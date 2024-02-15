@@ -20,17 +20,17 @@ class YahooFinanceData:
     volume: int
     
 class YahooFinanceLoader:
-    def __init__(self, asset_name):
-        self.asset_name = asset_name
+    def __init__(self, asset_name: str):
+        self.asset_name = asset_name.upper()
         self.data = self.load_data(date.today())
         
     def load_data(self, end_date: date):
         start_date: date = date(2019, 1, 1) # 5+ years
         
-        asset_folder = os.path.join('assets', self.asset_name)
+        asset_folder = os.path.join('data_cache', self.asset_name.lower())
         os.makedirs(asset_folder, exist_ok=True)  # create folder, if exists
 
-        file_name = f"{assert_all_finite}_data_{start_date.strftime('%Y-%m-%d')}_{end_date.strftime('%Y-%m-%d')}.csv"
+        file_name = f"{start_date.strftime('%Y-%m-%d')}_{end_date.strftime('%Y-%m-%d')}.csv"
         file_path = os.path.join(asset_folder, file_name)
         data_pd: DataFrame
         if not os.path.exists(file_path):
