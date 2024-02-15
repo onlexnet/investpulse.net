@@ -17,5 +17,11 @@ curl http://$OLLAMA_HOST:11434/api/generate -d '{
 }'
 ```
 
+## run all tests
+```bash
+pytest -v
+```
+
 ## Random hints
 [Jupyter notebook vscode shortcuts](https://github.com/microsoft/vscode-jupyter/issues/4376)
+[praw](https://pypi.org/project/praw/) - use to analyze sentiment from reddit r/wallstreetbets

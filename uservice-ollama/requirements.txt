@@ -2,3 +2,6 @@ yfinance==0.2.36
 pandas==2.2.0
 strictly-typed-pandas==0.2.1
 scikit-learn==1.4.0
+tweety==0.1.6
+
+# install pytest locally as - alternative one, installed globally - cant find module from current venv
