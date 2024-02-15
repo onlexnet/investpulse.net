@@ -18,9 +18,20 @@ from strictly_typed_pandas import DataSet
 from .YahooFinance import YahooFinanceData
 
 @dataclass
-class Result:
-    profit: int
-    loss: int
+class BuyDecision:
+    volumen: int
+    price: float
+
+@dataclass
+class SellDecision:
+    volumen: int
+    price: float
+    
+@dataclass
+class SkipDecision:
+    pass
+
+Decisions = BuyDecision | SellDecision | SkipDecision
         
     
 class ComputeStrategy1:
@@ -28,7 +39,34 @@ class ComputeStrategy1:
     def __init__(self, budget: float, initial_volume: int):
         initial_portfolio = 2 # I have two MSFT assets
         
-    def apply(self, item: YahooFinanceData) -> Result:
-        return Result(0, 0)
+    def apply(self, fact: YahooFinanceData) -> Decisions:
+        return SkipDecision()
+    
+# https://chat.openai.com/c/49e12137-0be2-4189-915c-3bea686abfe5
+# import pandas as pd
+# from ta.trend import MACD
+# import matplotlib.pyplot as plt
+
+# # Załaduj dane z pliku CSV (data.csv)
+# df = pd.read_csv('data.csv')
+
+# # Oblicz wskaźniki techniczne, w tym MACD
+# df['macd'] = MACD(df['Close']).macd()
+# df['signal_line'] = MACD(df['Close']).macd_signal()
+
+# # Sugeruj kupno, gdy wartość MACD przekracza linię sygnałową, i sprzedaż, gdy spada poniżej lini sygnałowej
+# df['buy_signal'] = df['macd'] > df['signal_line']
+# df['sell_signal'] = df['macd'] < df['signal_line']
+
+# # Wykres z ceną akcji, MACD i sygnałami kupna/sprzedaży
+# plt.figure(figsize=(12,6))
+# plt.plot(df['Close'], label='Close Price', color='blue')
+# plt.scatter(df.index[df['buy_signal']], df['Close'][df['buy_signal']], marker='^', color='green', label='Buy Signal')
+# plt.scatter(df.index[df['sell_signal']], df['Close'][df['sell_signal']], marker='v', color='red', label='Sell Signal')
+# plt.legend()
+# plt.title('Price with MACD Buy/Sell Signals')
+# plt.xlabel('Date')
+# plt.ylabel('Price')
+# plt.show()
 
     

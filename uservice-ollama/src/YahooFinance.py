@@ -1,13 +1,15 @@
+import datetime
+from typing import Callable
 from strictly_typed_pandas import DataSet
 import yfinance as yf
 from datetime import date
 import os
 from attr import dataclass
 from numpy import datetime64
-from pandas import DataFrame
+from pandas import DataFrame, Timestamp, to_datetime
 from sklearn.utils import assert_all_finite
 import pandas as pd
-
+from dateutil import parser
 
 @dataclass
 class YahooFinanceData:
@@ -41,7 +43,8 @@ class YahooFinanceLoader:
         data_pd = pd.read_csv(file_path)
         data_pd = data_pd.rename(columns=lambda x: x.lower().replace(' ', '_'))
         # and adjust types
-        data_pd['date'] = data_pd['date'].apply(pd.to_datetime)
-
+        # to_numpy: Callable[Timestamp (self) -> np.datetime64
+        data_pd['date'] = data_pd['date'].apply(pd.to_datetime, format='ISO8601')
+        
         data = DataSet[YahooFinanceData](data_pd)
         return data
