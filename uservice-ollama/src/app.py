@@ -5,7 +5,6 @@ from numpy import datetime64
 import numpy
 from pandas import DataFrame
 from strictly_typed_pandas import DataSet
-from typing import Callable
 from datetime import date, datetime
 import os
 

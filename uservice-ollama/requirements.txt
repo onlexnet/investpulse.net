@@ -5,3 +5,8 @@ scikit-learn==1.4.0
 tweety==0.1.6
 
 # install pytest locally as - alternative one, installed globally - cant find module from current venv
+pytest==8.0.1
+
+# Technical Analysis Library in Python
+# https://pypi.org/project/ta/
+ta==0.11.0

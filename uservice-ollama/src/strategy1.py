@@ -13,6 +13,7 @@
 # 11. Present results
 
 from dataclasses import dataclass
+from sre_parse import State
 from strictly_typed_pandas import DataSet
 
 from .YahooFinance import YahooFinanceData
@@ -33,13 +34,24 @@ class SkipDecision:
 
 Decisions = BuyDecision | SellDecision | SkipDecision
         
+@dataclass
+class ComputeStrategyState:
+    # Money allowed to be spent on BuyDecision, returned by SellDecision
+    budget: float
+    volume: int = 0
     
 class ComputeStrategy1:
+    state: ComputeStrategyState
     
-    def __init__(self, budget: float, initial_volume: int):
-        initial_portfolio = 2 # I have two MSFT assets
+    def __init__(self, facts: DataSet[YahooFinanceData], initial_state: ComputeStrategyState):
+        self.state = initial_state
         
+        assert len(facts) in (260, 261, 262)
+        
+    # data represents latest day, and we have to provide decision about
+    # what     
     def apply(self, fact: YahooFinanceData) -> Decisions:
+
         return SkipDecision()
     
 # https://chat.openai.com/c/49e12137-0be2-4189-915c-3bea686abfe5
@@ -47,7 +59,7 @@ class ComputeStrategy1:
 # from ta.trend import MACD
 # import matplotlib.pyplot as plt
 
-# # Załaduj dane z pliku CSV (data.csv)
+# Załaduj dane z pliku CSV (data.csv)
 # df = pd.read_csv('data.csv')
 
 # # Oblicz wskaźniki techniczne, w tym MACD
