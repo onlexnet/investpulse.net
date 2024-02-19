@@ -24,6 +24,7 @@ class YahooFinanceData:
 class LoadContext:
     date_from: date
     date_to: date
+    # e.g. MSFT
     asset_name: str
 
 def load(ctx: LoadContext) -> DataSet[YahooFinanceData]:

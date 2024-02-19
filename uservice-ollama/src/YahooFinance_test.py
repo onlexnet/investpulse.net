@@ -1,9 +1,10 @@
 import unittest
 
-from .YahooFinance import YahooFinanceLoader
+from .YahooFinance import load
 
+from . import dates_test
+from . import dates
 
-class YahooFinanceDataTest(unittest.TestCase):
-    
-    def test_should_load_example_data(self):
-        sut = YahooFinanceLoader('MSFT')
+def test_should_load_example_data():
+    load_ctx = dates_test.load_context
+    load(load_ctx)

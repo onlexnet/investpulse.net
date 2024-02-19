@@ -47,7 +47,9 @@
 				"github.vscode-pull-request-github",
 				"redhat.vscode-xml",
 				// live preview of local html files
-				"ms-vscode.live-server"
+				"ms-vscode.live-server",
+				// PlantUML preview
+				"jebbs.plantuml"
 			]
 		}
 	}

@@ -1,3 +1,4 @@
+from cgi import test
 from datetime import date
 
 from .YahooFinance import LoadContext, load
@@ -14,5 +15,5 @@ def test_dates():
     initial_set = split_result.initial_set
     test_set = split_result.test_set
     initial_set_size = len(initial_set.index)
-    print(initial_set)
-    assert len(initial_set.index) in (251, 252, 253), "initial set size should cover 1 year (about 251 working days)"
+    assert initial_set_size in (251, 252, 253), "initial set size should cover 1 year (about 251 working days)"
+    assert len(test_set.index) > 0, "Test set should contain some data"

@@ -46,8 +46,6 @@ class ComputeStrategy1:
     def __init__(self, facts: DataSet[YahooFinanceData], initial_state: ComputeStrategyState):
         self.state = initial_state
         
-        assert len(facts) in (260, 261, 262)
-        
     # data represents latest day, and we have to provide decision about
     # what     
     def apply(self, fact: YahooFinanceData) -> Decisions:
