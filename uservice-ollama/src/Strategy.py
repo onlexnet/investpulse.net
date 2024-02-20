@@ -13,44 +13,33 @@
 # 11. Present results
 
 from dataclasses import dataclass
+from datetime import date
 from sre_parse import State
 from strictly_typed_pandas import DataSet
+
+from .MarketAgent import OrderExecuted, MarketAgent, Side
 
 from .YahooFinance import YahooFinanceData
 
 @dataclass
-class BuyDecision:
-    volumen: int
-    price: float
-
-@dataclass
-class SellDecision:
-    volumen: int
-    price: float
-    
-@dataclass
-class SkipDecision:
-    pass
-
-Decisions = BuyDecision | SellDecision | SkipDecision
-        
-@dataclass
 class ComputeStrategyState:
     # Money allowed to be spent on BuyDecision, returned by SellDecision
-    budget: float
     volume: int = 0
     
 class ComputeStrategy1:
     state: ComputeStrategyState
     
-    def __init__(self, facts: DataSet[YahooFinanceData], initial_state: ComputeStrategyState):
+    def __init__(self, facts: DataSet[YahooFinanceData], initial_state: ComputeStrategyState, agent: MarketAgent):
         self.state = initial_state
-        
+        self.agent = agent
+        def listener(event: OrderExecuted) -> None:
+            self.state.volume += event.amount
+        agent.add_listener(listener)
+    
     # data represents latest day, and we have to provide decision about
     # what     
-    def apply(self, fact: YahooFinanceData) -> Decisions:
-
-        return SkipDecision()
+    def apply(self, fact: YahooFinanceData) -> None:
+        self.agent.make_order(Side.BUY, 1, date(2000, 1, 1))
     
 # https://chat.openai.com/c/49e12137-0be2-4189-915c-3bea686abfe5
 # import pandas as pd

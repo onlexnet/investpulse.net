@@ -7,11 +7,13 @@ from .dates import split
 date_from = date(2019, 1, 1)
 date_to = date(2023, 12, 31)
 asset_name = 'MSFT'
-load_context = LoadContext(date_from, date_to, asset_name)
+
+# MSFT asset with well defined range of dates.
+msft_context = LoadContext(date_from, date_to, asset_name)
 
 def test_dates():
-    data = load(load_context)
-    split_result = split(data)
+    yahoo_data = load(msft_context)
+    split_result = split(yahoo_data)
     initial_set = split_result.initial_set
     test_set = split_result.test_set
     initial_set_size = len(initial_set.index)
