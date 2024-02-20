@@ -53,15 +53,19 @@ class ComputeStrategy1:
         df['signal_line'] = macd.macd_signal()
         # Suggest buying when the MACD value crosses above the signal line, and selling when it falls below the signal line.
         df['buy_signal'] = (df['macd'] > df['signal_line']) & (df['macd'].shift(1) < df['signal_line'].shift(1))
+        df['sell_signal'] = (df['macd'] < df['signal_line']) & (df['macd'].shift(1) > df['signal_line'].shift(1))
         self.facts = df
 
         last_row = df.iloc[-1]
+        print(last_row)
         buy_signal = last_row['buy_signal']
-        print("SPARTA")
-        print(buy_signal)
+        sell_signal = last_row['sell_signal']
         if buy_signal:
             d = pandas.to_datetime(fact.date)
             self.agent.make_order(Side.BUY, 1, d)
+        if sell_signal:
+            d = pandas.to_datetime(fact.date)
+            self.agent.make_order(Side.SELL, 1, d)
     
 # https://chat.openai.com/c/49e12137-0be2-4189-915c-3bea686abfe5
 # import pandas as pd
