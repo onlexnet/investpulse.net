@@ -13,9 +13,14 @@
 # 11. Present results
 
 from dataclasses import dataclass
+import dataclasses
 from datetime import date
 from sre_parse import State
+import pandas
+from pandas import DataFrame
+from pandas import Series
 from strictly_typed_pandas import DataSet
+from ta.trend import MACD
 
 from .MarketAgent import OrderExecuted, MarketAgent, Side
 
@@ -30,6 +35,7 @@ class ComputeStrategy1:
     state: ComputeStrategyState
     
     def __init__(self, facts: DataSet[YahooFinanceData], initial_state: ComputeStrategyState, agent: MarketAgent):
+        self.facts = facts
         self.state = initial_state
         self.agent = agent
         def listener(event: OrderExecuted) -> None:
@@ -39,7 +45,23 @@ class ComputeStrategy1:
     # data represents latest day, and we have to provide decision about
     # what     
     def apply(self, fact: YahooFinanceData) -> None:
-        self.agent.make_order(Side.BUY, 1, date(2000, 1, 1))
+        fact_as_dict = dataclasses.asdict(fact)
+        fact_as_dataframe = DataFrame([fact_as_dict])
+        df = pandas.concat([self.facts, fact_as_dataframe], ignore_index=True)
+        macd = MACD(df['close'],window_fast=12, window_slow=26, window_sign=9)
+        df['macd'] = macd.macd()
+        df['signal_line'] = macd.macd_signal()
+        # Suggest buying when the MACD value crosses above the signal line, and selling when it falls below the signal line.
+        df['buy_signal'] = (df['macd'] > df['signal_line']) & (df['macd'].shift(1) < df['signal_line'].shift(1))
+        self.facts = df
+
+        last_row = df.iloc[-1]
+        buy_signal = last_row['buy_signal']
+        print("SPARTA")
+        print(buy_signal)
+        if buy_signal:
+            d = pandas.to_datetime(fact.date)
+            self.agent.make_order(Side.BUY, 1, d)
     
 # https://chat.openai.com/c/49e12137-0be2-4189-915c-3bea686abfe5
 # import pandas as pd

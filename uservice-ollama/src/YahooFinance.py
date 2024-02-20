@@ -1,13 +1,10 @@
-import datetime
-from typing import Callable
+from dataclasses import dataclass
 from strictly_typed_pandas import DataSet
 import yfinance as yf
 from datetime import date
 import os
-from attr import dataclass
 from numpy import datetime64
-from pandas import DataFrame, Timestamp, to_datetime
-from sklearn.utils import assert_all_finite
+from pandas import DataFrame
 import pandas as pd
 
 @dataclass
