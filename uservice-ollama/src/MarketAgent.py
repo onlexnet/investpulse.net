@@ -20,7 +20,7 @@ class Order:
 
 @dataclass
 class OrderExecuted:
-    side: Side
+    # Positive values mean: BUY, negative values mean: SELL
     amount: int
 
 # Naive and simple agent to execute requested operations on a Market.
@@ -33,7 +33,8 @@ class MarketAgent:
     
     def make_order(self, side: Side, amount: int, date: date):
         for l in self._listeners:
-            executed_order = OrderExecuted(side, amount)
+            signed_amount = amount if side == Side.BUY else -amount
+            executed_order = OrderExecuted(signed_amount)
             l(executed_order)
     
     # remove listener will be implemented later on, when required
