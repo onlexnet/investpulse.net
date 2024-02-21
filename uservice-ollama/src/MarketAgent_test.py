@@ -17,6 +17,6 @@ class MarketAgentTest(unittest.TestCase):
             x11 = a.amount
             
         sut.add_listener(my_listener)
-        sut.make_order(Side.BUY, 1, date(2000, 1, 1))
+        sut.make_order(Side.BUY, 1, date(2000, 1, 1), 100)
 
         assert x11 == 1

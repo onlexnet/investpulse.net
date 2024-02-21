@@ -21,7 +21,9 @@ class Order:
 @dataclass
 class OrderExecuted:
     # Positive values mean: BUY, negative values mean: SELL
+    side: Side
     amount: int
+    total_price: float
 
 # Naive and simple agent to execute requested operations on a Market.
 # TODO: allow buy 
@@ -31,10 +33,11 @@ class MarketAgent:
     _orderbook: Dict[asset_name, Order] = { }
     _listeners: List[Callable[[OrderExecuted], None]] = [ ]
     
-    def make_order(self, side: Side, amount: int, date: date):
+    # TODO remove suggested price as Agent should be aware what is the best price, and include additional operational costs related to buy/sell oeprations
+    def make_order(self, side: Side, amount: int, date: date, suggested_price: float):
+        assert amount > 0
         for l in self._listeners:
-            signed_amount = amount if side == Side.BUY else -amount
-            executed_order = OrderExecuted(signed_amount)
+            executed_order = OrderExecuted(side, amount, suggested_price)
             l(executed_order)
     
     # remove listener will be implemented later on, when required

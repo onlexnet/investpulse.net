@@ -7,7 +7,7 @@ from numpy import datetime64
 import numpy
 from strictly_typed_pandas import DataSet
 
-from .MarketAgent import MarketAgent
+from .MarketAgent import MarketAgent, OrderExecuted, Side
 
 from . import dates
 from . import dates_test
@@ -43,7 +43,22 @@ class ComputeStrategy1Test(unittest.TestCase):
         This intersection point is a potential "buy" signal. In this case, for the provided data, the crossing point could be on Day 5
         or Day 6, indicating a potential "buy" signal.
         """
+        
+        budget: float = 1000
+        buy_operation_count: int = 0
+        sell_operation_count: int = 0
+        def adjust_budget(event: OrderExecuted) -> None:
+            nonlocal budget, buy_operation_count, sell_operation_count
+            if (event.side == Side.BUY):
+                budget -= event.total_price
+                buy_operation_count += 1
+            if (event.side == Side.SELL):
+                budget += event.total_price
+                sell_operation_count += 1
+                
+        
         agent = MarketAgent()
+        agent.add_listener(adjust_budget)
         state = ComputeStrategyState(volume=0)
         
         load_context = dates_test.msft_context
@@ -62,11 +77,14 @@ class ComputeStrategy1Test(unittest.TestCase):
             100.6, 101.2, 101.9, 102.5, 103.0, 103.4, 103.9, 104.3, 104.6, 104.9,
             105.1, 104.8, 104.4, 103.9, 103.3, 102.6, 101.9, 101.2, 100.5, 98.5,
         ]
-        now = datetime64('1999-12-31')
+        day0 = datetime64('1999-12-31')
         for idx, x in enumerate(close):
-            date = now + numpy.timedelta64(idx, 'D')
-            data = YahooFinanceData(date, 0, 0, 0, x, 0, 0)
-            sut.apply(data)
-            sut.apply
+            now = day0 + numpy.timedelta64(idx, 'D')
+            finance_data = YahooFinanceData(now, 0, 0, 0, x, 0, 0)
+            sut.apply(finance_data)
+        
+        assert sell_operation_count == 2
+        assert buy_operation_count == 2
+        already_calculated_result = 1000.2
+        assert budget == already_calculated_result
 
-        assert state.volume == 2

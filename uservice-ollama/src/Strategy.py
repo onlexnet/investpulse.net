@@ -60,12 +60,12 @@ class ComputeStrategy1:
         print(last_row)
         buy_signal = last_row['buy_signal']
         sell_signal = last_row['sell_signal']
+        suggested_price: float = last_row['close']
+        d = pandas.to_datetime(fact.date)
         if buy_signal:
-            d = pandas.to_datetime(fact.date)
-            self.agent.make_order(Side.BUY, 1, d)
+            self.agent.make_order(Side.BUY, 1, d, suggested_price)
         if sell_signal:
-            d = pandas.to_datetime(fact.date)
-            self.agent.make_order(Side.SELL, 1, d)
+            self.agent.make_order(Side.SELL, 1, d, suggested_price)
     
 # https://chat.openai.com/c/49e12137-0be2-4189-915c-3bea686abfe5
 # import pandas as pd
