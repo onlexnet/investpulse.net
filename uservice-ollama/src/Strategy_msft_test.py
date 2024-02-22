@@ -82,20 +82,18 @@ class ComputeStrategy1Test(unittest.TestCase):
         
 
     def test_on_yahooo_data(self):
-        budget: float = 1000
+        initial_budget: float = 1000
         buy_operation_count: int = 0
         sell_operation_count: int = 0
         def adjust_budget(event: OrderExecuted) -> None:
-            nonlocal budget, buy_operation_count, sell_operation_count
+            nonlocal buy_operation_count, sell_operation_count
             if (event.side == Side.BUY):
-                budget -= event.total_price
                 buy_operation_count += 1
             if (event.side == Side.SELL):
-                budget += event.total_price
                 sell_operation_count += 1
                 
         
-        agent = MarketAgent(budget)
+        agent = MarketAgent(initial_budget)
         agent.add_listener(adjust_budget)
         state = ComputeStrategyState(volume=0)
         
@@ -127,8 +125,10 @@ class ComputeStrategy1Test(unittest.TestCase):
         #     finance_data = YahooFinanceData(now, 0, 0, 0, x, 0, 0)
         #     sut.apply(finance_data)
         
-        expected_budget = 1049.73
-        assert math.isclose(budget, expected_budget, rel_tol = 0.01), f"budget actual: {budget}, expected:{expected_budget}"
+        expected_budget = 1299.92
+        actual_budget = agent._budget
+        assert math.isclose(actual_budget, expected_budget, rel_tol = 0.01), f"budget actual: {actual_budget}, expected:{expected_budget}"
         assert sell_operation_count == 53
         assert buy_operation_count == 53
+        assert agent._assets['msft'] == 0 # jeżeli zostanąassety, należy oszacować ich wartość
 

@@ -63,3 +63,19 @@ class MarketAgentTest(unittest.TestCase):
         sut.make_order(Side.SELL, 1, date(2000, 1, 1), suggested_price)
 
         assert order_executed == OrderExecuted(Side.SELL, 1, 100)
+
+    def test_should_buy_and_sell(self):
+
+        order_executed: Optional[OrderExecuted] = None
+        initial_budget = 1000
+        sut = MarketAgent(budget=initial_budget)
+            
+        suggested_price = 100
+        sut.make_order(Side.BUY, 1, date(2000, 1, 1), suggested_price)
+        sut.make_order(Side.BUY, 1, date(2000, 1, 1), suggested_price)
+        assert sut._budget == initial_budget - 2 * suggested_price
+
+        sut.make_order(Side.SELL, AmountOptions.MAX, date(2000, 1, 1), suggested_price)
+        assert sut._budget == initial_budget
+        assert sut._assets['msft'] == 0
+

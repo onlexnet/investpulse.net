@@ -22,7 +22,7 @@ from pandas import Series
 from strictly_typed_pandas import DataSet
 from ta.trend import MACD
 
-from .MarketAgent import OrderExecuted, MarketAgent, Side
+from .MarketAgent import AmountOptions, OrderExecuted, MarketAgent, Side
 
 from .YahooFinance import YahooFinanceData
 
@@ -63,9 +63,9 @@ class ComputeStrategy1:
         suggested_price: float = last_row['close']
         d = pandas.to_datetime(fact.date)
         if buy_signal:
-            self.agent.make_order(Side.BUY, 1, d, suggested_price)
+            self.agent.make_order(Side.BUY, AmountOptions.MAX, d, suggested_price)
         if sell_signal:
-            self.agent.make_order(Side.SELL, 1, d, suggested_price)
+            self.agent.make_order(Side.SELL, AmountOptions.MAX, d, suggested_price)
     
 # https://chat.openai.com/c/49e12137-0be2-4189-915c-3bea686abfe5
 # import pandas as pd

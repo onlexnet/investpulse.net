@@ -55,19 +55,19 @@ class MarketAgent:
     # TODO remove suggested price as Agent should be aware what is the best price, and include additional operational costs related to buy/sell oeprations
     def make_order(self, side: Side, amount: AmountOrInt, date: date, suggested_price: float):
         
-        asset_name = 'msft' # TODO move such param to proper place aftrer making solution multi-asset
+        asset_name = 'msft' # TODO move such param to proper place after making solution multi-asset
         
         # Calculate real number of asset to buy / sell
-        real_amount: int = 0
+        assets_delta: int = 0
         if isinstance(amount, int):
-            real_amount = cast(int, amount)
+            assets_delta = cast(int, amount)
         elif isinstance(amount, AmountOptions):
             amount_option = cast(AmountOptions, amount)
             if amount_option == AmountOptions.MAX:
                 if side == Side.BUY:
-                    real_amount = math.floor(self._budget / suggested_price)
+                    assets_delta = math.floor(self._budget / suggested_price)
                 elif side == Side.SELL:
-                    real_amount = self._assets.get(asset_name, 0)
+                    assets_delta = self._assets.get(asset_name, 0)
                 else:
                     raise ValueError(f"Invalid Side:{side}")
             else:
@@ -76,13 +76,19 @@ class MarketAgent:
         # here real synchronous market operation TODO
         
         # apply side effects of the operation
-        budget_delta = real_amount * suggested_price
-        budget_signed_delta = budget_delta if side == Side.SELL else -budget_delta
-        self._budget += budget_signed_delta
+        assets = self._assets.get(asset_name, 0)
+        assets_signed_delta = assets_delta if side == Side.BUY else -assets_delta
+        budget_signed_delta = -assets_signed_delta * suggested_price
+        
+        new_assets = assets + assets_signed_delta
+        new_budget = round(self._budget + budget_signed_delta, 2)
+        self._assets[asset_name] = new_assets
+        self._budget = new_budget
+        
         
         # Notify listeners about decision
         for l in self._listeners:
-            executed_order = OrderExecuted(side, real_amount, suggested_price)
+            executed_order = OrderExecuted(side, assets_delta, suggested_price)
             l(executed_order)
     
     # remove listener will be implemented later on, when required
