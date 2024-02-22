@@ -32,14 +32,15 @@ class ComputeStrategyState:
     volume: int = 0
     
 class ComputeStrategy1:
-    state: ComputeStrategyState
+    _state: ComputeStrategyState
     
-    def __init__(self, facts: DataSet[YahooFinanceData], initial_state: ComputeStrategyState, agent: MarketAgent):
-        self.facts = facts
-        self.state = initial_state
+    def __init__(self, initial_state: ComputeStrategyState, agent: MarketAgent):
+        self._state = initial_state
         self.agent = agent
+        self.facts = DataFrame()
         def listener(event: OrderExecuted) -> None:
-            self.state.volume += event.amount
+            # TODO cover line below with test
+            self._state.volume += event.amount if event.side == Side.SELL else -event.amount
         agent.add_listener(listener)
     
     # data represents latest day, and we have to provide decision about
@@ -57,7 +58,7 @@ class ComputeStrategy1:
         self.facts = df
 
         last_row = df.iloc[-1]
-        print(last_row)
+        # print(last_row)
         buy_signal = last_row['buy_signal']
         sell_signal = last_row['sell_signal']
         suggested_price: float = last_row['close']

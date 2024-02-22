@@ -29,7 +29,7 @@ def load(ctx: LoadContext) -> DataSet[YahooFinanceData]:
     asset_name = ctx.asset_name
     end_date = ctx.date_to
     
-    asset_folder = os.path.join('data_cache', asset_name.lower())
+    asset_folder = os.path.join('.data_cache', asset_name.lower())
     os.makedirs(asset_folder, exist_ok=True)  # create folder, if exists
 
     file_name = f"{start_date.strftime('%Y-%m-%d')}_{end_date.strftime('%Y-%m-%d')}.csv"

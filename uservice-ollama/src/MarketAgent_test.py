@@ -12,7 +12,7 @@ class MarketAgentTest(unittest.TestCase):
         amount: int = 0
         
         budget = 1_000
-        sut = MarketAgent(budget, { })
+        sut = MarketAgent(budget)
         def my_listener(event: OrderExecuted):
             nonlocal amount
             amount = event.amount
@@ -31,7 +31,7 @@ class MarketAgentTest(unittest.TestCase):
         controlled_assets_msft = 3
         
         actual_assets = controlled_assets_msft
-        sut = MarketAgent(initial_budget, {'msft': actual_assets})
+        sut = MarketAgent(initial_budget, actual_assets)
         def my_listener(event: OrderExecuted):
             nonlocal actual_assets
             amount_delta = event.amount if event.side == Side.BUY else -event.amount
@@ -52,7 +52,7 @@ class MarketAgentTest(unittest.TestCase):
         controlled_assets_msft = 3 # more than one as we are going to sell 1 asset
         
         order_executed: Optional[OrderExecuted] = None
-        sut = MarketAgent(controlled_assets = {'msft': controlled_assets_msft})
+        sut = MarketAgent(controlled_assets_msft)
         def my_listener(event: OrderExecuted):
             nonlocal order_executed
             order_executed = event
@@ -60,9 +60,10 @@ class MarketAgentTest(unittest.TestCase):
         sut.add_listener(my_listener)
 
         suggested_price = 100
-        sut.make_order(Side.SELL, 1, date(2000, 1, 1), suggested_price)
+        now = date(2000, 1, 1)
+        sut.make_order(Side.SELL, 1, now, suggested_price)
 
-        assert order_executed == OrderExecuted(Side.SELL, 1, 100)
+        assert order_executed == OrderExecuted(now, Side.SELL, 1, 100, 100)
 
     def test_should_buy_and_sell(self):
 
@@ -77,5 +78,22 @@ class MarketAgentTest(unittest.TestCase):
 
         sut.make_order(Side.SELL, AmountOptions.MAX, date(2000, 1, 1), suggested_price)
         assert sut._budget == initial_budget
-        assert sut._assets['msft'] == 0
+        assert sut._assets == 0
+
+    def test_should_not_buy_zero_items(self):
+
+        order_executed: Optional[OrderExecuted] = None
+        initial_budget = 1000
+        sut = MarketAgent(budget=initial_budget)
+
+        def my_listener(event: OrderExecuted):
+            nonlocal order_executed
+            order_executed = event
+            
+        sut.add_listener(my_listener)
+            
+        suggested_price = 1001
+        sut.make_order(Side.BUY, AmountOptions.MAX, date(2000, 1, 1), suggested_price)
+
+        assert order_executed == None
 

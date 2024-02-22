@@ -1,10 +1,10 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from dataclasses import dataclass
 from datetime import date
 from enum import Enum
 import math
 from typing import Callable, Dict, List, Union, cast
 
-from attr import dataclass
 from pydantic import InstanceOf
 
 asset_name = str
@@ -22,8 +22,10 @@ class Order:
 @dataclass
 class OrderExecuted:
     # Positive values mean: BUY, negative values mean: SELL
+    date: date
     side: Side
     amount: int
+    price: float
     total_price: float
 
 class AmountOptions(Enum):
@@ -45,18 +47,18 @@ class MarketAgent:
     """
     _budget: float
     _orderbook: Dict[asset_name, Order] = { }
-    _assets:Dict[asset_name, int] # number of controlled assets
+    _assets: int = 0
     _listeners: List[Callable[[OrderExecuted], None]] = [ ]
     
-    def __init__(self, budget: float = 0, controlled_assets: Dict[asset_name, int] = { }):
+    def __init__(self, budget: float = 0, controlled_assets: int = 0):
         self._budget = budget
         self._assets = controlled_assets
                 
     # TODO remove suggested price as Agent should be aware what is the best price, and include additional operational costs related to buy/sell oeprations
     def make_order(self, side: Side, amount: AmountOrInt, date: date, suggested_price: float):
         
-        asset_name = 'msft' # TODO move such param to proper place after making solution multi-asset
-        
+        suggested_price = round(suggested_price, 2)
+
         # Calculate real number of asset to buy / sell
         assets_delta: int = 0
         if isinstance(amount, int):
@@ -67,28 +69,31 @@ class MarketAgent:
                 if side == Side.BUY:
                     assets_delta = math.floor(self._budget / suggested_price)
                 elif side == Side.SELL:
-                    assets_delta = self._assets.get(asset_name, 0)
+                    assets_delta = self._assets
                 else:
                     raise ValueError(f"Invalid Side:{side}")
             else:
                 raise ValueError(f"Invalid AmountOption:{amount_option}")
-                
+        
+        if assets_delta == 0:
+            return
+             
         # here real synchronous market operation TODO
         
         # apply side effects of the operation
-        assets = self._assets.get(asset_name, 0)
+        assets = self._assets
         assets_signed_delta = assets_delta if side == Side.BUY else -assets_delta
-        budget_signed_delta = -assets_signed_delta * suggested_price
+        budget_signed_delta = round(-assets_signed_delta * suggested_price, 2)
         
         new_assets = assets + assets_signed_delta
         new_budget = round(self._budget + budget_signed_delta, 2)
-        self._assets[asset_name] = new_assets
+        self._assets = new_assets
         self._budget = new_budget
         
         
         # Notify listeners about decision
         for l in self._listeners:
-            executed_order = OrderExecuted(side, assets_delta, suggested_price)
+            executed_order = OrderExecuted(date, side, assets_delta, suggested_price, budget_signed_delta)
             l(executed_order)
     
     # remove listener will be implemented later on, when required
