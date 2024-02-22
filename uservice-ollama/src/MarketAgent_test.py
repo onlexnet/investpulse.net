@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 import unittest
 
 from .MarketAgent import AmountOptions, OrderExecuted, MarketAgent, Side
@@ -45,3 +46,20 @@ class MarketAgentTest(unittest.TestCase):
         expected_budget = initial_budget + suggested_price * controlled_assets_msft
         assert actual_assets == expected_amount
         assert sut._budget == expected_budget
+
+    def test_should_sell_assets_partially(self):
+
+        controlled_assets_msft = 3 # more than one as we are going to sell 1 asset
+        
+        order_executed: Optional[OrderExecuted] = None
+        sut = MarketAgent(controlled_assets = {'msft': controlled_assets_msft})
+        def my_listener(event: OrderExecuted):
+            nonlocal order_executed
+            order_executed = event
+            
+        sut.add_listener(my_listener)
+
+        suggested_price = 100
+        sut.make_order(Side.SELL, 1, date(2000, 1, 1), suggested_price)
+
+        assert order_executed == OrderExecuted(Side.SELL, 1, 100)

@@ -48,7 +48,7 @@ class MarketAgent:
     _assets:Dict[asset_name, int] # number of controlled assets
     _listeners: List[Callable[[OrderExecuted], None]] = [ ]
     
-    def __init__(self, budget: float, controlled_assets: Dict[asset_name, int] = { }):
+    def __init__(self, budget: float = 0, controlled_assets: Dict[asset_name, int] = { }):
         self._budget = budget
         self._assets = controlled_assets
                 
