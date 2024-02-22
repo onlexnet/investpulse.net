@@ -40,7 +40,7 @@ class ComputeStrategy1:
         self.facts = DataFrame()
         def listener(event: OrderExecuted) -> None:
             # TODO cover line below with test
-            self._state.volume += event.amount if event.side == Side.SELL else -event.amount
+            self._state.volume += event.amount if event.side == Side.BUY else -event.amount
         agent.add_listener(listener)
     
     # data represents latest day, and we have to provide decision about

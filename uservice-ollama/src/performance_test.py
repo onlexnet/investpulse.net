@@ -9,7 +9,7 @@ from pandas import DataFrame
 from .YahooFinance import LoadContext, YahooFinanceData, load
 
 from .MarketAgent import MarketAgent, OrderExecuted
-from .Strategy import ComputeStrategy1, ComputeStrategyState
+from .Strategy1 import ComputeStrategy1, ComputeStrategyState
 
 folder_path = "test"
 files = os.listdir(folder_path)
@@ -71,7 +71,14 @@ def run_test(asset_name: str, date_from: date, date_to: date):
 
 def test_performance():
     date_from = date(2019, 1, 1)
-    date_to = date(2023, 12 ,31)
+    date_to = date(2024, 2, 22)
 
     run_test('msft', date_from, date_to)
+    run_test('aapl', date_from, date_to)
+    run_test('bac', date_from, date_to)
+    run_test('baba', date_from, date_to)
+    run_test('nflx', date_from, date_to)
+    run_test('ko', date_from, date_to)
+    run_test('nvda', date_from, date_to)
+    
         

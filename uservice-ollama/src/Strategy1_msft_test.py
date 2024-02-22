@@ -16,7 +16,7 @@ from . import dates
 from . import dates_test
 
 from .YahooFinance import LoadContext, YahooFinanceData, load
-from .Strategy import ComputeStrategy1, ComputeStrategyState
+from .Strategy1 import ComputeStrategy1, ComputeStrategyState
 
 class ComputeStrategy1Test(unittest.TestCase):
 
@@ -52,8 +52,6 @@ class ComputeStrategy1Test(unittest.TestCase):
         agent = MarketAgent(budget)
         agent.add_listener(adjust_budget)
         state = ComputeStrategyState(volume=0)
-        
-        load_context = dates_test.msft_context
         
         sut = ComputeStrategy1(state, agent)
 
