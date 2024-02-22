@@ -19,16 +19,6 @@ from .Strategy import ComputeStrategy1, ComputeStrategyState
 
 class ComputeStrategy1Test(unittest.TestCase):
 
-    def _skip_test_should_calculate_result(self):
-        agent = MarketAgent()
-        state = ComputeStrategyState(volume=0)
-        facts = DataSet[YahooFinanceData]()
-        sut = ComputeStrategy1(facts, state, agent)
-        fact = YahooFinanceData(datetime64('2020-01-01'), 1, 1, 1, 1, 1, 1)
-        sut.apply(fact)
-        
-        assert state.volume == 1
-
     def test_should_buy(self):
         """
         To generate a "buy" signal, we need the MACD line to cross above the signal line. 
@@ -59,7 +49,7 @@ class ComputeStrategy1Test(unittest.TestCase):
                 sell_operation_count += 1
                 
         
-        agent = MarketAgent()
+        agent = MarketAgent(budget)
         agent.add_listener(adjust_budget)
         state = ComputeStrategyState(volume=0)
         
@@ -105,7 +95,7 @@ class ComputeStrategy1Test(unittest.TestCase):
                 sell_operation_count += 1
                 
         
-        agent = MarketAgent()
+        agent = MarketAgent(budget)
         agent.add_listener(adjust_budget)
         state = ComputeStrategyState(volume=0)
         
