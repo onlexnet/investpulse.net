@@ -39,9 +39,9 @@ AmountOrInt = Union[int, AmountOptions]
 class MarketAgent:
     """
     - TODO: Budget size control based on initial payment and subsequent top-ups.
-    - TODO: Buying assets, but net exceeding available budget
+    - TODO Buying assets, but net exceeding available budget
     - TODO: Selling assets, but no exceeding what is owned
-    - TODO: remove suggested_proce as agebt should be avare what the best proce is
+    - TODO: remove suggested_price as agent should be avare what the best price is
     - TODO: Incorporate the spread into cost calculations
     - ? Retry unrealized buy / sell orders as long as there is not opposite request
     """
