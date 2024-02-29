@@ -2,6 +2,8 @@
 
 To test some smaller models, use [ollama](https://ollama.ai/library)
 
+To see example arch based on ollama [here](https://dzone.com/articles/using-spring-ai-with-ollama-for-a-local-ai-model)
+
 e.g. 
 ```
 ollama run orca2
