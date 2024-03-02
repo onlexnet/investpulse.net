@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+// Definicja wiadomości ping-pong
+message PingRequest {
+    // Pole opcjonalne - można przekazać dowolne dane pinga
+    string message = 1;
+}
+
+message PingResponse {
+    // Odpowiedź zawiera wiadomość echo, aby potwierdzić otrzymanie
+    string message = 1;
+}
+
+// Definicja serwisu Ping
+service PingService {
+    // Metoda ping, przyjmująca żądanie PingRequest i zwracająca odpowiedź PingResponse
+    rpc ping(PingRequest) returns (PingResponse) {}
+}

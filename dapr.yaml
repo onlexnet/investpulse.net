@@ -1,0 +1,13 @@
+version: 1
+apps:
+  - appID: processor
+    appDirPath: ./uservice_app1
+    appProtocol: grpc
+    appPort: 50051
+    command: [".venv/bin/python", "app.py"]
+  # - appID: emit-metrics
+  #   appDirPath: ./apps/emit-metrics/
+  #   daprHTTPPort: 3511
+  #   env:
+  #     DAPR_HOST_ADD: localhost
+  #   command: ["go","run", "app.go"]

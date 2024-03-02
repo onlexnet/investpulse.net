@@ -1,0 +1,3 @@
+.venv
+.dapr/logs
+__pycache__
