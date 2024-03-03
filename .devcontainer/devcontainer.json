@@ -16,7 +16,7 @@
 		},
 		"ghcr.io/devcontainers/features/java:1": {
 			"installMaven": true,
-			"version": "17",
+			"version": "21",
 			"jdkDistro": "oracle",
 			"gradleVersion": "latest",
 			"mavenVersion": "3.8.6",
@@ -40,7 +40,10 @@
 		"vscode": {
 			"extensions": [
 				"ms-azuretools.vscode-dapr",
-				"zxh404.vscode-proto3"
+				"zxh404.vscode-proto3",
+				"vscjava.vscode-java-pack",
+				"vmware.vscode-boot-dev-pack",
+				"vmware.vscode-spring-boot"
 			]
 		}
 	}

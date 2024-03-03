@@ -1,13 +1,14 @@
 version: 1
 apps:
-  - appID: processor
-    appDirPath: ./uservice_app1
+  - appID: app1
+    appDirPath: ./uservice-app1
     appProtocol: grpc
     appPort: 50051
     command: [".venv/bin/python", "app.py"]
-  # - appID: emit-metrics
-  #   appDirPath: ./apps/emit-metrics/
-  #   daprHTTPPort: 3511
-  #   env:
-  #     DAPR_HOST_ADD: localhost
-  #   command: ["go","run", "app.go"]
+  - appID: app2
+    appDirPath: ./uservice-app2
+    appProtocol: grpc
+    appPort: 50052
+    env:
+      EXAMPLE1: localhost
+    command: ["mvn", "spring-boot:run", "-ntp"]
