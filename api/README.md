@@ -1,7 +1,19 @@
 Run and keep working local pypi server
-```
-. start-devpi.sh
-```
+
+- run local pypi server (the first run)
+  ```
+  python -m venv .venv
+  . .venv/bin/activate
+  pip install -r requirements.txt
+  . start-devpi.sh
+  ```
+
+- run local pypi server (second run)
+  ```
+  python -m venv .venv
+  . .venv/bin/activate
+  . start-devpi.sh
+  ```
 
 Build and push python libs
 ```

@@ -4,10 +4,11 @@ import os
 import grpc
 from grpc_reflection.v1alpha import reflection
 
-from .lib.app1_rpc.app1_pb2 import PingResponse
+from app1_rpc.app1_pb2_grpc import PingServiceServicer, add_PingServiceServicer_to_server
+from app1_rpc import app1_pb2
 
-from .lib.app1_rpc.app1_pb2_grpc import PingServiceServicer, add_PingServiceServicer_to_server
-from lib.app1_rpc import app1_pb2
+
+from app1_rpc.app1_pb2 import PingResponse
 
 APP_PORT=os.getenv('APP_PORT', 50051)
 log = logging.getLogger("myapp")

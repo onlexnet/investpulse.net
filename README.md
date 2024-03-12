@@ -5,14 +5,6 @@
 
 ## Hints
 
-- run local pypi server
-  ```
-  cd api
-  python -m venv .venv
-  . .venv/bin/activate
-  pip install -r requirements.txt
-  . start-devpi.sh
-  ```
 - run applications
   ```
   dapr run -f dapr.yaml

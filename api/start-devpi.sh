@@ -1,0 +1,2 @@
+devpi-init
+devpi-server

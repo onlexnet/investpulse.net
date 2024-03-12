@@ -43,7 +43,8 @@
 				"zxh404.vscode-proto3",
 				"vscjava.vscode-java-pack",
 				"vmware.vscode-boot-dev-pack",
-				"vmware.vscode-spring-boot"
+				"vmware.vscode-spring-boot",
+				"ms-python.python"
 			]
 		}
 	},
