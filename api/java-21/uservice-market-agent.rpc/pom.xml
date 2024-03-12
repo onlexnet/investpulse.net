@@ -9,7 +9,7 @@
   <artifactId>uservice-projects.rpc</artifactId>
 
   <properties>
-    <proto.dir>../../grpc/uservice-market-agent.rpc</proto.dir>
+    <proto.dir>../../grpc/agent_rpc</proto.dir>
   </properties>
 
 </project>

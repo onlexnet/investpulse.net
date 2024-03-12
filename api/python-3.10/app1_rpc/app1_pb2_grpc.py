@@ -2,11 +2,12 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from uservice_market_agent.rpc import app1_pb2 as uservice__market__agent_dot_rpc_dot_app1__pb2
+from app1_rpc import app1_pb2 as app1__rpc_dot_app1__pb2
 
 
-class PingStub(object):
-    """Missing associated documentation comment in .proto file."""
+class PingServiceStub(object):
+    """Definicja serwisu Ping
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -15,38 +16,41 @@ class PingStub(object):
             channel: A grpc.Channel.
         """
         self.ping = channel.unary_unary(
-                '/Ping/ping',
-                request_serializer=uservice__market__agent_dot_rpc_dot_app1__pb2.MyPingRequest.SerializeToString,
-                response_deserializer=uservice__market__agent_dot_rpc_dot_app1__pb2.MyPingResponse.FromString,
+                '/PingService/ping',
+                request_serializer=app1__rpc_dot_app1__pb2.PingRequest.SerializeToString,
+                response_deserializer=app1__rpc_dot_app1__pb2.PingResponse.FromString,
                 )
 
 
-class PingServicer(object):
-    """Missing associated documentation comment in .proto file."""
+class PingServiceServicer(object):
+    """Definicja serwisu Ping
+    """
 
     def ping(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Metoda ping, przyjmująca żądanie PingRequest i zwracająca odpowiedź PingResponse
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_PingServicer_to_server(servicer, server):
+def add_PingServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ping': grpc.unary_unary_rpc_method_handler(
                     servicer.ping,
-                    request_deserializer=uservice__market__agent_dot_rpc_dot_app1__pb2.MyPingRequest.FromString,
-                    response_serializer=uservice__market__agent_dot_rpc_dot_app1__pb2.MyPingResponse.SerializeToString,
+                    request_deserializer=app1__rpc_dot_app1__pb2.PingRequest.FromString,
+                    response_serializer=app1__rpc_dot_app1__pb2.PingResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'Ping', rpc_method_handlers)
+            'PingService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Ping(object):
-    """Missing associated documentation comment in .proto file."""
+class PingService(object):
+    """Definicja serwisu Ping
+    """
 
     @staticmethod
     def ping(request,
@@ -59,8 +63,8 @@ class Ping(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Ping/ping',
-            uservice__market__agent_dot_rpc_dot_app1__pb2.MyPingRequest.SerializeToString,
-            uservice__market__agent_dot_rpc_dot_app1__pb2.MyPingResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/PingService/ping',
+            app1__rpc_dot_app1__pb2.PingRequest.SerializeToString,
+            app1__rpc_dot_app1__pb2.PingResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

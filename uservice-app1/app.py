@@ -2,24 +2,26 @@ from concurrent import futures
 import logging
 import os
 import grpc
-from app1_pb2 import PingRequest, PingResponse
-import app1_pb2
-import app1_pb2_grpc
 from grpc_reflection.v1alpha import reflection
+
+from .lib.app1_rpc.app1_pb2 import PingResponse
+
+from .lib.app1_rpc.app1_pb2_grpc import PingServiceServicer, add_PingServiceServicer_to_server
+from lib.app1_rpc import app1_pb2
 
 APP_PORT=os.getenv('APP_PORT', 50051)
 log = logging.getLogger("myapp")
 
-class MyClass(app1_pb2_grpc.PingServiceServicer):
+class MyClass(PingServiceServicer):
 
     def ping(self, request, context):
         log.info(request)
-        reply = app1_pb2.PingResponse(message="Hello Łosiu")
+        reply = PingResponse(message="Hello Łosiu")
         return reply
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    app1_pb2_grpc.add_PingServiceServicer_to_server(MyClass(), server)
+    add_PingServiceServicer_to_server(MyClass(), server)
 
     # the reflection service will be aware of "Greeter" and "ServerReflection" services.
     # source: https://github.com/grpc/grpc/blob/master/doc/python/server_reflection.md
