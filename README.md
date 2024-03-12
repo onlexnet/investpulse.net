@@ -11,8 +11,6 @@
   python -m venv .venv
   . .venv/bin/activate
   pip install -r requirements.txt
-  mkdir ~/packages  
-  pypi-server run -p 8080 ~/packages &
   ```
 - run applications
   ```
