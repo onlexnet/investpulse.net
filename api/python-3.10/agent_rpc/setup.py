@@ -6,8 +6,7 @@ LONG_DESCRIPTION = 'My first Python package with a slightly longer description'
 
 # Setting up
 setup(
-       # the name must match the folder name 'verysimplemodule'
-        name="verysimplemodule", 
+        name="onlexnet_app1", 
         version=VERSION,
         author="Jason Dsouza",
         author_email="<youremail@email.com>",
