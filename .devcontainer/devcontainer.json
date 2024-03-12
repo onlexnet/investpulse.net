@@ -32,7 +32,9 @@
 		}
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [
+		3141, // local devpi server
+	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
 	// Configure tool-specific properties.
@@ -44,12 +46,13 @@
 				"vscjava.vscode-java-pack",
 				"vmware.vscode-boot-dev-pack",
 				"vmware.vscode-spring-boot",
-				"ms-python.python"
+				"ms-python.python",
+				"ms-azuretools.vscode-dapr"
 			]
 		}
 	},
 	// --network=host allows to run devpi-server
-	"runArgs": [ "--network=host"],
+	// "runArgs": [ "--network=host"],
 	// https://stackoverflow.com/a/75644266
 	"mounts": [
 		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh",

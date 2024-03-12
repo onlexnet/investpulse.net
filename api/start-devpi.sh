@@ -1,2 +1,2 @@
 devpi-init
-devpi-server
+devpi-server --listen 0.0.0.0:3141
