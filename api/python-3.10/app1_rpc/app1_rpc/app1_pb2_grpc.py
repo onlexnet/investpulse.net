@@ -6,8 +6,7 @@ from app1_rpc import app1_pb2 as app1__rpc_dot_app1__pb2
 
 
 class PingServiceStub(object):
-    """Definicja serwisu Ping
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -23,12 +22,10 @@ class PingServiceStub(object):
 
 
 class PingServiceServicer(object):
-    """Definicja serwisu Ping
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def ping(self, request, context):
-        """Metoda ping, przyjmująca żądanie PingRequest i zwracająca odpowiedź PingResponse
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -49,8 +46,7 @@ def add_PingServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class PingService(object):
-    """Definicja serwisu Ping
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def ping(request,
