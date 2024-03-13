@@ -18,3 +18,5 @@ ta==0.11.0
 #   pytest --cov .
 #   pytest --cov-report html --cov .
 pytest-cov==4.1.0
+
+ipykernel

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+// Market data from Yahoo Finance
+message MarketChangedEvent {
+    // yyyymmdd
+    int32 date = 1;
+    double open = 2;
+    double close = 3;
+    double low = 4;
+    double high = 5;
+    double adj_close = 6;
+}
