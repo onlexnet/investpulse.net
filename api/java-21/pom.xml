@@ -6,9 +6,11 @@
   <version>${revision}</version>
 
   <modules>
-    <module>.parent.events</module>
+    <module>.parent</module>
     <module>.parent.rpc</module>
-    <module>uservice-market-agent.rpc</module>
+    <module>.parent.events</module>
+    <module>uservice-market.rpc</module>
+    <module>uservice-market.events</module>
   </modules>
 
   <properties>

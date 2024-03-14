@@ -1,15 +1,15 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>onlexnet.sinnet</groupId>
-    <artifactId>rpc-java-parent</artifactId>
+    <groupId>onlexnet.ptn</groupId>
+    <artifactId>client-rpc-parent</artifactId>
     <version>${revision}</version>
     <relativePath>../.parent.rpc/pom.xml</relativePath>
   </parent>
-  <artifactId>uservice-projects.rpc</artifactId>
+  <artifactId>uservice-market.rpc</artifactId>
 
   <properties>
-    <proto.dir>../../grpc/agent_rpc</proto.dir>
+    <proto.dir>../../grpc/market_rpc</proto.dir>
   </properties>
 
 </project>

@@ -1,12 +1,13 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>onlexnet.sinnet</groupId>
-    <artifactId>client-java-build</artifactId>
+    <groupId>onlexnet.ptn</groupId>
+    <artifactId>client-parent</artifactId>
     <version>${revision}</version>
+    <relativePath>../.parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>events-parent</artifactId>
+  <artifactId>client-events-parent</artifactId>
   <packaging>pom</packaging>
 
   <properties>
