@@ -11,39 +11,54 @@ import com.google.protobuf.Empty;
 
 import io.dapr.v1.DaprAppCallbackProtos;
 import io.dapr.v1.AppCallbackGrpc.AppCallbackImplBase;
+import io.dapr.v1.CommonProtos.InvokeRequest;
+import io.dapr.v1.CommonProtos.InvokeResponse;
+import io.dapr.v1.DaprAppCallbackProtos.BindingEventRequest;
+import io.dapr.v1.DaprAppCallbackProtos.BindingEventResponse;
+import io.dapr.v1.DaprAppCallbackProtos.ListInputBindingsResponse;
+import io.dapr.v1.DaprAppCallbackProtos.ListTopicSubscriptionsResponse;
+import io.dapr.v1.DaprAppCallbackProtos.TopicEventRequest;
+import io.dapr.v1.DaprAppCallbackProtos.TopicEventResponse;
 import io.dapr.v1.DaprAppCallbackProtos.TopicSubscription;
 import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import onlexnet.market.events.MarketChangedEvent;
 
 // source: https://github.com/dapr/java-sdk/blob/master/examples/src/main/java/io/dapr/examples/pubsub/grpc/SubscriberGrpcService.java
-/** Entry point of Grpc application services for DAPR*/
+/** Entry point of Grpc application services for DAPR */
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class DaprCallback extends AppCallbackImplBase {
     private final List<TopicSubscription> topicSubscriptionList = new ArrayList<>();
+    private final List<EventListener<?>> listeners;
 
     @PostConstruct
     public void init() {
         log.info("0000000000000000000");
     }
 
-
     @Override
-    public void listTopicSubscriptions(Empty request,
-            StreamObserver<DaprAppCallbackProtos.ListTopicSubscriptionsResponse> responseObserver) {
-                log.info("1111111111111");
-                registerConsumer("messagebus", "testingtopic", false);
+    public void listTopicSubscriptions(Empty request, StreamObserver<ListTopicSubscriptionsResponse> responseObserver) {
+        log.info("1111111111111");
+
+        for (var l: listeners) {
+            var eventClass = l.getEventClass();
+            var supportedClassCanonicalName = eventClass.getCanonicalName();
+            registerConsumer("pubsub", supportedClassCanonicalName, false);
+        }
+
+        registerConsumer("messagebus", "testingtopic", false);
         registerConsumer("messagebus", "bulkpublishtesting", false);
         registerConsumer("messagebus", "testingtopicbulk", true);
         registerConsumer("pubsub", "TOPIC_A", false);
         try {
-            DaprAppCallbackProtos.ListTopicSubscriptionsResponse.Builder builder = DaprAppCallbackProtos.ListTopicSubscriptionsResponse
-                    .newBuilder();
+            var builder = ListTopicSubscriptionsResponse.newBuilder();
             topicSubscriptionList.forEach(builder::addSubscriptions);
-            DaprAppCallbackProtos.ListTopicSubscriptionsResponse response = builder.build();
+            ListTopicSubscriptionsResponse response = builder.build();
             responseObserver.onNext(response);
         } catch (Throwable e) {
             log.info("22222222222222222");
@@ -56,12 +71,9 @@ public class DaprCallback extends AppCallbackImplBase {
 
     @Override
     @SneakyThrows
-    public void onTopicEvent(DaprAppCallbackProtos.TopicEventRequest request,
-            StreamObserver<DaprAppCallbackProtos.TopicEventResponse> responseObserver) {
+    public void onTopicEvent(TopicEventRequest request, StreamObserver<TopicEventResponse> responseObserver) {
         try {
-            String data = request.getData().toStringUtf8().replace("\"", "");
             log.info("ON RAW EVENT! data={}", request.getData());
-
 
             // dirty deserialization
             // var decoder = MarketChangedEvent.getDecoder();
@@ -70,12 +82,10 @@ public class DaprCallback extends AppCallbackImplBase {
 
             var reader = new SpecificDatumReader<>(MarketChangedEvent.class);
             var eventAsBytes = request.getData().toByteArray();
-            log.info("ON EVENT as bytes! data={}", eventAsBytes);
             var decoder = DecoderFactory.get().binaryDecoder(eventAsBytes, null);
             var payload = reader.read(null, decoder);
-            log.info("ON EVENT as bytes! payload={}", payload);
+            log.info("ON EVENT as object: {}", payload);
 
-        
             var response = DaprAppCallbackProtos.TopicEventResponse.newBuilder()
                     .setStatus(DaprAppCallbackProtos.TopicEventResponse.TopicEventResponseStatus.SUCCESS)
                     .build();
@@ -96,7 +106,7 @@ public class DaprCallback extends AppCallbackImplBase {
      * @param isBulkMessage flag to enable/disable bulk subscribe
      */
     public void registerConsumer(String pubsubName, String topic, boolean isBulkMessage) {
-        topicSubscriptionList.add(DaprAppCallbackProtos.TopicSubscription
+        topicSubscriptionList.add(TopicSubscription
                 .newBuilder()
                 .setPubsubName(pubsubName)
                 .setTopic(topic)

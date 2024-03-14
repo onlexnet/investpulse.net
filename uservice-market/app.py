@@ -22,16 +22,20 @@ async def serve():
 
     with DaprClient() as dc:
         event = MarketChangedEvent(date = 20010203)
+        
         event_as_str = str(event)
         event_as_bytes = event.to_avro_writable()
+        
         logging.info("sparta")
-        logging.info(f"Event as string: {event_as_str}")
-        print(event_as_str.__class__)
+        topic_name = MarketChangedEvent.RECORD_SCHEMA.fullname
 
         while True:
-            await asyncio.sleep(1)
-            # resp = dc.publish_event(pubsub_name="pubsub", topic_name="TOPIC_A", data = event_as_str, data_content_type="application/avro")
+            await asyncio.sleep(3)
+            # resp1 = dc.publish_event(pubsub_name="pubsub", topic_name="TOPIC_A", data = event_as_str, data_content_type="application/avro")
             resp = dc.publish_event(pubsub_name="pubsub", topic_name="TOPIC_A", data = event_as_str)
+            resp = dc.publish_event(pubsub_name="pubsub", topic_name=topic_name, data = event_as_str)
+            # resp2 = dc.publish_event(pubsub_name="pubsub", topic_name=event.RECORD_SCHEMA, data = event_as_str, data_content_type="application/avro")
+            # resp = dc.publish_event(pubsub_name="pubsub", topic_name="TOPIC_A", data = event_as_str)
             logging.info(f"Event sent: {event_as_str}")
 
     server.wait_for_termination()
