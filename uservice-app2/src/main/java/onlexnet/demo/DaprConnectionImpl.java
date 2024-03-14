@@ -1,6 +1,5 @@
 package onlexnet.demo;
 
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import io.dapr.client.DaprClient;

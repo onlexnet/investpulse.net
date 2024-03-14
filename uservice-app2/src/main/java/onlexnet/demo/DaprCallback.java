@@ -1,19 +1,17 @@
 package onlexnet.demo;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.avro.specific.SpecificDatumWriter;
 import org.springframework.stereotype.Component;
 
 import com.google.protobuf.Empty;
 
-import io.dapr.v1.AppCallbackGrpc;
 import io.dapr.v1.DaprAppCallbackProtos;
+import io.dapr.v1.AppCallbackGrpc.AppCallbackImplBase;
+import io.dapr.v1.DaprAppCallbackProtos.TopicSubscription;
 import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
@@ -21,10 +19,11 @@ import lombok.extern.slf4j.Slf4j;
 import onlexnet.market.events.MarketChangedEvent;
 
 // source: https://github.com/dapr/java-sdk/blob/master/examples/src/main/java/io/dapr/examples/pubsub/grpc/SubscriberGrpcService.java
+/** Entry point of Grpc application services for DAPR*/
 @Component
 @Slf4j
-public class DaprCallback extends AppCallbackGrpc.AppCallbackImplBase {
-    private final List<DaprAppCallbackProtos.TopicSubscription> topicSubscriptionList = new ArrayList<>();
+public class DaprCallback extends AppCallbackImplBase {
+    private final List<TopicSubscription> topicSubscriptionList = new ArrayList<>();
 
     @PostConstruct
     public void init() {
