@@ -14,3 +14,6 @@ twine==5.0.0
 
 # used to create packaged libraries for python distribution
 setuptools==69.1.1
+
+# required to generate classes from avro definition
+avro-gen3==0.7.12

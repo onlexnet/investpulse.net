@@ -1,0 +1,3 @@
+grpcio-reflection==1.62.0
+dapr-ext-grpc==1.12.0
+onlexnet_market==0.0.2

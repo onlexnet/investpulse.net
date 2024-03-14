@@ -8,6 +8,7 @@ python setup.py sdist
 popd
 
 
+python serialize_avro.py "./grpc/market_rpc/market.avsc" python-3.11/market_rpc/market_rpc
 OUT_DIR=./python-3.11/market_rpc
 python -m grpc_tools.protoc -I./grpc --python_out=$OUT_DIR --pyi_out=$OUT_DIR --grpc_python_out=$OUT_DIR ./grpc/market_rpc/*.proto
 pushd .

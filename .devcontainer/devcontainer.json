@@ -51,8 +51,7 @@
 				"vscjava.vscode-java-pack",
 				"vmware.vscode-boot-dev-pack",
 				"vmware.vscode-spring-boot",
-				"ms-python.python",
-				"ms-azuretools.vscode-dapr"
+				"ms-python.python"
 			]
 		}
 	},
