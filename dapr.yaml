@@ -10,10 +10,10 @@ apps:
     appProtocol: grpc
     appPort: 50052
     command: [".venv/bin/python", "app.py"]
-  # - appID: app2
-  #   appDirPath: ./uservice-app2
-  #   appProtocol: grpc
-  #   appPort: 50053
-  #   env:
-  #     EXAMPLE1: localhost
-  #   command: ["mvn", "spring-boot:run", "-ntp"]
+  - appID: app2
+    appDirPath: ./uservice-app2
+    appProtocol: grpc
+    appPort: 50053
+    env:
+      EXAMPLE1: localhost
+    command: ["mvn", "spring-boot:run", "-ntp"]
