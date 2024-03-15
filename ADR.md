@@ -28,3 +28,15 @@ Reasons:
 
 Alternatives:
 - get more knowledge about serialization options related to AVBRO and DAPR pubsub
+
+## ADR 3
+Context: Topic convention in pubsub scenarios
+
+Decision: single topic per single message
+
+Reasons:
+- Topic naming per conventions saves code and make such assymption very easy to explain
+- Already proven as workign solution in another project
+
+Alternatives:
+- recognize message type by extra metadata in cloudevent metadata
