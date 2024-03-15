@@ -81,7 +81,6 @@ public class DaprCallback extends AppCallbackImplBase {
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Throwable e) {
-
             log.error("errrrrrrrrrrrrr", e);
             responseObserver.onError(e);
         }
