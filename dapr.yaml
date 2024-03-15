@@ -16,4 +16,4 @@ apps:
     appPort: 50053
     env:
       EXAMPLE1: localhost
-    command: ["mvn", "spring-boot:run", "-ntp"]
+    command: ["mvn", "spring-boot:run", "-ntp", "-DskipTests"]

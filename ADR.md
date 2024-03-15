@@ -15,3 +15,16 @@ Alternatives:
 
 Consequences:
 - new tools to learn
+
+## ADR 2
+Context: Events serialization
+
+Decision: use events as pure JSON messages, ignoring schema
+
+Reasons:
+- I can't find simple way of how to serialize binary messages and deserialize them
+- when serialized to binaries, DAPR seems to save binary content as string in REDIS
+- ignoring schema and using just JSON representation looks very simple from coding perspective
+
+Alternatives:
+- get more knowledge about serialization options related to AVBRO and DAPR pubsub

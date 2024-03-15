@@ -51,7 +51,9 @@
 				"vscjava.vscode-java-pack",
 				"vmware.vscode-boot-dev-pack",
 				"vmware.vscode-spring-boot",
-				"ms-python.python"
+				"ms-python.python",
+				// to observe local redis instance used by DAPR
+				"dunn.redis"
 			]
 		}
 	},

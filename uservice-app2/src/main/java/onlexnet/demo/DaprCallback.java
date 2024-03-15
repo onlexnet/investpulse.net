@@ -3,19 +3,13 @@ package onlexnet.demo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.avro.io.DecoderFactory;
-import org.apache.avro.specific.SpecificDatumReader;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Empty;
 
-import io.dapr.v1.DaprAppCallbackProtos;
 import io.dapr.v1.AppCallbackGrpc.AppCallbackImplBase;
-import io.dapr.v1.CommonProtos.InvokeRequest;
-import io.dapr.v1.CommonProtos.InvokeResponse;
-import io.dapr.v1.DaprAppCallbackProtos.BindingEventRequest;
-import io.dapr.v1.DaprAppCallbackProtos.BindingEventResponse;
-import io.dapr.v1.DaprAppCallbackProtos.ListInputBindingsResponse;
+import io.dapr.v1.DaprAppCallbackProtos;
 import io.dapr.v1.DaprAppCallbackProtos.ListTopicSubscriptionsResponse;
 import io.dapr.v1.DaprAppCallbackProtos.TopicEventRequest;
 import io.dapr.v1.DaprAppCallbackProtos.TopicEventResponse;
@@ -33,6 +27,8 @@ import onlexnet.market.events.MarketChangedEvent;
 @Slf4j
 @RequiredArgsConstructor
 public class DaprCallback extends AppCallbackImplBase {
+    private final ObjectMapper objectMapper;
+    
     private final List<TopicSubscription> topicSubscriptionList = new ArrayList<>();
     private final List<EventListener<?>> listeners;
 
@@ -61,10 +57,8 @@ public class DaprCallback extends AppCallbackImplBase {
             ListTopicSubscriptionsResponse response = builder.build();
             responseObserver.onNext(response);
         } catch (Throwable e) {
-            log.info("22222222222222222");
             responseObserver.onError(e);
         } finally {
-            log.info("3333333333333333");
             responseObserver.onCompleted();
         }
     }
@@ -73,17 +67,12 @@ public class DaprCallback extends AppCallbackImplBase {
     @SneakyThrows
     public void onTopicEvent(TopicEventRequest request, StreamObserver<TopicEventResponse> responseObserver) {
         try {
-            log.info("ON RAW EVENT! data={}", request.getData());
-
             // dirty deserialization
             // var decoder = MarketChangedEvent.getDecoder();
             var eventAsString = request.getData().toStringUtf8();
             log.info("ON EVENT as string! data={}", eventAsString);
+            var payload = objectMapper.readValue(eventAsString, MarketChangedEvent.class);
 
-            var reader = new SpecificDatumReader<>(MarketChangedEvent.class);
-            var eventAsBytes = request.getData().toByteArray();
-            var decoder = DecoderFactory.get().binaryDecoder(eventAsBytes, null);
-            var payload = reader.read(null, decoder);
             log.info("ON EVENT as object: {}", payload);
 
             var response = DaprAppCallbackProtos.TopicEventResponse.newBuilder()

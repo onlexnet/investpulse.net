@@ -1,14 +1,46 @@
+from avro.io import BinaryEncoder
+import io
 import asyncio
+from io import BytesIO
+import io
 import time
 
-async def run():
-    while True:
-        await asyncio.sleep(1)
-        print(time.localtime())
+from market_rpc.onlexnet.market.events import MarketChangedEvent
+import fastavro
 
-loop = asyncio.get_event_loop()
-tasks = [
-    loop.create_task(run()),
-]
-loop.run_until_complete(asyncio.wait(tasks))
-loop.close()
+
+
+
+new_schema = {
+    "type": "record",
+    "name": "test_schema_migration_writer_union_new",
+    "fields": [{
+        "name": "test",
+        "type": "int"
+    }]
+}
+
+new_file = BytesIO()
+record = {"test": 1}
+buffer = io.BytesIO()
+fastavro.schemaless_writer(new_file, new_schema, record)
+new_file.seek(0)
+buff = new_file.read()
+new_file.seek(0)
+new_reader = fastavro.schemaless_reader(new_file, new_schema)
+
+
+
+event = MarketChangedEvent(20010203)
+event_as_dict = event.to_obj()
+fo = BytesIO()
+schema = MarketChangedEvent.RECORD_SCHEMA.to_json()
+fastavro.schemaless_writer(fo, schema, event_as_dict)
+fo.seek(0)
+bytes = fo.read()
+print(len(bytes))
+
+fo1 = BytesIO(b"some initial binary data: \x00\x01")
+print(len(fo1.read()))
+print(len(fo1.read()))
+# assert len(bytes) == 14
