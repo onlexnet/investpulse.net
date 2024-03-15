@@ -2,9 +2,12 @@ package onlexnet.demo;
 
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import onlexnet.market.events.MarketChangedEvent;
 
 @Component
+@Slf4j
 public class MarketChangedEventListener implements EventListener<MarketChangedEvent> {
 
     @Override
@@ -14,8 +17,7 @@ public class MarketChangedEventListener implements EventListener<MarketChangedEv
 
     @Override
     public void onEvent(MarketChangedEvent event) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onEvent'");
+        log.info("On event: {}", event);
     }
-    
+
 }

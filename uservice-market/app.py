@@ -38,11 +38,7 @@ async def serve():
             event_as_dict = event.to_avro_writable()
             as_json = json.dumps(event_as_dict)
             fastavro.json_writer
-            # resp1 = dc.publish_event(pubsub_name="pubsub", topic_name="TOPIC_A", data = event_as_str, data_content_type="application/avro")
-            resp = dc.publish_event(pubsub_name="pubsub", topic_name="TOPIC_A", data = as_json, data_content_type="application/json")
             resp = dc.publish_event(pubsub_name="pubsub", topic_name=topic_name, data = as_json, data_content_type="application/json")
-            # resp2 = dc.publish_event(pubsub_name="pubsub", topic_name=event.RECORD_SCHEMA, data = event_as_str, data_content_type="application/avro")
-            # resp = dc.publish_event(pubsub_name="pubsub", topic_name="TOPIC_A", data = event_as_str)
             logging.info(f"Event sent: {event_as_str}")
             await asyncio.sleep(3)
 

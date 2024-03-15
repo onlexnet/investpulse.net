@@ -2,6 +2,7 @@ package onlexnet.demo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
@@ -15,11 +16,9 @@ import io.dapr.v1.DaprAppCallbackProtos.TopicEventRequest;
 import io.dapr.v1.DaprAppCallbackProtos.TopicEventResponse;
 import io.dapr.v1.DaprAppCallbackProtos.TopicSubscription;
 import io.grpc.stub.StreamObserver;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import onlexnet.market.events.MarketChangedEvent;
 
 // source: https://github.com/dapr/java-sdk/blob/master/examples/src/main/java/io/dapr/examples/pubsub/grpc/SubscriberGrpcService.java
 /** Entry point of Grpc application services for DAPR */
@@ -28,29 +27,26 @@ import onlexnet.market.events.MarketChangedEvent;
 @RequiredArgsConstructor
 public class DaprCallback extends AppCallbackImplBase {
     private final ObjectMapper objectMapper;
-    
+
     private final List<TopicSubscription> topicSubscriptionList = new ArrayList<>();
     private final List<EventListener<?>> listeners;
 
-    @PostConstruct
-    public void init() {
-        log.info("0000000000000000000");
-    }
+    private final ConcurrentHashMap<String, EventListener<?>> topicListeners = new ConcurrentHashMap<>();
 
     @Override
     public void listTopicSubscriptions(Empty request, StreamObserver<ListTopicSubscriptionsResponse> responseObserver) {
-        log.info("1111111111111");
 
-        for (var l: listeners) {
-            var eventClass = l.getEventClass();
+        log.info("000000000000000000000000000: {}", listeners.size());
+        for (var listener : listeners) {
+            var eventClass = listener.getEventClass();
             var supportedClassCanonicalName = eventClass.getCanonicalName();
-            registerConsumer("pubsub", supportedClassCanonicalName, false);
+            var topic = "onlexnet:v1:" + supportedClassCanonicalName;
+            topicListeners.put(topic, listener);
+            log.info("00001111: topic:{}, total listeners:{}", topic, topicListeners.size());
+            registerConsumer("pubsub", topic, false);
+
         }
 
-        registerConsumer("messagebus", "testingtopic", false);
-        registerConsumer("messagebus", "bulkpublishtesting", false);
-        registerConsumer("messagebus", "testingtopicbulk", true);
-        registerConsumer("pubsub", "TOPIC_A", false);
         try {
             var builder = ListTopicSubscriptionsResponse.newBuilder();
             topicSubscriptionList.forEach(builder::addSubscriptions);
@@ -66,14 +62,14 @@ public class DaprCallback extends AppCallbackImplBase {
     @Override
     @SneakyThrows
     public void onTopicEvent(TopicEventRequest request, StreamObserver<TopicEventResponse> responseObserver) {
-        try {
-            // dirty deserialization
-            // var decoder = MarketChangedEvent.getDecoder();
-            var eventAsString = request.getData().toStringUtf8();
-            log.info("ON EVENT as string! data={}", eventAsString);
-            var payload = objectMapper.readValue(eventAsString, MarketChangedEvent.class);
 
-            log.info("ON EVENT as object: {}", payload);
+        try {
+            var topic = request.getTopic();
+            if (topicListeners.containsKey(topic)) {
+                var listener = topicListeners.get(topic);
+                var eventAsString = request.getData().toStringUtf8();
+                handleEvent(listener, eventAsString);
+            }
 
             var response = DaprAppCallbackProtos.TopicEventResponse.newBuilder()
                     .setStatus(DaprAppCallbackProtos.TopicEventResponse.TopicEventResponseStatus.SUCCESS)
@@ -84,6 +80,13 @@ public class DaprCallback extends AppCallbackImplBase {
             log.error("errrrrrrrrrrrrr", e);
             responseObserver.onError(e);
         }
+    }
+
+    @SneakyThrows
+    private <T> void handleEvent(EventListener<T> listener, String eventAsString) {
+        var clazz = listener.getEventClass();
+        var event = objectMapper.readValue(eventAsString, clazz);
+        listener.onEvent(event);
     }
 
     /**

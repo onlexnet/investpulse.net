@@ -26,9 +26,7 @@ class GrpcServer implements RpcFacade, AutoCloseable {
   public void start() {
     var port = grpcProperties.getServerPort();
     var builder = ServerBuilder.forPort(port);
-    log.warn("SPARTAA1 port:{}", port);
     for (var bindableService : services) {
-        log.warn("SPARTAA2: {}", bindableService);
         builder.addService(bindableService);
     }
     server = builder
