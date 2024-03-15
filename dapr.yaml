@@ -1,10 +1,10 @@
 version: 1
 apps:
-  - appID: app1
-    appDirPath: ./uservice-app1
-    appProtocol: grpc
-    appPort: 50051
-    command: [".venv/bin/python", "app.py"]
+  # - appID: app1
+  #   appDirPath: ./uservice-app1
+  #   appProtocol: grpc
+  #   appPort: 50051
+  #   command: [".venv/bin/python", "app.py"]
   - appID: market
     appDirPath: ./uservice-market
     appProtocol: grpc

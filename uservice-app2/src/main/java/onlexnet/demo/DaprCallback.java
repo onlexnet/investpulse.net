@@ -36,13 +36,12 @@ public class DaprCallback extends AppCallbackImplBase {
     @Override
     public void listTopicSubscriptions(Empty request, StreamObserver<ListTopicSubscriptionsResponse> responseObserver) {
 
-        log.info("000000000000000000000000000: {}", listeners.size());
+        log.info("listTopicSubscriptions invoked");
         for (var listener : listeners) {
             var eventClass = listener.getEventClass();
             var supportedClassCanonicalName = eventClass.getCanonicalName();
             var topic = "onlexnet:v1:" + supportedClassCanonicalName;
             topicListeners.put(topic, listener);
-            log.info("00001111: topic:{}, total listeners:{}", topic, topicListeners.size());
             registerConsumer("pubsub", topic, false);
 
         }
