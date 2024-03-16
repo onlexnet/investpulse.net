@@ -1,4 +1,10 @@
-Regeneracja kodu servera:
+# Scope
+- Distribute locally in real time changes on the market
+
+# Run tests
+```
+pytest -v
+```
 
 ## used articles
 - https://grpc.io/docs/languages/python/basics/#generating-client-and-server-code
