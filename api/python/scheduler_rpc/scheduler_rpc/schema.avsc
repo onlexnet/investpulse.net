@@ -1,8 +1,0 @@
-{
-    "namespace": "onlexnet.ptn.scheduler.events",
-    "type": "record",
-    "name": "TimeChangedEvent",
-    "fields": [
-        {"name": "date", "type": "long"}
-    ]
-}
