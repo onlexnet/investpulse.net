@@ -6,10 +6,10 @@
     <version>${revision}</version>
     <relativePath>../.parent.events/pom.xml</relativePath>
   </parent>
-  <artifactId>uservice-market.events</artifactId>
+  <artifactId>uservice-scheduler.events</artifactId>
 
   <properties>
-    <avro.dir>../../schema/market_rpc</avro.dir>
+    <avro.dir>../../schema/scheduler_rpc</avro.dir>
   </properties>
 
 </project>

@@ -11,6 +11,7 @@
     <module>.parent.events</module>
     <module>uservice-market.rpc</module>
     <module>uservice-market.events</module>
+    <module>uservice-scheduler.events</module>
   </modules>
 
   <properties>

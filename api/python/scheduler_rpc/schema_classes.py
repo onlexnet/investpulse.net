@@ -34,10 +34,10 @@ def get_schema_type(fullname: str) -> RecordSchema:
     
 __SCHEMAS = dict((n.fullname.lstrip("."), n) for n in six.itervalues(__NAMES.names))
 
-class MarketChangedEventClass(DictWrapper):
+class TimeChangedEventClass(DictWrapper):
     # No docs available.
     
-    RECORD_SCHEMA = get_schema_type("onlexnet.market.events.MarketChangedEvent")
+    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.events.TimeChangedEvent")
     def __init__(self,
         date: int,
     ):
@@ -60,8 +60,8 @@ class MarketChangedEventClass(DictWrapper):
     
     
 __SCHEMA_TYPES = {
-    'onlexnet.market.events.MarketChangedEvent': MarketChangedEventClass,
-    'MarketChangedEvent': MarketChangedEventClass,
+    'onlexnet.ptn.scheduler.events.TimeChangedEvent': TimeChangedEventClass,
+    'TimeChangedEvent': TimeChangedEventClass,
 }
 
 _json_converter = avrojson.AvroJsonConverter(use_logical_types=False, schema_types=__SCHEMA_TYPES)

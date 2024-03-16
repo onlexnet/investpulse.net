@@ -12,13 +12,6 @@
   <properties>
     <grpc.version>1.53.0</grpc.version>
 
-    <!--
-      Disable warning
-      [WARNING] Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent
-    !-->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
     <!-- Java version used to compile protobuf. -->
     <java.version>17</java.version>
   </properties>

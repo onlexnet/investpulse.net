@@ -2,10 +2,10 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from app1_rpc import app1_pb2 as app1__rpc_dot_app1__pb2
+import schema_pb2 as schema__pb2
 
 
-class PingServiceStub(object):
+class PingStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -15,13 +15,13 @@ class PingServiceStub(object):
             channel: A grpc.Channel.
         """
         self.ping = channel.unary_unary(
-                '/PingService/ping',
-                request_serializer=app1__rpc_dot_app1__pb2.PingRequest.SerializeToString,
-                response_deserializer=app1__rpc_dot_app1__pb2.PingResponse.FromString,
+                '/Ping/ping',
+                request_serializer=schema__pb2.MyPingRequest.SerializeToString,
+                response_deserializer=schema__pb2.MyPingResponse.FromString,
                 )
 
 
-class PingServiceServicer(object):
+class PingServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def ping(self, request, context):
@@ -31,21 +31,21 @@ class PingServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_PingServiceServicer_to_server(servicer, server):
+def add_PingServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ping': grpc.unary_unary_rpc_method_handler(
                     servicer.ping,
-                    request_deserializer=app1__rpc_dot_app1__pb2.PingRequest.FromString,
-                    response_serializer=app1__rpc_dot_app1__pb2.PingResponse.SerializeToString,
+                    request_deserializer=schema__pb2.MyPingRequest.FromString,
+                    response_serializer=schema__pb2.MyPingResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'PingService', rpc_method_handlers)
+            'Ping', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class PingService(object):
+class Ping(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -59,8 +59,8 @@ class PingService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/PingService/ping',
-            app1__rpc_dot_app1__pb2.PingRequest.SerializeToString,
-            app1__rpc_dot_app1__pb2.PingResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/Ping/ping',
+            schema__pb2.MyPingRequest.SerializeToString,
+            schema__pb2.MyPingResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

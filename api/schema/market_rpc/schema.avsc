@@ -1,5 +1,5 @@
 {
-    "namespace": "onlexnet.market.events",
+    "namespace": "onlexnet.pdt.market.events",
     "type": "record",
     "name": "MarketChangedEvent",
     "fields": [

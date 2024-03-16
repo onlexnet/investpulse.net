@@ -1,7 +1,7 @@
 {
-    "namespace": "onlexnet.market.events",
+    "namespace": "onlexnet.ptn.scheduler.events",
     "type": "record",
-    "name": "MarketChangedEvent",
+    "name": "TimeChangedEvent",
     "fields": [
         {"name": "date", "type": "long"}
     ]

@@ -9,7 +9,7 @@
   <artifactId>uservice-market.rpc</artifactId>
 
   <properties>
-    <proto.dir>../../grpc/market_rpc</proto.dir>
+    <proto.dir>../../schema/market_rpc</proto.dir>
   </properties>
 
 </project>
