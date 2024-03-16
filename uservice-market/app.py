@@ -12,9 +12,8 @@ import fastavro
 import json
 
 from dapr.clients import DaprClient
-from market_rpc.onlexnet.market.events import MarketChangedEvent
 from avro import datafile, io
-
+import onlexnet.pdt.market.events as events
 APP_PORT=os.getenv('APP_PORT', 50052)
 log = logging.getLogger("myapp")
 
@@ -25,13 +24,13 @@ async def serve():
     server.start()
 
     with DaprClient() as dc:
-        event = MarketChangedEvent(date = 20010203)
+        event = events.MarketChangedEvent(date = 20010203)
         
         event_as_str = str(event)
         
         logging.info("sparta")
         schema_prefix = "onlexnet:v1"
-        topic_name = f"{schema_prefix}:{MarketChangedEvent.RECORD_SCHEMA.fullname}"
+        topic_name = f"{schema_prefix}:{events.MarketChangedEvent.RECORD_SCHEMA.fullname}"
 
         while True:
 

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 // Market data from Yahoo Finance
-message MarketChangedEvent {
+message MarketChangedEventProtoExample {
     // yyyymmdd
     int32 date = 1;
     double open = 2;

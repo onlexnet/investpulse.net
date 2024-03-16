@@ -4,7 +4,7 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class MarketChangedEvent(_message.Message):
+class MarketChangedEventProtoExample(_message.Message):
     __slots__ = ("date", "open", "close", "low", "high", "adj_close")
     DATE_FIELD_NUMBER: _ClassVar[int]
     OPEN_FIELD_NUMBER: _ClassVar[int]

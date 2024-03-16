@@ -14,13 +14,13 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\"m\n\x12MarketChangedEvent\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\x05\x12\x0c\n\x04open\x18\x02 \x01(\x01\x12\r\n\x05\x63lose\x18\x03 \x01(\x01\x12\x0b\n\x03low\x18\x04 \x01(\x01\x12\x0c\n\x04high\x18\x05 \x01(\x01\x12\x11\n\tadj_close\x18\x06 \x01(\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\"y\n\x1eMarketChangedEventProtoExample\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\x05\x12\x0c\n\x04open\x18\x02 \x01(\x01\x12\r\n\x05\x63lose\x18\x03 \x01(\x01\x12\x0b\n\x03low\x18\x04 \x01(\x01\x12\x0c\n\x04high\x18\x05 \x01(\x01\x12\x11\n\tadj_close\x18\x06 \x01(\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'schema_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_MARKETCHANGEDEVENT']._serialized_start=16
-  _globals['_MARKETCHANGEDEVENT']._serialized_end=125
+  _globals['_MARKETCHANGEDEVENTPROTOEXAMPLE']._serialized_start=16
+  _globals['_MARKETCHANGEDEVENTPROTOEXAMPLE']._serialized_end=137
 # @@protoc_insertion_point(module_scope)

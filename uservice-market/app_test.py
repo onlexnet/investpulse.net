@@ -1,5 +1,5 @@
 from unittest import TestCase
-from market_rpc.onlexnet.market.events import MarketChangedEvent
+import onlexnet.pdt.market.events as events
 
 class MarketChangedEventTest(TestCase):
     pass
