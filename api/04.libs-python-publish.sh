@@ -4,11 +4,10 @@ devpi index -c dev bases=root/pypi
 devpi use root/dev
 
 export TWINE_PASSWORD=
-# twine upload -u root --repository-url http://localhost:3141/root/dev python/market_rpc/dist/*
-for dir in ./schema/*/     # list directories in the form "/tmp/dirname/"
+for dir in ./schema/*/     # list of uservices repositories
 do
-    dir=${dir%*/}      # remove the trailing "/"
-    aaa=${dir##*/}
-    echo "${aaa}"    # print everything after the final "/"
-    twine upload -u root --repository-url http://localhost:3141/root/dev python/$aaa/dist/*
+    dir=${dir%*/}       # remove the trailing "/"
+    dir_name=${dir##*/} # everything after the final "/"
+    echo "${dir_name}"    
+    twine upload -u root --repository-url http://localhost:3141/root/dev python/$dir_name/dist/*
 done

@@ -19,34 +19,30 @@ log = logging.getLogger("myapp")
 async def serve():
 
     with DaprClient() as dc:
-        event = events.TimeChangedEvent(date = 20010203)
-        
         start_date = date(2001, 1, 1)
         end_date = date(2001, 2, 2)
 
         current_date = start_date
 
         while current_date <= end_date:
+
+            current_date_as_int = current_date.year * 10_000 + current_date.month * 100 + current_date.day
+
+            event = events.TimeChangedEvent(current_date_as_int)
+            logging.info(event)
+
+            schema_prefix = "onlexnet:v1"
+            topic_name = f"{schema_prefix}:{event.RECORD_SCHEMA.fullname}"
+            event_as_dict = event.to_avro_writable()
+            as_json = json.dumps(event_as_dict)
+            dc.publish_event(pubsub_name="pubsub", topic_name=topic_name, data = as_json, data_content_type="application/json", publish_metadata={ "ttlInSeconds": "10" })
+            logging.info(f"Event sent: {event}")
+
             current_date += timedelta(days=1)
-            logging.info(current_date)
-            await asyncio.sleep(1)
-
-#     event_as_str = str(event)
-        
-#         logging.info("sparta")
-#         schema_prefix = "onlexnet:v1"
-#         topic_name = f"{schema_prefix}:{events.TimeChangedEvent.RECORD_SCHEMA.fullname}"
-
-#         while True:
+            await asyncio.sleep(0.3)
 
 
-# dates_as_numbers = []
 
-#             event_as_dict = event.to_avro_writable()
-#             as_json = json.dumps(event_as_dict)
-#             fastavro.json_writer
-#             resp = dc.publish_event(pubsub_name="pubsub", topic_name=topic_name, data = as_json, data_content_type="application/json")
-#             logging.info(f"Event sent: {event_as_str}")
 
     # server.wait_for_termination()
 
