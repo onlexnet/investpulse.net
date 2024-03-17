@@ -1,9 +1,9 @@
-(cd ./python/onlexnet_dapr; python setup.py sdist)
+(SERVICE_NAME=onlexnet_dapr; cd ./python/$SERVICE_NAME; rm -rf dist; python setup.py sdist)
 
-(cd ./python/agent_rpc; python setup.py sdist)
+(SERVICE_NAME=agent_rpc; cd ./python/$SERVICE_NAME; rm -rf dist; python setup.py sdist)
 
-(cd ./python/app1_rpc; python setup.py sdist)
+(SERVICE_NAME=app1_rpc; cd ./python/$SERVICE_NAME; rm -rf dist; python setup.py sdist)
 
-(cd ./python/market_rpc; python setup.py sdist)
+(SERVICE_NAME=market_rpc; cd ./python/$SERVICE_NAME; rm -rf dist; python setup.py sdist)
 
-(cd ./python/scheduler_rpc; python setup.py sdist)
+(SERVICE_NAME=scheduler_rpc; cd ./python/$SERVICE_NAME; rm -rf dist; python setup.py sdist)

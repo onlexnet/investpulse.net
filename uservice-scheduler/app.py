@@ -36,7 +36,7 @@ async def serve():
             d.publish(dc, event)
 
             current_date += timedelta(days=1)
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.1)
 
             report_event = events.BalanceReportRequestedEvent()
 

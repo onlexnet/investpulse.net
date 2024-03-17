@@ -1,8 +1,11 @@
 # Purpose
 
-Interacts (or simulate) buy / sell operations based on aglo commands, maintain orderbook, protects budget and creates operations raport on demand
+- Interacts (or simulate) buy / sell operations based on algo commands
+- Informs algo when requested orderbook positions are done / cancelled
+- protects budget
+- creates operations raport on demand
 
-## DEscription
 
-- Algo name: "algo-1"
-- Start with budget 2000$, but MSFT and keep
+## Run
+
+dapr run --app-protocol grpc --app-id abc --app-port 50000 python app.py

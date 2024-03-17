@@ -1,0 +1,7 @@
+!.venv/pip.conf
+.venv
+.dapr/logs
+__pycache__
+.data_cache
+# reports produced by the app
+.reports
