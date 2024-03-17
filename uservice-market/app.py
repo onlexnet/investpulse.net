@@ -53,13 +53,11 @@ def signal_handler(sig, frame):
 
 if __name__ == '__main__':
 
-    ctx = yf.LoadContext(date(2020, 1, 1), date(2023, 12, 31), "msft")
-    data = yf.load(ctx)
-
     logging.basicConfig(level=logging.DEBUG)
-
     logger.info(f"port: {APP_PORT}")
     
+    ctx = yf.LoadContext(date(2020, 1, 1), date(2023, 12, 31), "msft")
+    data = yf.load(ctx)
     loop = asyncio.get_event_loop()
     tasks = [
         loop.create_task(serve(data)),
