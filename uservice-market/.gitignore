@@ -2,3 +2,4 @@
 .venv
 .dapr/logs
 __pycache__
+.data_cache

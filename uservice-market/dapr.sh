@@ -1,0 +1,1 @@
+dapr run --app-protocol grpc --app-id market python app.py
