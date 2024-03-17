@@ -8,6 +8,9 @@ for dir in ./schema/*/     # list of uservices repositories
 do
     dir=${dir%*/}       # remove the trailing "/"
     dir_name=${dir##*/} # everything after the final "/"
-    echo "${dir_name}"    
+    echo "${dir_name}"
     twine upload -u root --repository-url http://localhost:3141/root/dev python/$dir_name/dist/*
 done
+
+# publish additioal projects
+twine upload -u root --repository-url http://localhost:3141/root/dev python/onlexnet_dapr/dist/*

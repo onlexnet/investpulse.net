@@ -13,6 +13,8 @@ import json
 from dapr.clients import DaprClient
 from avro import datafile, io
 import scheduler_rpc.onlexnet.ptn.scheduler.events as events
+import onlexnet.Dapr as d
+
 APP_PORT=os.getenv('APP_PORT', 500)
 log = logging.getLogger("myapp")
 
@@ -31,15 +33,14 @@ async def serve():
             event = events.TimeChangedEvent(current_date_as_int)
             logging.info(event)
 
-            schema_prefix = "onlexnet:v1"
-            topic_name = f"{schema_prefix}:{event.RECORD_SCHEMA.fullname}"
-            event_as_dict = event.to_avro_writable()
-            as_json = json.dumps(event_as_dict)
-            dc.publish_event(pubsub_name="pubsub", topic_name=topic_name, data = as_json, data_content_type="application/json", publish_metadata={ "ttlInSeconds": "10" })
-            logging.info(f"Event sent: {event}")
+            d.publish(dc, event)
 
             current_date += timedelta(days=1)
             await asyncio.sleep(0.3)
+
+            report_event = events.BalanceReportRequestedEvent()
+
+        d.publish(dc, report_event)
 
 
 
@@ -50,7 +51,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
     logger.info(f"port: {APP_PORT}")
-    
+
     loop = asyncio.get_event_loop()
     tasks = [
         loop.create_task(serve()),

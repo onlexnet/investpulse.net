@@ -2,12 +2,16 @@ from typing import cast
 from avrogen.dict_wrapper import DictWrapper
 from .schema_classes import _SCHEMA as get_schema_type
 from .schema_classes import _json_converter as json_converter
+from .schema_classes import BalanceReportRequestedEventClass
 from .schema_classes import TimeChangedEventClass
 from avro.io import DatumReader
 
 
 class SpecificDatumReader(DatumReader):
     SCHEMA_TYPES = {
+        "BalanceReportRequestedEvent": BalanceReportRequestedEventClass,
+        ".BalanceReportRequestedEvent": BalanceReportRequestedEventClass,
+        "onlexnet.ptn.scheduler.events.BalanceReportRequestedEvent": BalanceReportRequestedEventClass,
         "TimeChangedEvent": TimeChangedEventClass,
         ".TimeChangedEvent": TimeChangedEventClass,
         "onlexnet.ptn.scheduler.events.TimeChangedEvent": TimeChangedEventClass,

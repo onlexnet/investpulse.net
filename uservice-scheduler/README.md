@@ -1,6 +1,9 @@
 # Scope
 - Distribute locally in real time changes on the market
 
+## run standalone
+dapr run --app-protocol grpc --app-id scheduler python app.py
+
 # Run tests
 ```
 pytest -v

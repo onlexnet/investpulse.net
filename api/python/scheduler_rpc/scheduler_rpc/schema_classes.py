@@ -34,6 +34,19 @@ def get_schema_type(fullname: str) -> RecordSchema:
     
 __SCHEMAS = dict((n.fullname.lstrip("."), n) for n in six.itervalues(__NAMES.names))
 
+class BalanceReportRequestedEventClass(DictWrapper):
+    # No docs available.
+    
+    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.events.BalanceReportRequestedEvent")
+    def __init__(self,
+    ):
+        super().__init__()
+        
+    
+    def _restore_defaults(self) -> None:
+        pass
+    
+    
 class TimeChangedEventClass(DictWrapper):
     # No docs available.
     
@@ -60,7 +73,9 @@ class TimeChangedEventClass(DictWrapper):
     
     
 __SCHEMA_TYPES = {
+    'onlexnet.ptn.scheduler.events.BalanceReportRequestedEvent': BalanceReportRequestedEventClass,
     'onlexnet.ptn.scheduler.events.TimeChangedEvent': TimeChangedEventClass,
+    'BalanceReportRequestedEvent': BalanceReportRequestedEventClass,
     'TimeChangedEvent': TimeChangedEventClass,
 }
 
