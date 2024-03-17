@@ -43,7 +43,7 @@ async def serve(df: DataFrame):
             fastavro.json_writer
             resp = dc.publish_event(pubsub_name="pubsub", topic_name=topic_name, data = as_json, data_content_type="application/json")
             logging.info(f"Event sent: {event_as_str}")
-            await asyncio.sleep(0.01)
+            # await asyncio.sleep(0.01)
 
     server.wait_for_termination()
 
@@ -53,7 +53,7 @@ def signal_handler(sig, frame):
 
 if __name__ == '__main__':
 
-    ctx = yf.LoadContext(date(2020, 1, 1), date(2020, 12, 31), "msft")
+    ctx = yf.LoadContext(date(2020, 1, 1), date(2023, 12, 31), "msft")
     data = yf.load(ctx)
 
     logging.basicConfig(level=logging.DEBUG)
