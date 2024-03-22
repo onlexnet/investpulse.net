@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from strictly_typed_pandas import DataSet
 import yfinance as yf
 from datetime import date
 import os
@@ -24,7 +23,7 @@ class LoadContext:
     # e.g. MSFT
     asset_name: str
 
-def load(ctx: LoadContext) -> DataSet[YahooFinanceData]:
+def load(ctx: LoadContext) -> DataFrame:
     start_date = ctx.date_from
     asset_name = ctx.asset_name
     end_date = ctx.date_to
@@ -46,5 +45,4 @@ def load(ctx: LoadContext) -> DataSet[YahooFinanceData]:
     # to_numpy: Callable[Timestamp (self) -> np.datetime64
     data_pd['date'] = data_pd['date'].apply(pd.to_datetime, format='ISO8601')
         
-    data = DataSet[YahooFinanceData](data_pd)
-    return data
+    return data_pd

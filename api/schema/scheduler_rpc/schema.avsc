@@ -1,13 +1,13 @@
 [
    {
-        "namespace": "onlexnet.ptn.scheduler.events",
+        "namespace": "onlexnet.ptn.scheduler.test.events",
         "type": "record",
-        "name": "TimeChangedEvent",
-        "fields": [
-            {
-                "name": "date",
-                "type": "long"
-            }
+        "description": "aaaaaaaaaaaaaaaaaaaaaaa",
+        "comments": "aaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "name": "TimeChangeApplied",
+        "fields": [ 
+            { "name": "yyyymmdd", "type": "int" },
+            { "name": "hhmm", "type": "int" }
         ]
     },
     {

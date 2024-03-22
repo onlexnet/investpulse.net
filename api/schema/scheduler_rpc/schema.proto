@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message TimeClient {
+}
+
+
+message NewTime {
+    // Date in format yyyymmdd, e.g. 20010203 means 3rd Feb 2001
+    int32 yyyymmdd = 2;
+    // Time in format hhmm, eg. 1105 means 11
+    int32 hhmm = 3;
+}
+
+// Each client, interested in 
+service TimeScheduler {
+    rpc tick(TimeClient) returns (stream NewTime) { }
+}

@@ -47,36 +47,49 @@ class BalanceReportRequestedEventClass(DictWrapper):
         pass
     
     
-class TimeChangedEventClass(DictWrapper):
+class TimeChangeAppliedClass(DictWrapper):
     # No docs available.
     
-    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.events.TimeChangedEvent")
+    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.test.events.TimeChangeApplied")
     def __init__(self,
-        date: int,
+        yyyymmdd: int,
+        hhmm: int,
     ):
         super().__init__()
         
-        self.date = date
+        self.yyyymmdd = yyyymmdd
+        self.hhmm = hhmm
     
     def _restore_defaults(self) -> None:
-        self.date = int()
+        self.yyyymmdd = int()
+        self.hhmm = int()
     
     
     @property
-    def date(self) -> int:
+    def yyyymmdd(self) -> int:
         # No docs available.
-        return self._inner_dict.get('date')  # type: ignore
+        return self._inner_dict.get('yyyymmdd')  # type: ignore
     
-    @date.setter
-    def date(self, value: int) -> None:
-        self._inner_dict['date'] = value
+    @yyyymmdd.setter
+    def yyyymmdd(self, value: int) -> None:
+        self._inner_dict['yyyymmdd'] = value
+    
+    
+    @property
+    def hhmm(self) -> int:
+        # No docs available.
+        return self._inner_dict.get('hhmm')  # type: ignore
+    
+    @hhmm.setter
+    def hhmm(self, value: int) -> None:
+        self._inner_dict['hhmm'] = value
     
     
 __SCHEMA_TYPES = {
     'onlexnet.ptn.scheduler.events.BalanceReportRequestedEvent': BalanceReportRequestedEventClass,
-    'onlexnet.ptn.scheduler.events.TimeChangedEvent': TimeChangedEventClass,
+    'onlexnet.ptn.scheduler.test.events.TimeChangeApplied': TimeChangeAppliedClass,
     'BalanceReportRequestedEvent': BalanceReportRequestedEventClass,
-    'TimeChangedEvent': TimeChangedEventClass,
+    'TimeChangeApplied': TimeChangeAppliedClass,
 }
 
 _json_converter = avrojson.AvroJsonConverter(use_logical_types=False, schema_types=__SCHEMA_TYPES)
