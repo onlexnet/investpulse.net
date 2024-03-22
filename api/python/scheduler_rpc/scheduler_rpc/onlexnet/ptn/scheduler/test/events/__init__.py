@@ -1,4 +1,4 @@
-from ......schema_classes import TimeChangeAppliedClass
+from ......schema_classes import NewTimeAppliedClass
 
 
-TimeChangeApplied = TimeChangeAppliedClass
+NewTimeApplied = NewTimeAppliedClass

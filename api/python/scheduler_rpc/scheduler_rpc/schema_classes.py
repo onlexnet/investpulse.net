@@ -47,10 +47,10 @@ class BalanceReportRequestedEventClass(DictWrapper):
         pass
     
     
-class TimeChangeAppliedClass(DictWrapper):
+class NewTimeAppliedClass(DictWrapper):
     # No docs available.
     
-    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.test.events.TimeChangeApplied")
+    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.test.events.NewTimeApplied")
     def __init__(self,
         yyyymmdd: int,
         hhmm: int,
@@ -87,9 +87,9 @@ class TimeChangeAppliedClass(DictWrapper):
     
 __SCHEMA_TYPES = {
     'onlexnet.ptn.scheduler.events.BalanceReportRequestedEvent': BalanceReportRequestedEventClass,
-    'onlexnet.ptn.scheduler.test.events.TimeChangeApplied': TimeChangeAppliedClass,
+    'onlexnet.ptn.scheduler.test.events.NewTimeApplied': NewTimeAppliedClass,
     'BalanceReportRequestedEvent': BalanceReportRequestedEventClass,
-    'TimeChangeApplied': TimeChangeAppliedClass,
+    'NewTimeApplied': NewTimeAppliedClass,
 }
 
 _json_converter = avrojson.AvroJsonConverter(use_logical_types=False, schema_types=__SCHEMA_TYPES)

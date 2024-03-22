@@ -9,9 +9,11 @@ class TimeClient(_message.Message):
     def __init__(self) -> None: ...
 
 class NewTime(_message.Message):
-    __slots__ = ("yyyymmdd", "hhmm")
+    __slots__ = ("correlationId", "yyyymmdd", "hhmm")
+    CORRELATIONID_FIELD_NUMBER: _ClassVar[int]
     YYYYMMDD_FIELD_NUMBER: _ClassVar[int]
     HHMM_FIELD_NUMBER: _ClassVar[int]
+    correlationId: str
     yyyymmdd: int
     hhmm: int
-    def __init__(self, yyyymmdd: _Optional[int] = ..., hhmm: _Optional[int] = ...) -> None: ...
+    def __init__(self, correlationId: _Optional[str] = ..., yyyymmdd: _Optional[int] = ..., hhmm: _Optional[int] = ...) -> None: ...

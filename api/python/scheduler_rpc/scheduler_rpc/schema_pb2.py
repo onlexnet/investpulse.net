@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\"\x0c\n\nTimeClient\")\n\x07NewTime\x12\x10\n\x08yyyymmdd\x18\x02 \x01(\x05\x12\x0c\n\x04hhmm\x18\x03 \x01(\x05\x32\x32\n\rTimeScheduler\x12!\n\x04tick\x12\x0b.TimeClient\x1a\x08.NewTime\"\x00\x30\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\"\x0c\n\nTimeClient\"@\n\x07NewTime\x12\x15\n\rcorrelationId\x18\x01 \x01(\t\x12\x10\n\x08yyyymmdd\x18\x02 \x01(\x05\x12\x0c\n\x04hhmm\x18\x03 \x01(\x05\x32\x32\n\rTimeScheduler\x12!\n\x04tick\x12\x0b.TimeClient\x1a\x08.NewTime\"\x00\x30\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -24,7 +24,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_TIMECLIENT']._serialized_start=16
   _globals['_TIMECLIENT']._serialized_end=28
   _globals['_NEWTIME']._serialized_start=30
-  _globals['_NEWTIME']._serialized_end=71
-  _globals['_TIMESCHEDULER']._serialized_start=73
-  _globals['_TIMESCHEDULER']._serialized_end=123
+  _globals['_NEWTIME']._serialized_end=94
+  _globals['_TIMESCHEDULER']._serialized_start=96
+  _globals['_TIMESCHEDULER']._serialized_end=146
 # @@protoc_insertion_point(module_scope)
