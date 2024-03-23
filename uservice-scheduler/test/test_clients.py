@@ -32,7 +32,7 @@ class KnownClientsTest(unittest.IsolatedAsyncioTestCase):
 
 
     @pytest.mark.asyncio
-    @pytest.mark.skip
+    # @pytest.mark.skip
     async def test_emit_final_event(self):
 
         maybe_handled: Optional[proto.NewTime] = None
@@ -43,9 +43,10 @@ class KnownClientsTest(unittest.IsolatedAsyncioTestCase):
         sut = ClientsHub(1, DateTime(yyyymmdd = 20010101, hhmm=0), DateTime(yyyymmdd = 20010101, hhmm=1))
         await sut.add_client(client)
 
-        handled = cast(proto.NewTime, maybe_handled)
-        correlation_id = handled.correlationId
-        await sut.on_client_ack(correlation_id)
+        correlation_id1 = cast(proto.NewTime, maybe_handled).correlationId
+        await sut.on_client_ack(correlation_id1)
+
+        correlation_id2 = cast(proto.NewTime, maybe_handled).correlationId
 
         self.assertIsInstance(maybe_handled, proto.NewTime)
-        self.assertEqual(maybe_handled, proto.NewTime(correlationId=correlation_id, yyyymmdd = 20010101, hhmm=1))
+        self.assertEqual(maybe_handled, proto.NewTime(correlationId=correlation_id2, yyyymmdd = 20010101, hhmm=1))
