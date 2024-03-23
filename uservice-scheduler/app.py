@@ -74,11 +74,11 @@ def serve():
 
     # the reflection service will be aware of "Greeter" and "ServerReflection" services.
     # source: https://github.com/grpc/grpc/blob/master/doc/python/server_reflection.md
-    # SERVICE_NAMES = (
-    #     proto.DESCRIPTOR.services_by_name['TimeSchedulerService'].full_name,
-    #     reflection.SERVICE_NAME,
-    # )
-    # reflection.enable_server_reflection(SERVICE_NAMES, server)
+    SERVICE_NAMES = (
+        proto.DESCRIPTOR.services_by_name['TimeScheduler'].full_name,
+        reflection.SERVICE_NAME,
+    )
+    reflection.enable_server_reflection(SERVICE_NAMES, server)
 
     server.add_insecure_port(f"[::]:{APP_PORT}")
     server.start()
