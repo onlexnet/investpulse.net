@@ -14,4 +14,7 @@ def to_dto(x: datetime, correlation_id: str) -> proto.NewTime:
     yyyymmdd = x.year * 10000 + x.month * 100 + x.day
     hhmm = x.hour * 100 + x.minute
     return proto.NewTime(correlationId=correlation_id, yyyymmdd=yyyymmdd, hhmm = hhmm)
-    
+
+def normalize(it: datetime) -> datetime:
+    as_dto = to_dto(it, "ignored")
+    return from_dto(as_dto)

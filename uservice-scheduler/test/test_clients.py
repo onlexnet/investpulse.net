@@ -1,10 +1,13 @@
 from statistics import correlation
 from typing import Optional, cast
 from unittest import TestCase
+from datetime import datetime
 import unittest
 import pytest
-from src.clients import ClientsHub, DateTime
+from src.clients import ClientsHub
 import scheduler_rpc.schema_pb2 as proto
+
+from src.mapper import to_dto
 
 @pytest.mark.asyncio
 async def test_aaa():
@@ -20,7 +23,7 @@ class KnownClientsTest(unittest.IsolatedAsyncioTestCase):
             nonlocal maybe_handled
             maybe_handled = event
 
-        now = DateTime(yyyymmdd = 20010101, hhmm=0)
+        now = datetime(2001, 1, 1)
         sut = ClientsHub(1, now, now)
         await sut.add_client(client)
 
@@ -28,7 +31,8 @@ class KnownClientsTest(unittest.IsolatedAsyncioTestCase):
         correlation_id = handled.correlationId
 
         self.assertIsInstance(handled, proto.NewTime)
-        self.assertEqual(handled, proto.NewTime(correlationId=correlation_id, yyyymmdd = now.yyyymmdd, hhmm=now.hhmm))
+        expected = to_dto(now, correlation_id)
+        self.assertEqual(handled, expected)
 
 
     @pytest.mark.asyncio
@@ -40,7 +44,7 @@ class KnownClientsTest(unittest.IsolatedAsyncioTestCase):
             nonlocal maybe_handled
             maybe_handled = event
 
-        sut = ClientsHub(1, DateTime(yyyymmdd = 20010101, hhmm=0), DateTime(yyyymmdd = 20010101, hhmm=1))
+        sut = ClientsHub(1, datetime(2001, 1, 1), datetime(2001, 1, 1, 0, 1))
         await sut.add_client(client)
 
         correlation_id1 = cast(proto.NewTime, maybe_handled).correlationId
