@@ -31,3 +31,4 @@ Build and push python libs
 - [devpi by practice](https://stefan.sofa-rockers.org/2017/11/09/getting-started-with-devpi/)
 - [devpi demo](https://www.youtube.com/watch?v=-fz6k44ZHMzQ)
 - [devpi client configuration](https://opensource.com/article/18/7/setting-devpi)
+- https://github.com/grpc/grpc/issues/9575#issuecomment-293934506

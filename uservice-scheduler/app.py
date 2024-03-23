@@ -1,6 +1,6 @@
 import asyncio
 from concurrent import futures
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 import logging
 import os
 from venv import logger
@@ -8,7 +8,7 @@ from venv import logger
 from dapr.clients import DaprClient
 from avro import datafile, io
 import scheduler_rpc.onlexnet.ptn.scheduler.events as events
-import onlexnet.Dapr as d
+import onlexnet.dapr as d
 
 from scheduler_rpc.schema_pb2_grpc import TimeSchedulerServicer, add_TimeSchedulerServicer_to_server
 import scheduler_rpc.schema_pb2 as proto
@@ -19,11 +19,18 @@ import os
 import grpc
 from grpc_reflection.v1alpha import reflection
 
+from src.clients import ClientsHub
+
 
 APP_PORT=os.getenv('APP_PORT', 50000)
 log = logging.getLogger("myapp")
 
 class TimeSchedulerGrpc(TimeSchedulerServicer):
+
+    start_date = datetime(2001, 1, 1)
+    end_date = datetime(2001, 2, 2)
+    hub = ClientsHub(1, start_date, end_date)
+
     def tick(self, request: proto.TimeClient, context):
         log.info(request)
         reply = proto.NewTime()
@@ -41,34 +48,12 @@ def number_of_expected_clients() -> int:
     return int(CLIENTS)
 
 
-async def serve():
+async def main():
 
     with DaprClient() as dc:
-        start_date = date(2001, 1, 1)
-        end_date = date(2001, 2, 2)
-
-        current_date = start_date
-
-        while current_date <= end_date:
-
-            current_date_as_int = current_date.year * 10_000 + current_date.month * 100 + current_date.day
-
-            event = events.TimeChangedEvent(current_date_as_int)
-            logging.info(event)
-
-            d.publish(dc, event)
-
-            current_date += timedelta(days=1)
-            await asyncio.sleep(0.1)
-
-            report_event = events.BalanceReportRequestedEvent()
-
-        d.publish(dc, report_event)
-
-
-
-
-    # server.wait_for_termination()
+        # report_event = events.BalanceReportRequestedEvent()
+        # d.publish(dc, report_event)
+        pass
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
@@ -77,35 +62,23 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     tasks = [
-        loop.create_task(serve()),
+        loop.create_task(main()),
     ]
     loop.run_until_complete(asyncio.wait(tasks))
     loop.close()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    add_PingServiceServicer_to_server(MyClass(), server)
+    add_TimeSchedulerServicer_to_server(TimeSchedulerGrpc(), server)
 
     # the reflection service will be aware of "Greeter" and "ServerReflection" services.
     # source: https://github.com/grpc/grpc/blob/master/doc/python/server_reflection.md
-    SERVICE_NAMES = (
-        app1_pb2.DESCRIPTOR.services_by_name['PingService'].full_name,
-        reflection.SERVICE_NAME,
-    )
-    reflection.enable_server_reflection(SERVICE_NAMES, server)
+    # SERVICE_NAMES = (
+    #     proto.DESCRIPTOR.services_by_name['TimeSchedulerService'].full_name,
+    #     reflection.SERVICE_NAME,
+    # )
+    # reflection.enable_server_reflection(SERVICE_NAMES, server)
 
     server.add_insecure_port(f"[::]:{APP_PORT}")
     server.start()

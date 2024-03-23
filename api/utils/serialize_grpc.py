@@ -26,3 +26,18 @@ if (Path(schema_file).exists()):
         f"--pyi_out={CODEGEN_ROOT_DIR}",
         f"--grpc_python_out={CODEGEN_ROOT_DIR}",
         schema_file])
+
+import fileinput
+
+def replace_import(filename, old_line, new_line):
+    with fileinput.FileInput(filename, inplace=True) as file:
+        for line in file:
+            if line.strip() == old_line:
+                print(new_line)
+            else:
+                print(line, end='')
+
+
+# workaround for
+# https://github.com/grpc/grpc/issues/9575#issuecomment-293934506
+replace_import(f'{CODEGEN_ROOT_DIR}/schema_pb2_grpc.py', 'import schema_pb2 as schema__pb2', 'from . import schema_pb2 as schema__pb2')
