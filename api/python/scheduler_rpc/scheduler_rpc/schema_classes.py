@@ -47,22 +47,35 @@ class BalanceReportRequestedEventClass(DictWrapper):
         pass
     
     
-class NewTimeAppliedClass(DictWrapper):
+class NewTimeClass(DictWrapper):
     # No docs available.
     
-    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.test.events.NewTimeApplied")
+    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.events.NewTime")
     def __init__(self,
+        correlationId: str,
         yyyymmdd: int,
         hhmm: int,
     ):
         super().__init__()
         
+        self.correlationId = correlationId
         self.yyyymmdd = yyyymmdd
         self.hhmm = hhmm
     
     def _restore_defaults(self) -> None:
+        self.correlationId = str()
         self.yyyymmdd = int()
         self.hhmm = int()
+    
+    
+    @property
+    def correlationId(self) -> str:
+        # No docs available.
+        return self._inner_dict.get('correlationId')  # type: ignore
+    
+    @correlationId.setter
+    def correlationId(self, value: str) -> None:
+        self._inner_dict['correlationId'] = value
     
     
     @property
@@ -85,10 +98,37 @@ class NewTimeAppliedClass(DictWrapper):
         self._inner_dict['hhmm'] = value
     
     
+class NewTimeAppliedClass(DictWrapper):
+    # No docs available.
+    
+    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.events.NewTimeApplied")
+    def __init__(self,
+        correlationId: str,
+    ):
+        super().__init__()
+        
+        self.correlationId = correlationId
+    
+    def _restore_defaults(self) -> None:
+        self.correlationId = str()
+    
+    
+    @property
+    def correlationId(self) -> str:
+        # No docs available.
+        return self._inner_dict.get('correlationId')  # type: ignore
+    
+    @correlationId.setter
+    def correlationId(self, value: str) -> None:
+        self._inner_dict['correlationId'] = value
+    
+    
 __SCHEMA_TYPES = {
     'onlexnet.ptn.scheduler.events.BalanceReportRequestedEvent': BalanceReportRequestedEventClass,
-    'onlexnet.ptn.scheduler.test.events.NewTimeApplied': NewTimeAppliedClass,
+    'onlexnet.ptn.scheduler.events.NewTime': NewTimeClass,
+    'onlexnet.ptn.scheduler.events.NewTimeApplied': NewTimeAppliedClass,
     'BalanceReportRequestedEvent': BalanceReportRequestedEventClass,
+    'NewTime': NewTimeClass,
     'NewTimeApplied': NewTimeAppliedClass,
 }
 

@@ -3,6 +3,7 @@ from avrogen.dict_wrapper import DictWrapper
 from .schema_classes import _SCHEMA as get_schema_type
 from .schema_classes import _json_converter as json_converter
 from .schema_classes import BalanceReportRequestedEventClass
+from .schema_classes import NewTimeClass
 from .schema_classes import NewTimeAppliedClass
 from avro.io import DatumReader
 
@@ -12,9 +13,12 @@ class SpecificDatumReader(DatumReader):
         "BalanceReportRequestedEvent": BalanceReportRequestedEventClass,
         ".BalanceReportRequestedEvent": BalanceReportRequestedEventClass,
         "onlexnet.ptn.scheduler.events.BalanceReportRequestedEvent": BalanceReportRequestedEventClass,
+        "NewTime": NewTimeClass,
+        ".NewTime": NewTimeClass,
+        "onlexnet.ptn.scheduler.events.NewTime": NewTimeClass,
         "NewTimeApplied": NewTimeAppliedClass,
         ".NewTimeApplied": NewTimeAppliedClass,
-        "onlexnet.ptn.scheduler.test.events.NewTimeApplied": NewTimeAppliedClass,
+        "onlexnet.ptn.scheduler.events.NewTimeApplied": NewTimeAppliedClass,
     }
     
     

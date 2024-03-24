@@ -15,10 +15,10 @@ class TimeSchedulerStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.tick = channel.unary_stream(
+        self.tick = channel.unary_unary(
                 '/TimeScheduler/tick',
                 request_serializer=schema__pb2.TimeClient.SerializeToString,
-                response_deserializer=schema__pb2.NewTime.FromString,
+                response_deserializer=schema__pb2.ClientTag.FromString,
                 )
 
 
@@ -35,10 +35,10 @@ class TimeSchedulerServicer(object):
 
 def add_TimeSchedulerServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'tick': grpc.unary_stream_rpc_method_handler(
+            'tick': grpc.unary_unary_rpc_method_handler(
                     servicer.tick,
                     request_deserializer=schema__pb2.TimeClient.FromString,
-                    response_serializer=schema__pb2.NewTime.SerializeToString,
+                    response_serializer=schema__pb2.ClientTag.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -62,8 +62,8 @@ class TimeScheduler(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/TimeScheduler/tick',
+        return grpc.experimental.unary_unary(request, target, '/TimeScheduler/tick',
             schema__pb2.TimeClient.SerializeToString,
-            schema__pb2.NewTime.FromString,
+            schema__pb2.ClientTag.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

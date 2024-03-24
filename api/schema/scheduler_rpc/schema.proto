@@ -3,16 +3,11 @@ syntax = "proto3";
 message TimeClient {
 }
 
-
-message NewTime {
-    string correlationId = 1;
-    // Date in format yyyymmdd, e.g. 20010203 means 3rd Feb 2001
-    int32 yyyymmdd = 2;
-    // Time in format hhmm, eg. 1105 means 11:05
-    int32 hhmm = 3;
+// Confirmation of approved client registration for time.
+message ClientTag {
 }
 
 // Each client, interested in 
 service TimeScheduler {
-    rpc tick(TimeClient) returns (stream NewTime) { }
+    rpc tick(TimeClient) returns (ClientTag) { }
 }

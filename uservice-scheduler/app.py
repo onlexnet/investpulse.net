@@ -31,8 +31,10 @@ class TimeSchedulerGrpc(TimeSchedulerServicer):
     end_date = datetime(2001, 2, 2)
     hub = ClientsHub(1, start_date, end_date)
 
-    def tick(self, request: proto.TimeClient, context):
+    async def tick(self, request: proto.TimeClient, context):
         log.info(request)
+        await self.hub.add_client()
+
         reply = proto.NewTime()
         return reply
 

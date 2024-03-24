@@ -1,21 +1,27 @@
 [
-   {
-        "namespace": "onlexnet.ptn.scheduler.test.events",
-        "type": "record",
-        "description": "aaaaaaaaaaaaaaaaaaaaaaa",
-        "comments": "aaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "name": "NewTimeApplied",
-        "fields": [ 
-            { "name": "yyyymmdd", "type": "int" },
-            { "name": "hhmm", "type": "int" }
-        ]
-    },
-    {
-      "namespace": "onlexnet.ptn.scheduler.events",
-      "type": "record",
-      "description": "test description",
-      "name": "BalanceReportRequestedEvent",
-      "fields": [ ]
+  {
+    "namespace": "onlexnet.ptn.scheduler.events",
+    "type": "record",
+    "name": "NewTime",
+    "fields": [
+      { "name": "correlationId", "type": "string" },
+      { "name": "yyyymmdd", "type": "int" },
+      { "name": "hhmm", "type": "int" }
+    ]
+  },
+  {
+    "namespace": "onlexnet.ptn.scheduler.events",
+    "type": "record",
+    "name": "NewTimeApplied",
+    "fields": [
+      { "name": "correlationId", "type": "string" }
+    ]
+  },
+  {
+    "namespace": "onlexnet.ptn.scheduler.events",
+    "type": "record",
+    "description": "test description",
+    "name": "BalanceReportRequestedEvent",
+    "fields": [ ]
   }
-
 ]
