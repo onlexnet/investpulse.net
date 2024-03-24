@@ -4,11 +4,12 @@ from unittest import TestCase
 from datetime import datetime
 import unittest
 import pytest
-from src.clients import ClientsHub, TimeTick
+from src.clients import ClientsHub
 import scheduler_rpc.schema_pb2 as proto
 
 
 from src.mapper import to_dto
+from src.models import TimeTick
 
 class KnownClientsTest(unittest.IsolatedAsyncioTestCase):
 
@@ -16,7 +17,7 @@ class KnownClientsTest(unittest.IsolatedAsyncioTestCase):
     async def test_emit_first_event(self):
 
         maybe_handled: Optional[TimeTick] = None
-        async def sender(event: TimeTick):
+        def sender(event: TimeTick):
             nonlocal maybe_handled
             maybe_handled = event
 
@@ -36,7 +37,7 @@ class KnownClientsTest(unittest.IsolatedAsyncioTestCase):
     async def test_emit_final_event(self):
 
         maybe_handled: Optional[TimeTick] = None
-        async def client(event: TimeTick):
+        def client(event: TimeTick):
             nonlocal maybe_handled
             maybe_handled = event
 

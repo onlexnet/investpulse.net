@@ -4,12 +4,8 @@ from datetime import datetime, timedelta
 from typing import AsyncIterable, Awaitable, Callable, List, TypeAlias
 from uuid import uuid4
 
-from src.mapper import from_dto, normalize, to_dto
-
-@dataclass
-class TimeTick:
-    now: datetime
-    correlation_id: str
+from src.mapper import normalize, to_dto
+from src.models import Sender, TimeTick
 
 class ClientsHub:
     """
@@ -18,10 +14,10 @@ class ClientsHub:
 
     __lock = Lock()
     __now: datetime
-    __sender: Callable[[TimeTick], Awaitable[None]]
+    __sender: Sender
 
 
-    def __init__(self, numer_of_clients: int, scope_from: datetime, scope_to: datetime, sender: Callable[[TimeTick], Awaitable[None]]):
+    def __init__(self, numer_of_clients: int, scope_from: datetime, scope_to: datetime, sender: Sender):
         self.number_of_clients = numer_of_clients
         self.__now = normalize(scope_from)
         self.__scope_to = scope_to
@@ -75,4 +71,4 @@ class ClientsHub:
         self.__correlation_id = correlation_id
         self.__acks_to_confirm = self.number_of_clients
         event = TimeTick(now, correlation_id)
-        await self.__sender(event)
+        self.__sender(event)

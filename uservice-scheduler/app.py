@@ -19,7 +19,9 @@ import os
 import grpc
 from grpc_reflection.v1alpha import reflection
 
-from src.clients import ClientsHub
+from src.clients import ClientsHub, Sender
+from src.mapper import to_dto
+from src.models import TimeTick
 
 
 APP_PORT=os.getenv('APP_PORT', 50000)
@@ -27,15 +29,19 @@ log = logging.getLogger("myapp")
 
 class TimeSchedulerGrpc(TimeSchedulerServicer):
 
-    start_date = datetime(2001, 1, 1)
-    end_date = datetime(2001, 2, 2)
-    hub = ClientsHub(1, start_date, end_date)
+    def __init__(self, sender: Sender):
+        start_date = datetime(2001, 1, 1)
+        end_date = datetime(2001, 2, 2)
+        self.hub = ClientsHub(1, start_date, end_date, sender)
+
+    async def send(self, tick: TimeTick):
+        pass
 
     async def tick(self, request: proto.TimeClient, context):
         log.info(request)
         await self.hub.add_client()
 
-        reply = proto.NewTime()
+        reply = proto.ClientTag()
         return reply
 
 
@@ -51,28 +57,18 @@ def number_of_expected_clients() -> int:
 
 
 async def main():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     with DaprClient() as dc:
+
+        def send(x: TimeTick):
+            event = to_dto(x.now, x.correlation_id)
+            d.publish(dc, event)
+        service = TimeSchedulerGrpc(send)
+        add_TimeSchedulerServicer_to_server(service, server)
+        
         # report_event = events.BalanceReportRequestedEvent()
         # d.publish(dc, report_event)
-        pass
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
-    logger.info(f"port: {APP_PORT}")
-
-    loop = asyncio.get_event_loop()
-    tasks = [
-        loop.create_task(main()),
-    ]
-    loop.run_until_complete(asyncio.wait(tasks))
-    loop.close()
-
-
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    add_TimeSchedulerServicer_to_server(TimeSchedulerGrpc(), server)
 
     # the reflection service will be aware of "Greeter" and "ServerReflection" services.
     # source: https://github.com/grpc/grpc/blob/master/doc/python/server_reflection.md
@@ -86,9 +82,15 @@ def serve():
     server.start()
     server.wait_for_termination()
 
-if __name__ == '__main__':
-    logging.basicConfig()
-    log.setLevel(logging.INFO)
 
-    log.info(f"port: {APP_PORT}")
-    serve()
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
+    logger.info(f"port: {APP_PORT}")
+
+    loop = asyncio.get_event_loop()
+    tasks = [
+        loop.create_task(main()),
+    ]
+    loop.run_until_complete(asyncio.wait(tasks))
+    loop.close()
