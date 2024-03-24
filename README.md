@@ -8,7 +8,7 @@
 - run applications
   ```
   dapr run -f dapr.yaml
-  ```
+  
 - see local zipking traces:
   ```
   http://localhost:9411

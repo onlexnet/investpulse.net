@@ -5,6 +5,7 @@ import logging
 import os
 import signal
 import sys
+from typing import Optional
 import uuid
 from venv import logger
 import grpc
@@ -14,15 +15,40 @@ from datetime import date
 
 from pandas import DataFrame
 
+from src.MyInterceptor import add_authentication
 import src.YahooFinance as yf
 
 from dapr.clients import DaprClient
 from avro import datafile, io
 import market_rpc.onlexnet.pdt.market.events as events
+import scheduler_rpc.onlexnet.ptn.scheduler.events as events_scheduler
+from scheduler_rpc.schema_pb2_grpc import TimeSchedulerStub
+from scheduler_rpc.schema_pb2 import TimeClient
 import onlexnet.dapr as d
+from dapr.ext.grpc import App
+from cloudevents.sdk.event import v1
+from dapr.clients.grpc._response import TopicEventResponse
 
-APP_PORT=os.getenv('APP_PORT', 50052)
-log = logging.getLogger("myapp")
+APP_PORT=os.getenv('APP_PORT', 50000)
+DAPR_GRPC_PORT=os.getenv('DAPR_GRPC_PORT', 0)
+
+log = logging.getLogger("market")
+
+
+app = App()
+
+# Default subscription for a topic
+@app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(events_scheduler.NewTime))
+def mytopic(event: v1.Event) -> Optional[TopicEventResponse]:
+    # Returning None (or not doing a return explicitly) is equivalent
+    # to returning a TopicEventResponse("success").
+    # You can also return TopicEventResponse("retry") for dapr to log
+    # the message and retry delivery later, or TopicEventResponse("drop")
+    # for it to drop the message
+
+    log.info("SPARTAA2")
+    return TopicEventResponse("success")
+
 
 # in the future we would like to listen data directly from Yahoo
 # right now, we are working on simulated time so is enough to preload data from Yahoo
@@ -38,15 +64,22 @@ async def serve(df: DataFrame):
     server.add_insecure_port(f"[::]:{APP_PORT}")
     server.start()
 
+    authentication = add_authentication('dapr-app-id', 'scheduler')
+    with grpc.insecure_channel(f"localhost:{DAPR_GRPC_PORT}") as channel:
+            intercept_channel = grpc.intercept_channel(channel, authentication) 
+            stub = TimeSchedulerStub(intercept_channel)
+            stub.tick(TimeClient())
+
     with DaprClient() as dc:
-        
-        for index, row in df.iterrows():
-            date = row['date']
-            date_as_year = date.year * 10_000 + date.month * 100 + date.day
-            event = events.MarketChangedEvent(date = date_as_year)
-            d.publish(dc, event)
-            logging.info(f"Event sent: {event}")
-            await asyncio.sleep(0.01)
+
+        # for index, row in df.iterrows():
+        #     date = row['date']
+        #     date_as_year = date.year * 10_000 + date.month * 100 + date.day
+        #     event = events.MarketChangedEvent(date = date_as_year)
+        #     d.publish(dc, event)
+        #     logging.info(f"Event sent: {event}")
+        #     await asyncio.sleep(0.01)
+        pass        
 
     server.wait_for_termination()
 

@@ -27,7 +27,7 @@ what means application should emit real time.
 
 
 ## run standalone
-dapr run --app-protocol grpc --app-id scheduler python app.py
+dapr run --app-protocol grpc --app-port 50000 --app-id scheduler python app.py
 
 # Run tests
 ```

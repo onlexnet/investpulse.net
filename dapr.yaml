@@ -10,25 +10,25 @@ apps:
     appProtocol: grpc
     appPort: 50052
     command: [".venv/bin/python", "app.py"]
-  - appID: app2
-    appDirPath: ./uservice-app2
-    appProtocol: grpc
-    appPort: 50053
-    env:
-      EXAMPLE1: localhost
-    command: ["mvn", "spring-boot:run", "-ntp", "-DskipTests"]
+  # - appID: app2
+  #   appDirPath: ./uservice-app2
+  #   appProtocol: grpc
+  #   appPort: 50053
+  #   env:
+  #     EXAMPLE1: localhost
+  #   command: ["mvn", "spring-boot:run", "-ntp", "-DskipTests"]
   - appID: scheduler
     appDirPath: ./uservice-scheduler
     appProtocol: grpc
     appPort: 50054
     command: [".venv/bin/python", "app.py"]
-  - appID: agent
-    appDirPath: ./uservice-agent
-    appProtocol: grpc
-    appPort: 50055
-    command: [".venv/bin/python", "app.py"]
-  - appID: agent
-    appDirPath: ./uservice-signals-1
-    appProtocol: grpc
-    appPort: 50056
-    command: [".venv/bin/python", "app.py"]
+  # - appID: agent
+  #   appDirPath: ./uservice-agent
+  #   appProtocol: grpc
+  #   appPort: 50055
+  #   command: [".venv/bin/python", "app.py"]
+  # - appID: agent
+  #   appDirPath: ./uservice-signals-1
+  #   appProtocol: grpc
+  #   appPort: 50056
+  #   command: [".venv/bin/python", "app.py"]
