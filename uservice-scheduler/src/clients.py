@@ -22,6 +22,8 @@ class ClientsHub:
     def __init__(self, numer_of_clients: int, scope_from: datetime, scope_to: datetime, sender: Sender):
         self.number_of_clients = numer_of_clients
         self.__now = normalize(scope_from)
+        self.__reported_when = datetime.now()
+        self.__reported_events = 0
         self.__scope_to = scope_to
         self.__sender = sender
 
@@ -61,18 +63,22 @@ class ClientsHub:
         
     def __next_time(self):
         now = self.__now
-        time_delta = timedelta(minutes=1)
+        time_delta = timedelta(hours=1)
         new_datetime = now + time_delta
         self.__now = new_datetime
     
     def __dispatch_time(self):
-        correlation_id = str(uuid4())
         now = self.__now
-        if now.hour == 0 and now.minute == 0 and now.second == 0:
-            logging.info(f"time: {now}")
+        if now > self.__scope_to:
+            logging.info(f"End of scheduler")
+            return
+        
+        correlation_id = str(uuid4())
+
         event = to_dto(now, correlation_id)
         # all know clients has to confirm time message which we are going to send
         self.__correlation_id = correlation_id
         self.__acks_to_confirm = self.number_of_clients
         event = TimeTick(now, correlation_id)
         self.__sender(event)
+        self.__reported_events += 1

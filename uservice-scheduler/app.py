@@ -1,3 +1,4 @@
+import functools
 import json
 from cloudevents.sdk.event import v1
 import asyncio
@@ -23,6 +24,7 @@ import os
 import grpc
 from grpc_reflection.v1alpha import reflection
 
+from src.calls import invocation_counter
 from src.clients import ClientsHub, Sender
 from src.mapper import to_dto
 from src.models import TimeTick
@@ -36,7 +38,7 @@ class TimeSchedulerGrpc(TimeSchedulerServicer):
 
     def __init__(self, sender: Sender):
         start_date = datetime(2001, 1, 1)
-        end_date = datetime(2001, 1, 1, 23, 59)
+        end_date = datetime(2023, 12, 31, 23, 59)
         self.hub = ClientsHub(1, start_date, end_date, sender)
 
     def send(self, correlation_id: str):
@@ -66,9 +68,11 @@ async def main():
     server = app._server
     with DaprClient() as dc:
 
+        @invocation_counter
         def send(x: TimeTick):
             event = to_dto(x.now, x.correlation_id)
             d.publish(dc, event)
+
         service = TimeSchedulerGrpc(send)
         add_TimeSchedulerServicer_to_server(service, server)
         

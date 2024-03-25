@@ -5,9 +5,10 @@
 
 ## Hints
 
-- run applications
+- [run multiple applications](https://docs.dapr.io/developing-applications/local-development/multi-app-dapr-run/multi-app-overview/)
   ```
-  dapr run -f dapr.yaml
+  dapr run -f dapr.yaml --resources-path .components
+  ```
   
 - see local zipking traces:
   ```
