@@ -41,7 +41,6 @@ class TimeSchedulerGrpc(TimeSchedulerServicer):
 
     def send(self, correlation_id: str):
         self.hub.on_client_ack(correlation_id)
-        pass
 
     def tick(self, request: proto.TimeClient, context):
         log.info(f"request: {request}")
