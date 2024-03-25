@@ -1,5 +1,10 @@
 version: 1
 apps:
+  - appID: scheduler
+    appDirPath: ./uservice-scheduler
+    appProtocol: grpc
+    appPort: 50054
+    command: [".venv/bin/python", "app.py"]
   # - appID: app1
   #   appDirPath: ./uservice-app1
   #   appProtocol: grpc
@@ -17,11 +22,6 @@ apps:
   #   env:
   #     EXAMPLE1: localhost
   #   command: ["mvn", "spring-boot:run", "-ntp", "-DskipTests"]
-  - appID: scheduler
-    appDirPath: ./uservice-scheduler
-    appProtocol: grpc
-    appPort: 50054
-    command: [".venv/bin/python", "app.py"]
   # - appID: agent
   #   appDirPath: ./uservice-agent
   #   appProtocol: grpc

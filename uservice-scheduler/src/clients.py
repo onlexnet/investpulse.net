@@ -23,7 +23,7 @@ class ClientsHub:
         self.__scope_to = scope_to
         self.__sender = sender
 
-    async def add_client(self):
+    def add_client(self):
         """
         Waits for all clients and starts emits events automatically
         """
@@ -33,7 +33,7 @@ class ClientsHub:
 
         # TODO dispatch time only when all expected clients are connected
 
-        await self.__dispatch_time();
+        self.__dispatch_time();
     
     async def on_client_ack(self, correlation_id: str):
         """
@@ -55,7 +55,7 @@ class ClientsHub:
             return
         
         self.__next_time()
-        await self.__dispatch_time()
+        self.__dispatch_time()
         
     def __next_time(self):
         now = self.__now
@@ -63,7 +63,7 @@ class ClientsHub:
         new_datetime = now + time_delta
         self.__now = new_datetime
     
-    async def __dispatch_time(self):
+    def __dispatch_time(self):
         correlation_id = str(uuid4())
         now = self.__now
         event = to_dto(now, correlation_id)

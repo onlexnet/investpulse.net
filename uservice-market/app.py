@@ -5,6 +5,7 @@ import logging
 import os
 import signal
 import sys
+import time
 from typing import Optional
 import uuid
 from venv import logger
@@ -32,12 +33,8 @@ from dapr.clients.grpc._response import TopicEventResponse
 APP_PORT=os.getenv('APP_PORT', 50000)
 DAPR_GRPC_PORT=os.getenv('DAPR_GRPC_PORT', 0)
 
-log = logging.getLogger("market")
-
-
 app = App()
 
-# Default subscription for a topic
 @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(events_scheduler.NewTime))
 def mytopic(event: v1.Event) -> Optional[TopicEventResponse]:
     # Returning None (or not doing a return explicitly) is equivalent
@@ -45,8 +42,8 @@ def mytopic(event: v1.Event) -> Optional[TopicEventResponse]:
     # You can also return TopicEventResponse("retry") for dapr to log
     # the message and retry delivery later, or TopicEventResponse("drop")
     # for it to drop the message
-
-    log.info("SPARTAA2")
+    logger.info("SPARTAA2")
+    # raise ValueError("!!!!!!!!!!!!!")
     return TopicEventResponse("success")
 
 
@@ -59,29 +56,36 @@ def preload_data() -> DataFrame:
     return data
 
 async def serve(df: DataFrame):
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    logger.info("SPARTAA0")
+    server = app._server
 
-    server.add_insecure_port(f"[::]:{APP_PORT}")
-    server.start()
+    logger.info("SPARTAA1")
+
+
+    # server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    # server.add_insecure_port(f"[::]:{APP_PORT}")
+    # server.start()
 
     authentication = add_authentication('dapr-app-id', 'scheduler')
-    with grpc.insecure_channel(f"localhost:{DAPR_GRPC_PORT}") as channel:
-            intercept_channel = grpc.intercept_channel(channel, authentication) 
-            stub = TimeSchedulerStub(intercept_channel)
-            stub.tick(TimeClient())
 
-    with DaprClient() as dc:
+    channel = grpc.insecure_channel(f"localhost:{DAPR_GRPC_PORT}")
+    intercept_channel = grpc.intercept_channel(channel, authentication) 
+    stub = TimeSchedulerStub(intercept_channel)
+    stub.tick(TimeClient())
 
-        # for index, row in df.iterrows():
-        #     date = row['date']
-        #     date_as_year = date.year * 10_000 + date.month * 100 + date.day
-        #     event = events.MarketChangedEvent(date = date_as_year)
-        #     d.publish(dc, event)
-        #     logging.info(f"Event sent: {event}")
-        #     await asyncio.sleep(0.01)
-        pass        
+    # with DaprClient() as dc:
+    #     for index, row in df.iterrows():
+    #         date = row['date']
+    #         date_as_year = date.year * 10_000 + date.month * 100 + date.day
+    #         event = events.MarketChangedEvent(date = date_as_year)
+    #         d.publish(dc, event)
+    #         logging.info(f"Event sent: {event}")
+    #         await asyncio.sleep(0.01)
+    #     pass        
+    
+    # server.wait_for_termination()
+    app.run(int(APP_PORT))
 
-    server.wait_for_termination()
 
 def signal_handler(sig, frame):
     logger.warn('You pressed Ctrl+C!')

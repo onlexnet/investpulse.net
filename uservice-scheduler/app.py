@@ -37,9 +37,9 @@ class TimeSchedulerGrpc(TimeSchedulerServicer):
     async def send(self, tick: TimeTick):
         pass
 
-    async def tick(self, request: proto.TimeClient, context):
-        log.info(request)
-        await self.hub.add_client()
+    def tick(self, request: proto.TimeClient, context):
+        log.info(f"request: {request}")
+        self.hub.add_client()
 
         reply = proto.ClientTag()
         return reply
@@ -70,17 +70,17 @@ async def main():
         # report_event = events.BalanceReportRequestedEvent()
         # d.publish(dc, report_event)
 
-    # the reflection service will be aware of "Greeter" and "ServerReflection" services.
-    # source: https://github.com/grpc/grpc/blob/master/doc/python/server_reflection.md
-    SERVICE_NAMES = (
-        proto.DESCRIPTOR.services_by_name['TimeScheduler'].full_name,
-        reflection.SERVICE_NAME,
-    )
-    reflection.enable_server_reflection(SERVICE_NAMES, server)
+        # the reflection service will be aware of "Greeter" and "ServerReflection" services.
+        # source: https://github.com/grpc/grpc/blob/master/doc/python/server_reflection.md
+        SERVICE_NAMES = (
+            proto.DESCRIPTOR.services_by_name['TimeScheduler'].full_name,
+            reflection.SERVICE_NAME,
+        )
+        reflection.enable_server_reflection(SERVICE_NAMES, server)
 
-    server.add_insecure_port(f"[::]:{APP_PORT}")
-    server.start()
-    server.wait_for_termination()
+        server.add_insecure_port(f"[::]:{APP_PORT}")
+        server.start()
+        server.wait_for_termination()
 
 
 if __name__ == '__main__':
