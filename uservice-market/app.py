@@ -30,7 +30,6 @@ import onlexnet.dapr as d
 from dapr.ext.grpc import App
 from cloudevents.sdk.event import v1
 from dapr.clients.grpc._response import TopicEventResponseStatus, TopicEventResponse
-from fastavro import json_reader
 
 APP_PORT=os.getenv('APP_PORT', 50000)
 DAPR_GRPC_PORT=os.getenv('DAPR_GRPC_PORT', 0)
@@ -47,21 +46,11 @@ def preload_data() -> DataFrame:
     return data
 
 async def serve(df: DataFrame):
-    logger.info("SPARTAA0")
-    server = app._server
-
-    logger.info("SPARTAA1")
-
-
-    # server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    # server.add_insecure_port(f"[::]:{APP_PORT}")
-    # server.start()
-
-    authentication = add_header('dapr-app-id', 'scheduler')
+    dapr_interceptor = add_header('dapr-app-id', 'scheduler')
 
     channel = grpc.insecure_channel(f"localhost:{DAPR_GRPC_PORT}")
-    intercept_channel = grpc.intercept_channel(channel, authentication) 
-    stub = TimeSchedulerStub(intercept_channel)
+    scheduler_channel = grpc.intercept_channel(channel, dapr_interceptor) 
+    stub = TimeSchedulerStub(scheduler_channel)
     stub.tick(TimeClient())
 
     with DaprClient() as dc:
@@ -73,20 +62,11 @@ async def serve(df: DataFrame):
             # the message and retry delivery later, or TopicEventResponse("drop")
             # for it to drop the message
 
-            logger.info("SPARTAA2")
-
             as_json = cast(bytes, event.data).decode('UTF-8')
-            logger.info(as_json)
-
             as_dict = json.loads(as_json)
             event_typed = events_scheduler.NewTime.from_obj(as_dict)
-            logger.info(event_typed)
-
             correlation_id = event_typed.correlationId
-
-            logger.info("SPARTAA3")
             d.publish(dc, scheduler_test.NewTimeApplied(correlation_id))
-            logger.info("SPARTAA4")
             return TopicEventResponse(TopicEventResponseStatus.success)
 
 
@@ -99,8 +79,7 @@ async def serve(df: DataFrame):
     #         await asyncio.sleep(0.01)
     #     pass        
     
-    # server.wait_for_termination()
-    app.run(int(APP_PORT))
+        app.run(int(APP_PORT))
 
 
 def signal_handler(sig, frame):

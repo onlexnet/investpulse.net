@@ -1,18 +1,20 @@
 from asyncio import Lock
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+import threading
 from typing import AsyncIterable, Awaitable, Callable, List, TypeAlias
 from uuid import uuid4
 
 from src.mapper import normalize, to_dto
 from src.models import Sender, TimeTick
+import logging
 
 class ClientsHub:
     """
     Waits for predicted number of clients, and next notifies all of them about time changes.
     """
 
-    __lock = Lock()
+    __lock = threading.Lock()
     __now: datetime
     __sender: Sender
 
@@ -35,7 +37,7 @@ class ClientsHub:
 
         self.__dispatch_time();
     
-    async def on_client_ack(self, correlation_id: str):
+    def on_client_ack(self, correlation_id: str):
         """
         the method will be ignored on prod as I do not see any special case
         in tests it is used to wait with next time signal when all clients already applied side effects of the previous signal
@@ -44,7 +46,7 @@ class ClientsHub:
         # TODO
         # check if correlation_id is valid, it means: same as used with latesst NewTime message to clients
         
-        async with self.__lock:
+        with self.__lock:
             if self.__acks_to_confirm > 0:
                 self.__acks_to_confirm -= 1
             else:
@@ -66,6 +68,8 @@ class ClientsHub:
     def __dispatch_time(self):
         correlation_id = str(uuid4())
         now = self.__now
+        if now.hour == 0 and now.minute == 0 and now.second == 0:
+            logging.info(f"time: {now}")
         event = to_dto(now, correlation_id)
         # all know clients has to confirm time message which we are going to send
         self.__correlation_id = correlation_id

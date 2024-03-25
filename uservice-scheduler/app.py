@@ -1,9 +1,13 @@
+import json
+from cloudevents.sdk.event import v1
 import asyncio
 from concurrent import futures
 from datetime import datetime, timedelta
 import logging
 import os
+from typing import Optional, cast
 from venv import logger
+from dapr.clients.grpc._response import TopicEventResponseStatus, TopicEventResponse
 
 from dapr.clients import DaprClient
 from avro import datafile, io
@@ -23,6 +27,7 @@ from src.clients import ClientsHub, Sender
 from src.mapper import to_dto
 from src.models import TimeTick
 
+from dapr.ext.grpc import App
 
 APP_PORT=os.getenv('APP_PORT', 50000)
 log = logging.getLogger("myapp")
@@ -31,10 +36,11 @@ class TimeSchedulerGrpc(TimeSchedulerServicer):
 
     def __init__(self, sender: Sender):
         start_date = datetime(2001, 1, 1)
-        end_date = datetime(2001, 2, 2)
+        end_date = datetime(2001, 1, 1, 23, 59)
         self.hub = ClientsHub(1, start_date, end_date, sender)
 
-    async def send(self, tick: TimeTick):
+    def send(self, correlation_id: str):
+        self.hub.on_client_ack(correlation_id)
         pass
 
     def tick(self, request: proto.TimeClient, context):
@@ -55,10 +61,10 @@ def number_of_expected_clients() -> int:
         raise ValueError(f"Env variable 'ENV_NAME_NUMBER_OF_TIME_CLIENTS' is not defined")
     return int(CLIENTS)
 
+app = App()
 
 async def main():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-
+    server = app._server
     with DaprClient() as dc:
 
         def send(x: TimeTick):
@@ -67,6 +73,16 @@ async def main():
         service = TimeSchedulerGrpc(send)
         add_TimeSchedulerServicer_to_server(service, server)
         
+        @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(events.NewTimeApplied))
+        def mytopic(event: v1.Event) -> Optional[TopicEventResponse]:
+            as_json = cast(bytes, event.data).decode('UTF-8')
+            as_dict = json.loads(as_json)
+            event_typed = events.NewTimeApplied.from_obj(as_dict)
+            correlation_id = event_typed.correlationId
+
+            service.send(correlation_id)
+            pass
+
         # report_event = events.BalanceReportRequestedEvent()
         # d.publish(dc, report_event)
 
@@ -77,10 +93,7 @@ async def main():
             reflection.SERVICE_NAME,
         )
         reflection.enable_server_reflection(SERVICE_NAMES, server)
-
-        server.add_insecure_port(f"[::]:{APP_PORT}")
-        server.start()
-        server.wait_for_termination()
+        app.run(int(APP_PORT))
 
 
 if __name__ == '__main__':
