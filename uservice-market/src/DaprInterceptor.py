@@ -19,7 +19,7 @@ class AuthenticationInterceptor(grpc.UnaryUnaryClientInterceptor):
         response = continuation(new_details, next(new_request_iterator))
         return postprocess(response) if postprocess else response
 
-def add_authentication(header, value):
+def add_header(header, value):
     def intercept_call(client_call_details, request_iterator, request_streaming,
                        response_streaming):
         metadata = []

@@ -1,3 +1,4 @@
+from typing import cast
 from avro.io import BinaryEncoder
 import io
 import asyncio
@@ -5,7 +6,7 @@ from io import BytesIO
 import io
 import time
 
-from market_rpc.onlexnet.market.events import MarketChangedEvent
+from market_rpc.onlexnet.pdt.market.events import MarketChangedEvent
 import fastavro
 
 
@@ -39,6 +40,9 @@ fastavro.schemaless_writer(fo, schema, event_as_dict)
 fo.seek(0)
 bytes = fo.read()
 print(len(bytes))
+
+fo.seek(0)
+aaa: MarketChangedEvent = cast(MarketChangedEvent, fastavro.schemaless_reader(fo, schema))
 
 fo1 = BytesIO(b"some initial binary data: \x00\x01")
 print(len(fo1.read()))
