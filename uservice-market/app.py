@@ -66,7 +66,7 @@ async def serve(df: DataFrame):
             as_dict = json.loads(as_json)
             event_typed = events_scheduler.NewTime.from_obj(as_dict)
             correlation_id = event_typed.correlationId
-            d.publish(dc, scheduler_test.NewTimeApplied(correlation_id))
+            d.publish(dc, "pubsub", scheduler_test.NewTimeApplied(correlation_id))
             return TopicEventResponse(TopicEventResponseStatus.success)
 
 

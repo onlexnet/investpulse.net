@@ -71,7 +71,7 @@ async def main():
         @invocation_counter
         def send(x: TimeTick):
             event = to_dto(x.now, x.correlation_id)
-            d.publish(dc, event)
+            d.publish(dc, "pubsub", event)
 
         service = TimeSchedulerGrpc(send)
         add_TimeSchedulerServicer_to_server(service, server)
