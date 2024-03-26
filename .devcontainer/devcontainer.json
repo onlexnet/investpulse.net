@@ -39,6 +39,7 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
 		3141, // local devpi server
+		9411, // local zipkin server
 		50000,
 		50052,
 		50054

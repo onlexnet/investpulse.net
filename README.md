@@ -19,3 +19,8 @@
 - https://grpc.io/docs/languages/python/basics/#generating-client-and-server-code
 - https://adityamattos.com/grpc-in-python-part-3-implementing-grpc-streaming
 - [Python grpc client and server](https://www.youtube.com/watch?v=WB37L7PjI5k)
+
+## Known issues
+- Zipkin non working in Docker:
+  - deinstall zipkin on WSL (host machine)
+  - expose port 9411
