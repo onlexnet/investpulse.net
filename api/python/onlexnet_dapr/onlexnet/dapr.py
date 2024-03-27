@@ -12,7 +12,7 @@ def as_topic_name(event: Any) -> str:
   topic_name = f"{schema_prefix}:{event.RECORD_SCHEMA.fullname}"
   return topic_name
 
-def reply(dc: DaprClient, pubsub_name: str, event: Any, reply_to: v1.Event):
+def cont(dc: DaprClient, pubsub_name: str, event: Any, reply_to: v1.Event):
 
   topic_name = as_topic_name(event)
   traceid, exists = reply_to.Get("traceid")
@@ -20,7 +20,7 @@ def reply(dc: DaprClient, pubsub_name: str, event: Any, reply_to: v1.Event):
   
   event_as_dict = event.to_avro_writable()
   as_json = json.dumps(event_as_dict)
-  publish_metadata={ 'ttlInSeconds': '10', 'cloudevent.traceparent': traceid}
+  publish_metadata={ 'ttlInSeconds': '10', 'cloudevent.traceid': traceid}
   dc.publish_event(pubsub_name=pubsub_name, topic_name=topic_name, data = as_json, data_content_type="application/json", publish_metadata=publish_metadata)
 
 def publish(dc: DaprClient, pubsub_name: str, event: Any, ):

@@ -1,16 +1,11 @@
 import asyncio
-from concurrent import futures
-from io import BytesIO
 import logging
 import os
 import signal
 import sys
-import time
 from typing import Optional, cast
-import uuid
 from venv import logger
 import grpc
-import fastavro
 import json
 from datetime import date, datetime
 
@@ -76,12 +71,21 @@ async def serve(df: DataFrame):
             yyyymmdd = event_typed.yyyymmdd
             today = from_dto(yyyymmdd)
             row = df.loc[df['date'] == today]
+            
             if not row.empty:
+                open = df['open'].values[0]
+                high = df['high'].values[0]
+                low = df['low'].values[0]
+                close = df['close'].values[0]
+                adj_close = df['adj_close'].values[0]
+                volume = int(df['volume'].values[0])
+                new_event = events.MarketChangedEvent(date=yyyymmdd, open=open, high=high, low=low, close=close, adjClose=adj_close, volume=volume)
+                d.publish(dc, "pubsub", new_event)
                 logger.info(row)
 
 
             correlation_id = event_typed.correlationId
-            d.reply(dc, "pubsub", scheduler_test.NewTimeApplied(correlation_id), event)
+            d.cont(dc, "pubsub", scheduler_test.NewTimeApplied(correlation_id), event)
             return TopicEventResponse(TopicEventResponseStatus.success)
 
 
