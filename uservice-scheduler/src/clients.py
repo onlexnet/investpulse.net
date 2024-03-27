@@ -63,7 +63,7 @@ class ClientsHub:
         
     def __next_time(self):
         now = self.__now
-        time_delta = timedelta(hours=1)
+        time_delta = timedelta(hours=3)
         new_datetime = now + time_delta
         self.__now = new_datetime
     

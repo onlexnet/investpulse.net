@@ -24,3 +24,4 @@
 - Zipkin non working in Docker:
   - deinstall zipkin on WSL (host machine)
   - expose port 9411
+  - to configure DAPR <-> ZIPKIN please reopen $HOME/.dapr/config.yaml
