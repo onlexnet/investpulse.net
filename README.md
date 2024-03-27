@@ -12,7 +12,7 @@
   
 - see local zipking traces:
   ```
-  http://localhost:9  411
+  http://localhost:9411
   ```
 
 ## used articles
