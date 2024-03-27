@@ -37,7 +37,7 @@ log = logging.getLogger("myapp")
 class TimeSchedulerGrpc(TimeSchedulerServicer):
 
     def __init__(self, sender: Sender):
-        start_date = datetime(2001, 1, 1)
+        start_date = datetime(2014, 1, 1)
         end_date = datetime(2023, 12, 31, 23, 59)
         self.hub = ClientsHub(1, start_date, end_date, sender)
 

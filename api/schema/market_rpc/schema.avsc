@@ -3,6 +3,12 @@
     "type": "record",
     "name": "MarketChangedEvent",
     "fields": [
-        {"name": "date", "type": "long"}
+        {"name": "date", "type": "long"},
+        {"name": "open", "type": "double"},
+        {"name": "high", "type": "double"},
+        {"name": "low", "type": "double"},
+        {"name": "close", "type": "double"},
+        {"name": "adjClose", "type": "double"},
+        {"name": "volume", "type": "long"}
     ]
 }

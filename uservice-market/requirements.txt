@@ -2,7 +2,7 @@
 dapr-ext-grpc==1.12.0
 
 grpcio-reflection==1.62.0
-onlexnet_market==0.0.10
+onlexnet_market==0.0.11
 onlexnet_dapr==0.0.9
 onlexnet_scheduler == 0.0.25
 

@@ -12,7 +12,7 @@ from venv import logger
 import grpc
 import fastavro
 import json
-from datetime import date
+from datetime import date, datetime
 
 from pandas import DataFrame
 
@@ -36,12 +36,17 @@ DAPR_GRPC_PORT=os.getenv('DAPR_GRPC_PORT', 0)
 
 app = App()
 
+def from_dto(yyyymmdd: int) -> date:
+    as_year = yyyymmdd // 10000
+    as_month = yyyymmdd // 100 % 100
+    as_days = yyyymmdd % 100
+    return datetime(as_year, as_month, as_days)
 
 # in the future we would like to listen data directly from Yahoo
 # right now, we are working on simulated time so is enough to preload data from Yahoo
 # and serve the data when time 'passed'
 def preload_data() -> DataFrame:
-    ctx = yf.LoadContext(date(2020, 1, 1), date(2023, 12, 31), "msft")
+    ctx = yf.LoadContext(date(2010, 1, 1), date(2023, 12, 31), "msft")
     data = yf.load(ctx)
     return data
 
@@ -62,12 +67,23 @@ async def serve(df: DataFrame):
             # the message and retry delivery later, or TopicEventResponse("drop")
             # for it to drop the message
 
+
             as_json = cast(bytes, event.data).decode('UTF-8')
             as_dict = json.loads(as_json)
             event_typed = events_scheduler.NewTime.from_obj(as_dict)
+
+            # find even for given day
+            yyyymmdd = event_typed.yyyymmdd
+            today = from_dto(yyyymmdd)
+            row = df.loc[df['date'] == today]
+            if not row.empty:
+                logger.info(row)
+
+
             correlation_id = event_typed.correlationId
             d.reply(dc, "pubsub", scheduler_test.NewTimeApplied(correlation_id), event)
             return TopicEventResponse(TopicEventResponseStatus.success)
+
 
 
     #     for index, row in df.iterrows():
@@ -88,7 +104,7 @@ def signal_handler(sig, frame):
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     logger.info(f"port: {APP_PORT}")
     
     yahoo_data = preload_data()
@@ -100,3 +116,4 @@ if __name__ == '__main__':
     loop.close()
 
     signal.signal(signal.SIGINT, signal_handler)
+
