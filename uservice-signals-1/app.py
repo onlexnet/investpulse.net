@@ -1,29 +1,50 @@
+from asyncio.log import logger
 from concurrent import futures
 from datetime import date, timedelta
 import datetime
+import json
 import logging
+from logging.handlers import QueueHandler, QueueListener
 import os
-from typing import Optional
+import threading
+from typing import Optional, cast
 from dapr.clients.grpc._response import TopicEventResponse
 
 from cloudevents.sdk.event import v1
 from dapr.ext.grpc import App
 
 from dapr.clients import DaprClient
-from avro import datafile, io
 import scheduler_rpc.onlexnet.ptn.scheduler.events as events
 import onlexnet.dapr as d
 import pandas as pd
-
+import market_rpc.onlexnet.pdt.market.events as market_events
+# the queue is thread safe
+from queue import Queue
 
 APP_PORT=os.getenv('APP_PORT')
-log = logging.getLogger("myapp")
 
 app = App()
 
+logger = logging.getLogger(__name__)
+logger.setLevel(level=logging.INFO)
+
+lock = threading.Lock()
+df = pd.DataFrame()
+
 # Default subscription for a topic
-@app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(events.TimeChangedEventClass))
+@app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(market_events.MarketChangedEvent))
 def onTimeChangedEventClass(event: v1.Event) -> Optional[TopicEventResponse]:
+
+    as_json = cast(bytes, event.data).decode('UTF-8')
+    as_dict = json.loads(as_json)
+    event_typed = market_events.MarketChangedEvent.from_obj(as_dict)
+
+    with lock:
+        last_index = len(df)
+        df.loc[last_index] = as_dict
+
+    logging.info("SPARTAAAAAAAAAAAAAA")
+
     # Returning None (or not doing a return explicitly) is equivalent
     # to returning a TopicEventResponse("success").
     # You can also return TopicEventResponse("retry") for dapr to log
@@ -55,5 +76,4 @@ def onTimeChangedEventClass(event: v1.Event) -> Optional[TopicEventResponse]:
     return TopicEventResponse("success")
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    app.run(APP_PORT)
+    app.run(int(APP_PORT))

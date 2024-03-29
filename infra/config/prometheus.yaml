@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['myapi:6003']
+    metrics_path: '/tam-metrics'
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node_exporter:9100']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8098']
+# https://docs.dapr.io/operations/observability/metrics/prometheus/
+  - job_name: 'dapr'
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+    static_configs:
+      # 192.168.49.1 - Host IP
+      - targets: ['192.168.49.1:19054', '192.168.49.1:19052', '192.168.49.1:19057']

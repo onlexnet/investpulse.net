@@ -48,7 +48,7 @@ class BalanceReportRequestedEventClass(DictWrapper):
     
     
 class NewTimeClass(DictWrapper):
-    # No docs available.
+    """Informs listening services about change in time to allow them start new activities"""
     
     RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.events.NewTime")
     def __init__(self,
@@ -70,7 +70,7 @@ class NewTimeClass(DictWrapper):
     
     @property
     def correlationId(self) -> str:
-        # No docs available.
+        """bbbbbbbbbbbbbb"""
         return self._inner_dict.get('correlationId')  # type: ignore
     
     @correlationId.setter
@@ -99,18 +99,25 @@ class NewTimeClass(DictWrapper):
     
     
 class NewTimeAppliedClass(DictWrapper):
-    # No docs available.
+    """Only for testing purposes: confirm readiness on one of listener, and may inform about additional listeners (when additionalClients > 0)"""
     
     RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.events.NewTimeApplied")
     def __init__(self,
         correlationId: str,
+        additionalClients: Optional[Union[int, None]]=None,
     ):
         super().__init__()
         
         self.correlationId = correlationId
+        if additionalClients is None:
+            # default: None
+            self.additionalClients = self.RECORD_SCHEMA.fields_dict["additionalClients"].default
+        else:
+            self.additionalClients = additionalClients
     
     def _restore_defaults(self) -> None:
         self.correlationId = str()
+        self.additionalClients = self.RECORD_SCHEMA.fields_dict["additionalClients"].default
     
     
     @property
@@ -121,6 +128,16 @@ class NewTimeAppliedClass(DictWrapper):
     @correlationId.setter
     def correlationId(self, value: str) -> None:
         self._inner_dict['correlationId'] = value
+    
+    
+    @property
+    def additionalClients(self) -> Union[int, None]:
+        # No docs available.
+        return self._inner_dict.get('additionalClients')  # type: ignore
+    
+    @additionalClients.setter
+    def additionalClients(self, value: Union[int, None]) -> None:
+        self._inner_dict['additionalClients'] = value
     
     
 __SCHEMA_TYPES = {

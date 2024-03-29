@@ -63,28 +63,39 @@ def number_of_expected_clients() -> int:
     return int(CLIENTS)
 
 app = App()
+known_clients = number_of_expected_clients()
+
 
 async def main():
+    clients_to_confirm: int
     server = app._server
     with DaprClient() as dc:
 
         @invocation_counter
         def send(x: TimeTick):
             event = to_dto(x.now, x.correlation_id)
+            nonlocal clients_to_confirm
+            clients_to_confirm = known_clients
             d.publish(dc, "pubsub", event)
 
         service = TimeSchedulerGrpc(send)
         add_TimeSchedulerServicer_to_server(service, server)
         
         @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(events.NewTimeApplied))
-        def mytopic(event: v1.Event) -> Optional[TopicEventResponse]:
+        def onNewTimeApplied(event: v1.Event) -> Optional[TopicEventResponse]:
             as_json = cast(bytes, event.data).decode('UTF-8')
             as_dict = json.loads(as_json)
             event_typed = events.NewTimeApplied.from_obj(as_dict)
             correlation_id = event_typed.correlationId
+            additional_clients = event_typed.additionalClients or 0
+
+            nonlocal clients_to_confirm
+            logging.info(f"Additional clients: {additional_clients}")
+            clients_to_confirm = clients_to_confirm - 1 + additional_clients
+            if clients_to_confirm > 0:
+                return
 
             service.send(correlation_id)
-            pass
 
         # report_event = events.BalanceReportRequestedEvent()
         # d.publish(dc, report_event)

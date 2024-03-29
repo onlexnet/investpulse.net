@@ -7,13 +7,19 @@
 
 - [run multiple applications](https://docs.dapr.io/developing-applications/local-development/multi-app-dapr-run/multi-app-overview/)
   ```
-  dapr run -f dapr.yaml --resources-path .components
+  # metrics port to avoid clash with Prometheus
+  dapr run -f dapr.yaml
   ```
   
 - see local zipking traces:
   ```
   http://localhost:9411
   ```
+
+- run monitoring
+  - enable metrics in dapr:
+    Metrics endpoint is open by default
+    more: https://v1-10.docs.dapr.io/operations/monitoring/metrics/metrics-overview/
 
 ## used articles
 - https://grpc.io/docs/languages/python/basics/#generating-client-and-server-code

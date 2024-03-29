@@ -40,9 +40,12 @@
 	"forwardPorts": [
 		3141, // local devpi server
 		9411, // local zipkin server
+		9090, // prometheus
+		3000, // graphana
 		50000,
 		50052,
-		50054
+		50054,
+		19052, 19054, 19057
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
