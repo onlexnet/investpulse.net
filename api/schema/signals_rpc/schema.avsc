@@ -1,0 +1,33 @@
+[
+  {
+    "namespace": "onlexnet.ptn.signals.events",
+    "type": "record",
+    "name": "Order",
+    "fields": [
+      {
+        "name": "kind",
+        "type": {
+          "name": "OrderKind",
+          "type": "enum",
+          "symbols": [
+            "BUY",
+            "SELL"
+          ]
+        }
+      },
+      {
+        "name": "amount",
+        "type": "string",
+        "doc": "bbbbbbbbbbbbbb"
+      },
+      {
+        "name": "yyyymmdd",
+        "type": "int"
+      },
+      {
+        "name": "hhmm",
+        "type": "int"
+      }
+    ]
+  }
+]

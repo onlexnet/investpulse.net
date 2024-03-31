@@ -9,3 +9,6 @@ python ./utils/serialize_avro.py market_rpc
 
 python ./utils/serialize_grpc.py scheduler_rpc
 python ./utils/serialize_avro.py scheduler_rpc
+
+python ./utils/serialize_grpc.py signals_rpc
+python ./utils/serialize_avro.py signals_rpc
