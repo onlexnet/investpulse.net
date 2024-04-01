@@ -90,7 +90,6 @@ async def main():
             additional_clients = event_typed.additionalClients or 0
 
             nonlocal clients_to_confirm
-            logging.info(f"Additional clients: {additional_clients}")
             clients_to_confirm = clients_to_confirm - 1 + additional_clients
             if clients_to_confirm > 0:
                 return

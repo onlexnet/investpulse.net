@@ -28,6 +28,13 @@ apps:
     resourcesPath: ../.components
     command: [".venv/bin/python", "app.py"]
     metricsPort: 19057
+  - appID: strat-01
+    appDirPath: ./uservice-strat-01
+    appProtocol: grpc
+    appPort: 50058
+    resourcesPath: ../.components
+    command: [".venv/bin/python", "app.py"]
+    metricsPort: 19058
   # - appID: app2
   #   appDirPath: ./uservice-app2
   #   appProtocol: grpc

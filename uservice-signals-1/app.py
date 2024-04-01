@@ -32,9 +32,7 @@ def main():
         def on_TimeChangedEventClass(event: v1.Event) -> Optional[TopicEventResponse]:
 
             as_json = cast(bytes, event.data).decode('UTF-8')
-            log.info(as_json)
             as_dict = json.loads(as_json)
-            log.info(as_dict)
             assert isinstance(as_dict, dict)
 
             event_typed = market_events.MarketChangedEvent._construct(as_dict)

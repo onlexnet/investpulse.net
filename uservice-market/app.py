@@ -82,7 +82,6 @@ async def serve(df: DataFrame):
                 new_event = events.MarketChangedEvent(date=yyyymmdd, open=open, high=high, low=low, close=close, adjClose=adj_close, volume=volume)
                 additional_clients = additional_clients + 1
                 d.publish(dc, "pubsub", new_event)
-                logger.info(row)
 
 
             correlation_id = event_typed.correlationId
