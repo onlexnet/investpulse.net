@@ -104,13 +104,13 @@ class NewTimeAppliedClass(DictWrapper):
     RECORD_SCHEMA = get_schema_type("onlexnet.ptn.scheduler.events.NewTimeApplied")
     def __init__(self,
         correlationId: str,
-        additionalClients: Optional[Union[int, None]]=None,
+        additionalClients: Optional[int]=None,
     ):
         super().__init__()
         
         self.correlationId = correlationId
         if additionalClients is None:
-            # default: None
+            # default: 0
             self.additionalClients = self.RECORD_SCHEMA.fields_dict["additionalClients"].default
         else:
             self.additionalClients = additionalClients
@@ -131,12 +131,12 @@ class NewTimeAppliedClass(DictWrapper):
     
     
     @property
-    def additionalClients(self) -> Union[int, None]:
+    def additionalClients(self) -> int:
         # No docs available.
         return self._inner_dict.get('additionalClients')  # type: ignore
     
     @additionalClients.setter
-    def additionalClients(self, value: Union[int, None]) -> None:
+    def additionalClients(self, value: int) -> None:
         self._inner_dict['additionalClients'] = value
     
     
