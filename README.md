@@ -16,6 +16,15 @@
   http://localhost:9411
   ```
 
+- see kibana dashboard:
+  ```
+  # run dockerized monitoring
+  cd infra
+  docker compose up -d
+  # see results
+  http://localhost:3000
+  ```
+
 - run monitoring
   - enable metrics in dapr:
     Metrics endpoint is open by default
@@ -27,7 +36,20 @@
 - [Python grpc client and server](https://www.youtube.com/watch?v=WB37L7PjI5k)
 
 ## Known issues
-- Zipkin non working in Docker:
-  - deinstall zipkin on WSL (host machine)
-  - expose port 9411
-  - to configure DAPR <-> ZIPKIN please reopen $HOME/.dapr/config.yaml
+- AVRO deserialization in Python does not work when you import more than one module
+  - it orerrides internal globbal variable so that some definitions of serializers disappeared
+    schema_classes:
+    ```python
+    __SCHEMA_TYPES = {
+        'onlexnet.pdt.market.events.MarketChangedEvent': MarketChangedEventClass,
+        'MarketChangedEvent': MarketChangedEventClass,
+    }
+
+    _json_converter = avrojson.AvroJsonConverter(use_logical_types=False, schema_types=__SCHEMA_TYPES)
+    avrojson.set_global_json_converter(_json_converter)
+    ```
+  - solution:
+    use
+    market_events.MarketChangedEvent._construct
+    instead of 
+    market_events.MarketChangedEvent.from_obj

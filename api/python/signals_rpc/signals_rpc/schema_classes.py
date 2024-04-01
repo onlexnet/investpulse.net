@@ -37,25 +37,16 @@ __SCHEMAS = dict((n.fullname.lstrip("."), n) for n in six.itervalues(__NAMES.nam
 class OrderClass(DictWrapper):
     # No docs available.
     
-    RECORD_SCHEMA = get_schema_type("onlexnet.ptn.signals.events.Order")
+    RECORD_SCHEMA = get_schema_type("onlexnet.pdt.signals.events.Order")
     def __init__(self,
         kind: Union[str, "OrderKindClass"],
-        amount: str,
-        yyyymmdd: int,
-        hhmm: int,
     ):
         super().__init__()
         
         self.kind = kind
-        self.amount = amount
-        self.yyyymmdd = yyyymmdd
-        self.hhmm = hhmm
     
     def _restore_defaults(self) -> None:
         self.kind = OrderKindClass.BUY
-        self.amount = str()
-        self.yyyymmdd = int()
-        self.hhmm = int()
     
     
     @property
@@ -68,36 +59,6 @@ class OrderClass(DictWrapper):
         self._inner_dict['kind'] = value
     
     
-    @property
-    def amount(self) -> str:
-        """bbbbbbbbbbbbbb"""
-        return self._inner_dict.get('amount')  # type: ignore
-    
-    @amount.setter
-    def amount(self, value: str) -> None:
-        self._inner_dict['amount'] = value
-    
-    
-    @property
-    def yyyymmdd(self) -> int:
-        # No docs available.
-        return self._inner_dict.get('yyyymmdd')  # type: ignore
-    
-    @yyyymmdd.setter
-    def yyyymmdd(self, value: int) -> None:
-        self._inner_dict['yyyymmdd'] = value
-    
-    
-    @property
-    def hhmm(self) -> int:
-        # No docs available.
-        return self._inner_dict.get('hhmm')  # type: ignore
-    
-    @hhmm.setter
-    def hhmm(self, value: int) -> None:
-        self._inner_dict['hhmm'] = value
-    
-    
 class OrderKindClass(object):
     # No docs available.
     
@@ -106,8 +67,8 @@ class OrderKindClass(object):
     
     
 __SCHEMA_TYPES = {
-    'onlexnet.ptn.signals.events.Order': OrderClass,
-    'onlexnet.ptn.signals.events.OrderKind': OrderKindClass,
+    'onlexnet.pdt.signals.events.Order': OrderClass,
+    'onlexnet.pdt.signals.events.OrderKind': OrderKindClass,
     'Order': OrderClass,
     'OrderKind': OrderKindClass,
 }

@@ -52,7 +52,7 @@ class ClientsHub:
             if self.__acks_to_confirm > 0:
                 self.__acks_to_confirm -= 1
             else:
-                raise ValueError("Unexpected")
+                raise ValueError("Unexpected: more time consumers than expected")
 
         # if we are waiting for more confirmations, lets skip next step
         if self.__acks_to_confirm > 0:

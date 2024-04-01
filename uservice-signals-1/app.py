@@ -1,12 +1,8 @@
-from asyncio.log import logger
-from concurrent import futures
-from datetime import date, timedelta
-import datetime
+import onlexnet.dapr as d
+import scheduler_rpc.onlexnet.ptn.scheduler.test.events as scheduler_test
 import json
-import logging
-from logging.handlers import QueueHandler, QueueListener
+from src.logger import log
 import os
-import threading
 from typing import Optional, cast
 from dapr.clients.grpc._response import TopicEventResponse
 
@@ -14,66 +10,55 @@ from cloudevents.sdk.event import v1
 from dapr.ext.grpc import App
 
 from dapr.clients import DaprClient
-import scheduler_rpc.onlexnet.ptn.scheduler.events as events
 import onlexnet.dapr as d
-import pandas as pd
 import market_rpc.onlexnet.pdt.market.events as market_events
 # the queue is thread safe
-from queue import Queue
 
-APP_PORT=os.getenv('APP_PORT')
+import src.data as data
+from src.market import Publisher
+import src.market as market
+
+
+APP_PORT=os.getenv('APP_PORT', 8080)
 
 app = App()
 
-logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.INFO)
+def main():
+    with DaprClient() as dc:
+        # Default subscription for a topic
 
-lock = threading.Lock()
-df = pd.DataFrame()
+        sender: Publisher = lambda x: d.publish(dc, "pubsub", x)
+        @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(market_events.MarketChangedEvent))
+        def on_TimeChangedEventClass(event: v1.Event) -> Optional[TopicEventResponse]:
 
-# Default subscription for a topic
-@app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(market_events.MarketChangedEvent))
-def onTimeChangedEventClass(event: v1.Event) -> Optional[TopicEventResponse]:
+            as_json = cast(bytes, event.data).decode('UTF-8')
+            log.info(as_json)
+            as_dict = json.loads(as_json)
+            log.info(as_dict)
+            assert isinstance(as_dict, dict)
 
-    as_json = cast(bytes, event.data).decode('UTF-8')
-    as_dict = json.loads(as_json)
-    event_typed = market_events.MarketChangedEvent.from_obj(as_dict)
+            event_typed = market_events.MarketChangedEvent._construct(as_dict)
+            assert isinstance(event_typed, market_events.MarketChangedEvent)
 
-    with lock:
-        last_index = len(df)
-        df.loc[last_index] = as_dict
+            # TODO: add data only if it does not exists AND has 'close' value
+            # so that we may avoid duplicates
+            # when new data is added, create proper BUY or SELL event
 
-    logging.info("SPARTAAAAAAAAAAAAAA")
+            new_event = data.add_event(event_typed)
+            market.send(new_event, sender)
 
-    # Returning None (or not doing a return explicitly) is equivalent
-    # to returning a TopicEventResponse("success").
-    # You can also return TopicEventResponse("retry") for dapr to log
-    # the message and retry delivery later, or TopicEventResponse("drop")
-    # for it to drop the message
+            d.cont(dc, "pubsub", scheduler_test.NewTimeApplied("correlation_id", 0), event)
 
-    # store financial result raport as requested by the event
+            # Returning None (or not doing a return explicitly) is equivalent
+            # to returning a TopicEventResponse("success").
+            # You can also return TopicEventResponse("retry") for dapr to log
+            # the message and retry delivery later, or TopicEventResponse("drop")
+            # for it to drop the message
 
-    # list of name, degree, score
-    # nme = ["aparna", "pankaj", "sudhir", "Geeku"]
-    # deg = ["MBA", "BCA", "M.Tech", "MBA"]
-    # scr = [90, 40, 80, 98]
+            # store financial result raport as requested by the event
 
-    # # dictionary of lists
-    # dict = {'name': nme, 'degree': deg, 'score': scr}
-
-    # df = pd.DataFrame(dict)
-    # asset_name = "test"
-    # asset_folder = os.path.join('.reports', asset_name.lower())
-    # os.makedirs(asset_folder, exist_ok=True)  # create folder, if exists
-    # start_date = datetime()
-    # file_name = f"{start_date.strftime('%Y-%m-%d')}.csv"
-    # file_path = os.path.join(asset_folder, file_name)
-    # df.to_csv(file_path)
-
-
-    # df.to_csv()
-
-    return TopicEventResponse("success")
+            return TopicEventResponse("success")
+        app.run(int(APP_PORT))
 
 if __name__ == '__main__':
-    app.run(int(APP_PORT))
+    main()

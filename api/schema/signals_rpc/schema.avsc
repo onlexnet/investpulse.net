@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "onlexnet.ptn.signals.events",
+    "namespace": "onlexnet.pdt.signals.events",
     "type": "record",
     "name": "Order",
     "fields": [
@@ -14,19 +14,6 @@
             "SELL"
           ]
         }
-      },
-      {
-        "name": "amount",
-        "type": "string",
-        "doc": "bbbbbbbbbbbbbb"
-      },
-      {
-        "name": "yyyymmdd",
-        "type": "int"
-      },
-      {
-        "name": "hhmm",
-        "type": "int"
       }
     ]
   }

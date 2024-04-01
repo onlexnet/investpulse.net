@@ -11,10 +11,10 @@ class SpecificDatumReader(DatumReader):
     SCHEMA_TYPES = {
         "Order": OrderClass,
         ".Order": OrderClass,
-        "onlexnet.ptn.signals.events.Order": OrderClass,
+        "onlexnet.pdt.signals.events.Order": OrderClass,
         "OrderKind": OrderKindClass,
         ".OrderKind": OrderKindClass,
-        "onlexnet.ptn.signals.events.OrderKind": OrderKindClass,
+        "onlexnet.pdt.signals.events.OrderKind": OrderKindClass,
     }
     
     

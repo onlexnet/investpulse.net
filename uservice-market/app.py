@@ -15,7 +15,6 @@ from src.DaprInterceptor import add_header
 import src.YahooFinance as yf
 
 from dapr.clients import DaprClient
-from avro import datafile, io
 import market_rpc.onlexnet.pdt.market.events as events
 import scheduler_rpc.onlexnet.ptn.scheduler.events as events_scheduler
 from scheduler_rpc.schema_pb2_grpc import TimeSchedulerStub
@@ -72,20 +71,22 @@ async def serve(df: DataFrame):
             today = from_dto(yyyymmdd)
             row = df.loc[df['date'] == today]
             
+            additional_clients = 0
             if not row.empty:
-                open = df['open'].values[0]
-                high = df['high'].values[0]
-                low = df['low'].values[0]
-                close = df['close'].values[0]
-                adj_close = df['adj_close'].values[0]
-                volume = int(df['volume'].values[0])
+                open = row['open'].values[0]
+                high = row['high'].values[0]
+                low = row['low'].values[0]
+                close = row['close'].values[0]
+                adj_close = row['adj_close'].values[0]
+                volume = int(row['volume'].values[0])
                 new_event = events.MarketChangedEvent(date=yyyymmdd, open=open, high=high, low=low, close=close, adjClose=adj_close, volume=volume)
+                additional_clients = additional_clients + 1
                 d.publish(dc, "pubsub", new_event)
                 logger.info(row)
 
 
             correlation_id = event_typed.correlationId
-            d.cont(dc, "pubsub", scheduler_test.NewTimeApplied(correlation_id), event)
+            d.cont(dc, "pubsub", scheduler_test.NewTimeApplied(correlation_id, additional_clients), event)
             return TopicEventResponse(TopicEventResponseStatus.success)
 
 
