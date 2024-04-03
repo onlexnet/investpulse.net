@@ -16,12 +16,14 @@ APP_PORT=os.getenv('APP_PORT', 8080)
 
 app = App()
 
+budget = 2000 # 2000$
+
 def main():
     with DaprClient() as dc:
         # Default subscription for a topic
 
         @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(signal_events.Order))
-        def on_TimeChangedEventClass(event: v1.Event) -> Optional[TopicEventResponse]:
+        def on_Order(event: v1.Event) -> Optional[TopicEventResponse]:
 
             as_json = cast(bytes, event.data).decode('UTF-8')
             as_dict = json.loads(as_json)
