@@ -1,6 +1,6 @@
 # local dev packages
 onlexnet_scheduler==0.1.1
-onlexnet_signals==0.1.0
+onlexnet_signals==0.1.1
 onlexnet_dapr==0.0.11
 
 # to communicate with DAPR

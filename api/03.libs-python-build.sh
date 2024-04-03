@@ -1,4 +1,4 @@
-(SERVICE_NAME=onlexnet_dapr; cd ./python/$SERVICE_NAME; rm -rf dist; python setup.py sdist)
+(SERVICE_NAME=onlexnet; cd ./python/$SERVICE_NAME; rm -rf dist; python setup.py sdist)
 
 (SERVICE_NAME=agent_rpc; cd ./python/$SERVICE_NAME; rm -rf dist; python setup.py sdist)
 

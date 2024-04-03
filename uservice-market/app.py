@@ -54,7 +54,7 @@ async def serve(df: DataFrame):
 
     with DaprClient() as dc:
         @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(events_scheduler.NewTime))
-        def mytopic(event: v1.Event) -> Optional[TopicEventResponse]:
+        def on_NewTime(event: v1.Event) -> Optional[TopicEventResponse]:
             # Returning None (or not doing a return explicitly) is equivalent
             # to returning a TopicEventResponse("success").
             # You can also return TopicEventResponse("retry") for dapr to log
@@ -73,13 +73,14 @@ async def serve(df: DataFrame):
             
             additional_clients = 0
             if not row.empty:
+                when = events.datetime5(yyyymmdd, event_typed.hhmm)
                 open = row['open'].values[0]
                 high = row['high'].values[0]
                 low = row['low'].values[0]
                 close = row['close'].values[0]
                 adj_close = row['adj_close'].values[0]
                 volume = int(row['volume'].values[0])
-                new_event = events.MarketChangedEvent(date=yyyymmdd, open=open, high=high, low=low, close=close, adjClose=adj_close, volume=volume)
+                new_event = events.MarketChangedEvent(when=when, date=yyyymmdd, open=open, high=high, low=low, close=close, adjClose=adj_close, volume=volume)
                 additional_clients = additional_clients + 1
                 d.publish(dc, "pubsub", new_event)
 

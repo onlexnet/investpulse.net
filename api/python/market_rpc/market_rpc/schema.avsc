@@ -3,12 +3,50 @@
     "type": "record",
     "name": "MarketChangedEvent",
     "fields": [
-        {"name": "date", "type": "long"},
-        {"name": "open", "type": "double"},
-        {"name": "high", "type": "double"},
-        {"name": "low", "type": "double"},
-        {"name": "close", "type": "double"},
-        {"name": "adjClose", "type": "double"},
-        {"name": "volume", "type": "long"}
+        {
+            "name": "when",
+            "type": {
+                "name": "datetime5",
+                "type": "record",
+                "fields": [
+                    {
+                        "name": "yyyymmdd",
+                        "type": "int"
+                    },
+                    {
+                        "name": "hhmm",
+                        "type": "int"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "date",
+            "type": "long"
+        },
+        {
+            "name": "open",
+            "type": "double"
+        },
+        {
+            "name": "high",
+            "type": "double"
+        },
+        {
+            "name": "low",
+            "type": "double"
+        },
+        {
+            "name": "close",
+            "type": "double"
+        },
+        {
+            "name": "adjClose",
+            "type": "double"
+        },
+        {
+            "name": "volume",
+            "type": "long"
+        }
     ]
 }

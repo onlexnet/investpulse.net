@@ -1,3 +1,4 @@
+from datetime import datetime
 import onlexnet.dapr as d
 import scheduler_rpc.onlexnet.ptn.scheduler.test.events as scheduler_test
 import json
@@ -14,6 +15,7 @@ import onlexnet.dapr as d
 import market_rpc.onlexnet.pdt.market.events as market_events
 # the queue is thread safe
 
+from onlexnet.convert import from_datetime5
 import src.data as data
 from src.market import Publisher
 import src.market as market
@@ -29,7 +31,7 @@ def main():
 
         sender: Publisher = lambda x: d.publish(dc, "pubsub", x)
         @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(market_events.MarketChangedEvent))
-        def on_TimeChangedEventClass(event: v1.Event) -> Optional[TopicEventResponse]:
+        def on_MarketChangedEvent(event: v1.Event) -> Optional[TopicEventResponse]:
 
             as_json = cast(bytes, event.data).decode('UTF-8')
             as_dict = json.loads(as_json)
@@ -43,7 +45,13 @@ def main():
             # when new data is added, create proper BUY or SELL event
 
             new_event = data.add_event(event_typed)
-            market.send(new_event, sender)
+            # do not fix error of types - it works perfectly
+            # it needs to be moved to spearated place and avro deserialization should be also out of domain logic
+            when5 = market_events.datetime5._construct(event_typed.when)
+
+            when = from_datetime5(when5.yyyymmdd, when5.hhmm)
+            # now = datetime(event_typed.)
+            market.send(new_event, sender, when)
 
             d.cont(dc, "pubsub", scheduler_test.NewTimeApplied("correlation_id", 0), event)
 

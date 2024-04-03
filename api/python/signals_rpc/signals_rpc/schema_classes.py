@@ -40,13 +40,16 @@ class OrderClass(DictWrapper):
     RECORD_SCHEMA = get_schema_type("onlexnet.pdt.signals.events.Order")
     def __init__(self,
         kind: Union[str, "OrderKindClass"],
+        wnen: "datetime6Class",
     ):
         super().__init__()
         
         self.kind = kind
+        self.wnen = wnen
     
     def _restore_defaults(self) -> None:
         self.kind = OrderKindClass.BUY
+        self.wnen = datetime6Class._construct_with_defaults()
     
     
     @property
@@ -59,6 +62,16 @@ class OrderClass(DictWrapper):
         self._inner_dict['kind'] = value
     
     
+    @property
+    def wnen(self) -> "datetime6Class":
+        # No docs available.
+        return self._inner_dict.get('wnen')  # type: ignore
+    
+    @wnen.setter
+    def wnen(self, value: "datetime6Class") -> None:
+        self._inner_dict['wnen'] = value
+    
+    
 class OrderKindClass(object):
     # No docs available.
     
@@ -66,11 +79,51 @@ class OrderKindClass(object):
     SELL = "SELL"
     
     
+class datetime6Class(DictWrapper):
+    # No docs available.
+    
+    RECORD_SCHEMA = get_schema_type("onlexnet.pdt.signals.events.datetime6")
+    def __init__(self,
+        yyyymmdd: int,
+        hhmm: int,
+    ):
+        super().__init__()
+        
+        self.yyyymmdd = yyyymmdd
+        self.hhmm = hhmm
+    
+    def _restore_defaults(self) -> None:
+        self.yyyymmdd = int()
+        self.hhmm = int()
+    
+    
+    @property
+    def yyyymmdd(self) -> int:
+        # No docs available.
+        return self._inner_dict.get('yyyymmdd')  # type: ignore
+    
+    @yyyymmdd.setter
+    def yyyymmdd(self, value: int) -> None:
+        self._inner_dict['yyyymmdd'] = value
+    
+    
+    @property
+    def hhmm(self) -> int:
+        # No docs available.
+        return self._inner_dict.get('hhmm')  # type: ignore
+    
+    @hhmm.setter
+    def hhmm(self, value: int) -> None:
+        self._inner_dict['hhmm'] = value
+    
+    
 __SCHEMA_TYPES = {
     'onlexnet.pdt.signals.events.Order': OrderClass,
     'onlexnet.pdt.signals.events.OrderKind': OrderKindClass,
+    'onlexnet.pdt.signals.events.datetime6': datetime6Class,
     'Order': OrderClass,
     'OrderKind': OrderKindClass,
+    'datetime6': datetime6Class,
 }
 
 _json_converter = avrojson.AvroJsonConverter(use_logical_types=False, schema_types=__SCHEMA_TYPES)

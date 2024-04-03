@@ -4,6 +4,7 @@ from .schema_classes import _SCHEMA as get_schema_type
 from .schema_classes import _json_converter as json_converter
 from .schema_classes import OrderClass
 from .schema_classes import OrderKindClass
+from .schema_classes import datetime6Class
 from avro.io import DatumReader
 
 
@@ -15,6 +16,9 @@ class SpecificDatumReader(DatumReader):
         "OrderKind": OrderKindClass,
         ".OrderKind": OrderKindClass,
         "onlexnet.pdt.signals.events.OrderKind": OrderKindClass,
+        "datetime6": datetime6Class,
+        ".datetime6": datetime6Class,
+        "onlexnet.pdt.signals.events.datetime6": datetime6Class,
     }
     
     

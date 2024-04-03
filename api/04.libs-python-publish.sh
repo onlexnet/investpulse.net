@@ -12,5 +12,5 @@ do
     twine upload -u root --repository-url http://localhost:3141/root/dev python/$dir_name/dist/*
 done
 
-# publish additioal (not based on schemas) projects
-twine upload -u root --repository-url http://localhost:3141/root/dev python/onlexnet_dapr/dist/*
+# publish additional (not based on avro/grpc schemas) projects
+twine upload -u root --repository-url http://localhost:3141/root/dev python/onlexnet/dist/*
