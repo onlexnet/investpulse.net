@@ -10,7 +10,7 @@ def test_should_update_state():
     data.df.iloc[0:0] # clear existing data
 
     event = market_events.MarketChangedEvent(20010101, 1, 1, 1, 1, 1, 1)
-    data.add_event(event)
+    data.create_events(event)
     assert len(data.df.index) == 1
 
 def test_should_update_stateonly_once():
@@ -18,8 +18,8 @@ def test_should_update_stateonly_once():
     data.df.iloc[0:0] # clear existing data
 
     event = market_events.MarketChangedEvent(20010101, 1, 1, 1, 1, 1, 1)
-    data.add_event(event)
-    data.add_event(event)
+    data.create_events(event)
+    data.create_events(event)
     assert len(data.df.index) == 1
 
 # class DataTest(unittest.TestCase):

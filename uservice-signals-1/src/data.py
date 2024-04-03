@@ -16,7 +16,7 @@ class ORDER(Enum):
     BUY = 1,
     SELL = 2
 
-def add_event(event: market_events.MarketChangedEvent) -> ORDER:
+def create_events(event: market_events.MarketChangedEvent) -> ORDER:
     date = event.date
     with lock:
         row = df.loc[df['date'] == date]
@@ -24,7 +24,9 @@ def add_event(event: market_events.MarketChangedEvent) -> ORDER:
             last_index = len(df)
             as_dict: Any = event._inner_dict
             df.loc[last_index] = as_dict
-    
+        else:
+            return ORDER.NONE
+                        
         macd = MACD(df['close'], window_fast=12, window_slow=26, window_sign=9)
         df['macd'] = macd.macd()
         df['signal_line'] = macd.macd_signal()

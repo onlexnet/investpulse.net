@@ -44,14 +44,15 @@ def main():
             # so that we may avoid duplicates
             # when new data is added, create proper BUY or SELL event
 
-            new_event = data.add_event(event_typed)
+            new_event = data.create_events(event_typed)
             # do not fix error of types - it works perfectly
             # it needs to be moved to spearated place and avro deserialization should be also out of domain logic
             when5 = market_events.datetime5._construct(event_typed.when)
 
             when = from_datetime5(when5.yyyymmdd, when5.hhmm)
             # now = datetime(event_typed.)
-            market.send(new_event, sender, when)
+            if new_event.name != 'NONE':
+                market.send(new_event, sender, when)
 
             d.cont(dc, "pubsub", scheduler_test.NewTimeApplied("correlation_id", 0), event)
 
