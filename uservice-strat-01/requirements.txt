@@ -1,7 +1,8 @@
 # local dev packages
 onlexnet_scheduler==0.1.1
 onlexnet_signals==0.1.1
-onlexnet_dapr==0.0.11
+onlexnet==0.0.23
+onlexnet_agent==0.0.4
 
 # to communicate with DAPR
 dapr-ext-grpc==1.12.0

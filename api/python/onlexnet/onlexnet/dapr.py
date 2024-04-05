@@ -17,7 +17,7 @@ def cont(dc: DaprClient, pubsub_name: str, event: Any, reply_to: v1.Event):
   topic_name = as_topic_name(event)
   traceid, exists = reply_to.Get("traceid")
   assert exists
-  
+
   event_as_dict = event.to_avro_writable()
   as_json = json.dumps(event_as_dict)
   publish_metadata={ 'ttlInSeconds': '10', 'cloudevent.traceid': traceid}
@@ -30,4 +30,53 @@ def publish(dc: DaprClient, pubsub_name: str, event: Any, ):
   event_as_dict = event.to_avro_writable()
   as_json = json.dumps(event_as_dict)
   dc.publish_event(pubsub_name=pubsub_name, topic_name=topic_name, data = as_json, data_content_type="application/json", publish_metadata={ "ttlInSeconds": "10" })
+
+
+import collections
+import grpc
+
+class _ClientCallDetails(
+        collections.namedtuple(
+            '_ClientCallDetails',
+            ('method', 'timeout', 'metadata', 'credentials')),
+        grpc.ClientCallDetails):
+    pass
+
+class _AuthenticationInterceptor(grpc.UnaryUnaryClientInterceptor):
+    def __init__(self, interceptor_function):
+        self._fn = interceptor_function
+
+    def intercept_unary_unary(self, continuation, client_call_details, request):
+        new_details, new_request_iterator, postprocess = self._fn(
+            client_call_details, iter((request,)), False, False)
+        response = continuation(new_details, next(new_request_iterator))
+        return postprocess(response) if postprocess else response
+
+
+def add_header(header, value):
+    """Example usage:
+
+    DAPR_GRPC_PORT=os.getenv('DAPR_GRPC_PORT', 0)
+
+    interceptor_for_scheduler = add_header('dapr-app-id', 'scheduler')
+
+    channel = grpc.insecure_channel(f"localhost:{DAPR_GRPC_PORT}")
+
+    scheduler_channel = grpc.intercept_channel(channel, interceptor_for_scheduler)
+    """
+    def intercept_call(client_call_details, request_iterator, request_streaming,
+                       response_streaming):
+        metadata = []
+        if client_call_details.metadata is not None:
+            metadata = list(client_call_details.metadata)
+        metadata.append((
+            header,
+            value,
+        ))
+        client_call_details = _ClientCallDetails(
+            client_call_details.method, client_call_details.timeout, metadata,
+            client_call_details.credentials)
+        return client_call_details, request_iterator, None
+
+    return _AuthenticationInterceptor(intercept_call)
 

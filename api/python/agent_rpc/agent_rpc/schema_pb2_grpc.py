@@ -5,7 +5,7 @@ import grpc
 from . import schema_pb2 as schema__pb2
 
 
-class PingStub(object):
+class AgentStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -14,42 +14,58 @@ class PingStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.ping = channel.unary_unary(
-                '/Ping/ping',
-                request_serializer=schema__pb2.MyPingRequest.SerializeToString,
-                response_deserializer=schema__pb2.MyPingResponse.FromString,
+        self.buy = channel.unary_unary(
+                '/Agent/buy',
+                request_serializer=schema__pb2.BuyOrder.SerializeToString,
+                response_deserializer=schema__pb2.State.FromString,
+                )
+        self.sell = channel.unary_unary(
+                '/Agent/sell',
+                request_serializer=schema__pb2.SellOrder.SerializeToString,
+                response_deserializer=schema__pb2.State.FromString,
                 )
 
 
-class PingServicer(object):
+class AgentServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def ping(self, request, context):
+    def buy(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def sell(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_PingServicer_to_server(servicer, server):
+def add_AgentServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'ping': grpc.unary_unary_rpc_method_handler(
-                    servicer.ping,
-                    request_deserializer=schema__pb2.MyPingRequest.FromString,
-                    response_serializer=schema__pb2.MyPingResponse.SerializeToString,
+            'buy': grpc.unary_unary_rpc_method_handler(
+                    servicer.buy,
+                    request_deserializer=schema__pb2.BuyOrder.FromString,
+                    response_serializer=schema__pb2.State.SerializeToString,
+            ),
+            'sell': grpc.unary_unary_rpc_method_handler(
+                    servicer.sell,
+                    request_deserializer=schema__pb2.SellOrder.FromString,
+                    response_serializer=schema__pb2.State.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'Ping', rpc_method_handlers)
+            'Agent', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Ping(object):
+class Agent(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def ping(request,
+    def buy(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +75,25 @@ class Ping(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Ping/ping',
-            schema__pb2.MyPingRequest.SerializeToString,
-            schema__pb2.MyPingResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/Agent/buy',
+            schema__pb2.BuyOrder.SerializeToString,
+            schema__pb2.State.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def sell(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Agent/sell',
+            schema__pb2.SellOrder.SerializeToString,
+            schema__pb2.State.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

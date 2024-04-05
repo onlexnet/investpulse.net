@@ -2,9 +2,10 @@ from concurrent import futures
 from datetime import date, timedelta
 import datetime
 from io import BytesIO
+import json
 import logging
 import os
-from typing import Optional
+from typing import Optional, cast
 from venv import logger
 from dapr.clients.grpc._response import TopicEventResponse
 
@@ -14,18 +15,30 @@ from dapr.ext.grpc import App
 from dapr.clients import DaprClient
 from avro import datafile, io
 import scheduler_rpc.onlexnet.ptn.scheduler.events as events
+import market_rpc.onlexnet.pdt.market.events as me
 import onlexnet.dapr as d
 import pandas as pd
-
+from threading import Lock
+from agent_rpc.schema_pb2_grpc import AgentServicer, add_AgentServicer_to_server
+from agent_rpc.schema_pb2 import State, OrderBook, Finished
 
 APP_PORT=int(os.getenv('APP_PORT', 50000))
 log = logging.getLogger("myapp")
 
 app = App()
 
-# Default subscription for a topic
+class MyService(AgentServicer):
+    def buy(self, request, context):
+        log.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        return State(orderBook=OrderBook(), finished=Finished(), budget=2000)
+
+    def sell(self, request, context):
+        log.info("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+        return State(orderBook=OrderBook(), finished=Finished(), budget=2000)
+
+
 @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(events.BalanceReportRequestedEvent))
-def mytopic(event: v1.Event) -> Optional[TopicEventResponse]:
+def on_BalanceReportRequestedEvent(event: v1.Event) -> Optional[TopicEventResponse]:
     # Returning None (or not doing a return explicitly) is equivalent
     # to returning a TopicEventResponse("success").
     # You can also return TopicEventResponse("retry") for dapr to log
@@ -56,6 +69,33 @@ def mytopic(event: v1.Event) -> Optional[TopicEventResponse]:
 
     return TopicEventResponse("success")
 
+lock = Lock()
+market: dict[str, me.MarketChangedEvent] = {}
+
+def serve():
+  server = app._server
+  with DaprClient() as dp:
+    # Observer current prices to simulate buy/sell operations using last market values
+    # just to simplify operations
+    # Proper implementation (guessing prices, postponing operation) will be imlemented later on
+    @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(me.MarketChangedEvent))
+    def on_something(event: v1.Event) -> Optional[TopicEventResponse]:
+        as_json = cast(bytes, event.data).decode('UTF-8')
+        as_dict = json.loads(as_json)
+        event_typed = me.MarketChangedEvent._construct(as_dict)
+        with lock:
+            key = as_key(event_typed)
+            market[key] = event_typed
+            pass
+
+        return TopicEventResponse("success")
+
+    add_AgentServicer_to_server(MyService(), server)
+    app.run(APP_PORT)
+
+def as_key(item: me.MarketChangedEvent):
+    return f"{item.ticker}-{item.date}"
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    app.run(APP_PORT)
+    serve()

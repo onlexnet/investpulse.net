@@ -2,6 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="onlexnet",
-    version="0.0.22",
+    author="siudeks",
+    version="0.0.23",
     packages=find_packages(),
 )

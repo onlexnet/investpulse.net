@@ -40,6 +40,8 @@ class MarketChangedEventClass(DictWrapper):
     RECORD_SCHEMA = get_schema_type("onlexnet.pdt.market.events.MarketChangedEvent")
     def __init__(self,
         when: "datetime5Class",
+        ticker: str,
+        whenyyyymmddhhmm: int,
         date: int,
         open: float,
         high: float,
@@ -51,6 +53,8 @@ class MarketChangedEventClass(DictWrapper):
         super().__init__()
         
         self.when = when
+        self.ticker = ticker
+        self.whenyyyymmddhhmm = whenyyyymmddhhmm
         self.date = date
         self.open = open
         self.high = high
@@ -61,6 +65,8 @@ class MarketChangedEventClass(DictWrapper):
     
     def _restore_defaults(self) -> None:
         self.when = datetime5Class._construct_with_defaults()
+        self.ticker = str()
+        self.whenyyyymmddhhmm = int()
         self.date = int()
         self.open = float()
         self.high = float()
@@ -78,6 +84,26 @@ class MarketChangedEventClass(DictWrapper):
     @when.setter
     def when(self, value: "datetime5Class") -> None:
         self._inner_dict['when'] = value
+    
+    
+    @property
+    def ticker(self) -> str:
+        # No docs available.
+        return self._inner_dict.get('ticker')  # type: ignore
+    
+    @ticker.setter
+    def ticker(self, value: str) -> None:
+        self._inner_dict['ticker'] = value
+    
+    
+    @property
+    def whenyyyymmddhhmm(self) -> int:
+        # No docs available.
+        return self._inner_dict.get('whenyyyymmddhhmm')  # type: ignore
+    
+    @whenyyyymmddhhmm.setter
+    def whenyyyymmddhhmm(self, value: int) -> None:
+        self._inner_dict['whenyyyymmddhhmm'] = value
     
     
     @property

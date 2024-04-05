@@ -1,13 +1,30 @@
 syntax = "proto3";
 
-message MyPingRequest {
-    string message = 1;
+message BuyOrder {
+    string ticker = 1;
+    double amount = 2;
 }
 
-message MyPingResponse {
-    string message = 1;
+message SellOrder {
+  string ticker = 1;
+  double amount = 2;
 }
 
-service Ping {
-    rpc ping(MyPingRequest) returns (MyPingResponse) {}
+message OrderBook {
+
+}
+
+message Finished {
+}
+
+message State {
+  OrderBook orderBook = 1;
+  Finished finished = 2;
+  double budget = 3;
+}
+
+
+service Agent {
+    rpc buy(BuyOrder) returns (State) {}
+    rpc sell(SellOrder) returns (State) {}
 }
