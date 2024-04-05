@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\"*\n\x08\x42uyOrder\x12\x0e\n\x06ticker\x18\x01 \x01(\t\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x01\"+\n\tSellOrder\x12\x0e\n\x06ticker\x18\x01 \x01(\t\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x01\"\x0b\n\tOrderBook\"\n\n\x08\x46inished\"S\n\x05State\x12\x1d\n\torderBook\x18\x01 \x01(\x0b\x32\n.OrderBook\x12\x1b\n\x08\x66inished\x18\x02 \x01(\x0b\x32\t.Finished\x12\x0e\n\x06\x62udget\x18\x03 \x01(\x01\x32\x41\n\x05\x41gent\x12\x1a\n\x03\x62uy\x12\t.BuyOrder\x1a\x06.State\"\x00\x12\x1c\n\x04sell\x12\n.SellOrder\x1a\x06.State\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\"<\n\x08\x42uyOrder\x12\x10\n\x08\x63lientId\x18\x01 \x01(\t\x12\x0e\n\x06ticker\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x01\"=\n\tSellOrder\x12\x10\n\x08\x63lientId\x18\x01 \x01(\t\x12\x0e\n\x06ticker\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x01\"\x0b\n\tOrderBook\"\n\n\x08\x46inished\"S\n\x05State\x12\x1d\n\torderBook\x18\x01 \x01(\x0b\x32\n.OrderBook\x12\x1b\n\x08\x66inished\x18\x02 \x01(\x0b\x32\t.Finished\x12\x0e\n\x06\x62udget\x18\x03 \x01(\x01\x32\x41\n\x05\x41gent\x12\x1a\n\x03\x62uy\x12\t.BuyOrder\x1a\x06.State\"\x00\x12\x1c\n\x04sell\x12\n.SellOrder\x1a\x06.State\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,15 +22,15 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'schema_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _globals['_BUYORDER']._serialized_start=16
-  _globals['_BUYORDER']._serialized_end=58
-  _globals['_SELLORDER']._serialized_start=60
-  _globals['_SELLORDER']._serialized_end=103
-  _globals['_ORDERBOOK']._serialized_start=105
-  _globals['_ORDERBOOK']._serialized_end=116
-  _globals['_FINISHED']._serialized_start=118
-  _globals['_FINISHED']._serialized_end=128
-  _globals['_STATE']._serialized_start=130
-  _globals['_STATE']._serialized_end=213
-  _globals['_AGENT']._serialized_start=215
-  _globals['_AGENT']._serialized_end=280
+  _globals['_BUYORDER']._serialized_end=76
+  _globals['_SELLORDER']._serialized_start=78
+  _globals['_SELLORDER']._serialized_end=139
+  _globals['_ORDERBOOK']._serialized_start=141
+  _globals['_ORDERBOOK']._serialized_end=152
+  _globals['_FINISHED']._serialized_start=154
+  _globals['_FINISHED']._serialized_end=164
+  _globals['_STATE']._serialized_start=166
+  _globals['_STATE']._serialized_end=249
+  _globals['_AGENT']._serialized_start=251
+  _globals['_AGENT']._serialized_end=316
 # @@protoc_insertion_point(module_scope)

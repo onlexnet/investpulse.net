@@ -1,17 +1,18 @@
 syntax = "proto3";
 
 message BuyOrder {
-    string ticker = 1;
-    double amount = 2;
+  string clientId = 1;
+  string ticker = 2;
+  double amount = 3;
 }
 
 message SellOrder {
-  string ticker = 1;
-  double amount = 2;
+  string clientId = 1;
+  string ticker = 2;
+  double amount = 3;
 }
 
 message OrderBook {
-
 }
 
 message Finished {

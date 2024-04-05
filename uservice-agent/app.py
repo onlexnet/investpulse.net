@@ -1,3 +1,4 @@
+import asyncio
 from concurrent import futures
 from datetime import date, timedelta
 import datetime
@@ -13,13 +14,14 @@ from cloudevents.sdk.event import v1
 from dapr.ext.grpc import App
 
 from dapr.clients import DaprClient
+from dapr.aio.clients import DaprClient as DaprClientAsync
 from avro import datafile, io
 import scheduler_rpc.onlexnet.ptn.scheduler.events as events
 import market_rpc.onlexnet.pdt.market.events as me
 import onlexnet.dapr as d
 import pandas as pd
 from threading import Lock
-from agent_rpc.schema_pb2_grpc import AgentServicer, add_AgentServicer_to_server
+from agent_rpc.schema_pb2_grpc import AgentServicer, add_AgentServicer_to_server, Agent
 from agent_rpc.schema_pb2 import State, OrderBook, Finished
 
 APP_PORT=int(os.getenv('APP_PORT', 50000))
@@ -28,8 +30,12 @@ log = logging.getLogger("myapp")
 app = App()
 
 class MyService(AgentServicer):
+    def __init__(self, dapr: DaprClient) -> None:
+        self.dapr = dapr
+
     def buy(self, request, context):
         log.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        log.info(request)
         return State(orderBook=OrderBook(), finished=Finished(), budget=2000)
 
     def sell(self, request, context):
@@ -72,9 +78,16 @@ def on_BalanceReportRequestedEvent(event: v1.Event) -> Optional[TopicEventRespon
 lock = Lock()
 market: dict[str, me.MarketChangedEvent] = {}
 
-def serve():
+async def serve():
+
+  async with DaprClientAsync() as a:
+      log.info(f"{a._channel.__class__}")
+
+
+
+
   server = app._server
-  with DaprClient() as dp:
+  with DaprClient() as dapr:
     # Observer current prices to simulate buy/sell operations using last market values
     # just to simplify operations
     # Proper implementation (guessing prices, postponing operation) will be imlemented later on
@@ -90,7 +103,7 @@ def serve():
 
         return TopicEventResponse("success")
 
-    add_AgentServicer_to_server(MyService(), server)
+    add_AgentServicer_to_server(MyService(dapr), server)
     app.run(APP_PORT)
 
 def as_key(item: me.MarketChangedEvent):
@@ -98,4 +111,4 @@ def as_key(item: me.MarketChangedEvent):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    serve()
+    asyncio.run(serve())

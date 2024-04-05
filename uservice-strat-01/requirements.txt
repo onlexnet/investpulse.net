@@ -2,7 +2,7 @@
 onlexnet_scheduler==0.1.1
 onlexnet_signals==0.1.1
 onlexnet==0.0.23
-onlexnet_agent==0.0.4
+onlexnet_agent==0.0.5
 
 # to communicate with DAPR
 dapr-ext-grpc==1.12.0

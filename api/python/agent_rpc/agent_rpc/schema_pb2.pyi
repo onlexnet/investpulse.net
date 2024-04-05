@@ -5,20 +5,24 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class BuyOrder(_message.Message):
-    __slots__ = ("ticker", "amount")
+    __slots__ = ("clientId", "ticker", "amount")
+    CLIENTID_FIELD_NUMBER: _ClassVar[int]
     TICKER_FIELD_NUMBER: _ClassVar[int]
     AMOUNT_FIELD_NUMBER: _ClassVar[int]
+    clientId: str
     ticker: str
     amount: float
-    def __init__(self, ticker: _Optional[str] = ..., amount: _Optional[float] = ...) -> None: ...
+    def __init__(self, clientId: _Optional[str] = ..., ticker: _Optional[str] = ..., amount: _Optional[float] = ...) -> None: ...
 
 class SellOrder(_message.Message):
-    __slots__ = ("ticker", "amount")
+    __slots__ = ("clientId", "ticker", "amount")
+    CLIENTID_FIELD_NUMBER: _ClassVar[int]
     TICKER_FIELD_NUMBER: _ClassVar[int]
     AMOUNT_FIELD_NUMBER: _ClassVar[int]
+    clientId: str
     ticker: str
     amount: float
-    def __init__(self, ticker: _Optional[str] = ..., amount: _Optional[float] = ...) -> None: ...
+    def __init__(self, clientId: _Optional[str] = ..., ticker: _Optional[str] = ..., amount: _Optional[float] = ...) -> None: ...
 
 class OrderBook(_message.Message):
     __slots__ = ()
