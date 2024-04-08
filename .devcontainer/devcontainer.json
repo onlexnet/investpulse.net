@@ -1,78 +1,79 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "Ubuntu",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:jammy",
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	"features": {
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {
-			"moby": true,
-			"azureDnsAutoDetection": true,
-			"installDockerBuildx": true,
-			"installDockerComposeSwitch": true,
-			"version": "20.10",
-			"dockerDashComposeVersion": "v2"
-		},
-		"ghcr.io/devcontainers/features/java:1": {
-			"installMaven": true,
-			"version": "21",
-			"jdkDistro": "oracle",
-			"gradleVersion": "latest",
-			"mavenVersion": "3.8.6",
-			"antVersion": "latest",
-			"groovyVersion": "latest"
-		},
-		"ghcr.io/devcontainers/features/python:1": {
-			"installTools": true,
-			"version": "3.11"
-		},
-		"ghcr.io/dapr/cli/dapr-cli:0": {
-			"version": "latest"
-		},
-		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-			"version": "1.23",
-			"helm": "latest",
-			"minikube": "latest"
-		}
-	},
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [
-		3141, // local devpi server
-		9411, // local zipkin server
-		9090, // prometheus
-		3000, // graphana
-		50000,
-		50052,
-		50054,
-		19052, 19054, 19057
-	],
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
-	// Configure tool-specific properties.
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ms-azuretools.vscode-dapr",
-				"zxh404.vscode-proto3",
-				"vscjava.vscode-java-pack",
-				"vmware.vscode-boot-dev-pack",
-				"vmware.vscode-spring-boot",
-				"ms-python.python",
-				"dunn.redis",
-				"GitHub.vscode-pull-request-github"
-			]
-		}
-	},
-	// --network=host allows to run devpi-server
-	// "runArgs": [ "--network=host"],
-	// https://stackoverflow.com/a/75644266
-	"mounts": [
-		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh",
-		// allows to access host ports
-		// https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
-		// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
-	]
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+  "name": "Ubuntu",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "azureDnsAutoDetection": true,
+      "installDockerBuildx": true,
+      "installDockerComposeSwitch": true,
+      "version": "20.10",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "installMaven": true,
+      "version": "21",
+      "jdkDistro": "oracle",
+      "gradleVersion": "latest",
+      "mavenVersion": "3.8.6",
+      "antVersion": "latest",
+      "groovyVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "installTools": true,
+      "version": "3.12"
+    },
+    "ghcr.io/dapr/cli/dapr-cli:0": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "version": "1.23",
+      "helm": "latest",
+      "minikube": "latest"
+    }
+  },
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [
+    3141, // local devpi server
+    9411, // local zipkin server
+    9090, // prometheus
+    3000, // graphana
+    50000,
+    50052,
+    50054,
+    19052,
+    19054,
+    19057
+  ],
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // "postCreateCommand": "uname -a",
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-dapr",
+        "zxh404.vscode-proto3",
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "vmware.vscode-spring-boot",
+        "ms-python.python",
+        "dunn.redis",
+        "GitHub.vscode-pull-request-github"
+      ]
+    }
+  },
+  // --network=host allows to run devpi-server
+  // "runArgs": [ "--network=host"],
+  // https://stackoverflow.com/a/75644266
+  "mounts": [
+    "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh",
+    // allows to access host ports
+    // https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
+    // "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
+  ]
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"

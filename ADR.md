@@ -6,7 +6,7 @@ Context: We are going to share aplication events across uservices
 Decision: Use AVRO for serialization
 
 Reasons:
-- Already used in messaging like Kafka
+- Already used in messaging like Kafka, with forced schema verification
 - good tooling set to generate classes for java and python
 
 Alternatives:
@@ -40,3 +40,16 @@ Reasons:
 
 Alternatives:
 - recognize message type by extra metadata in cloudevent metadata
+
+## ADR 4
+Context: Time management
+
+Decision: Create single service 'uservice-scheduler' to emit time changes
+
+Reasons:
+- For testing purposes we need to have ability to run 'whole' system and see side effects of operations on much faster event loop that realtime as we have operations 
+
+Alternatives:
+- I do not see altertatives TBH
+
+

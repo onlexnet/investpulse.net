@@ -1,13 +1,14 @@
 import asyncio
 from concurrent import futures
+from dataclasses import dataclass
 from datetime import date, timedelta
 import datetime
 from io import BytesIO
 import json
 import logging
 import os
+import struct
 from typing import Optional, cast
-from venv import logger
 from dapr.clients.grpc._response import TopicEventResponse
 
 from cloudevents.sdk.event import v1
@@ -20,9 +21,9 @@ import scheduler_rpc.onlexnet.ptn.scheduler.events as events
 import market_rpc.onlexnet.pdt.market.events as me
 import onlexnet.dapr as d
 import pandas as pd
-from threading import Lock
 from agent_rpc.schema_pb2_grpc import AgentServicer, add_AgentServicer_to_server, Agent
-from agent_rpc.schema_pb2 import State, OrderBook, Finished
+from agent_rpc.schema_pb2 import State, OrderBook, Finished, BuyOrder, SellOrder
+from grpc._server import _Context
 
 APP_PORT=int(os.getenv('APP_PORT', 50000))
 log = logging.getLogger("myapp")
@@ -31,14 +32,17 @@ app = App()
 
 class MyService(AgentServicer):
     def __init__(self, dapr: DaprClient) -> None:
-        self.dapr = dapr
+        self._dapr = dapr
 
-    def buy(self, request, context):
+    def buy(self, request: BuyOrder, context: _Context) -> State:
         log.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        self._dapr.save_state()
         log.info(request)
+        # load current state
+
         return State(orderBook=OrderBook(), finished=Finished(), budget=2000)
 
-    def sell(self, request, context):
+    def sell(self, request: SellOrder, context: _Context) -> State:
         log.info("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
         return State(orderBook=OrderBook(), finished=Finished(), budget=2000)
 
@@ -75,16 +79,7 @@ def on_BalanceReportRequestedEvent(event: v1.Event) -> Optional[TopicEventRespon
 
     return TopicEventResponse("success")
 
-lock = Lock()
-market: dict[str, me.MarketChangedEvent] = {}
-
 async def serve():
-
-  async with DaprClientAsync() as a:
-      log.info(f"{a._channel.__class__}")
-
-
-
 
   server = app._server
   with DaprClient() as dapr:
@@ -92,14 +87,16 @@ async def serve():
     # just to simplify operations
     # Proper implementation (guessing prices, postponing operation) will be imlemented later on
     @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(me.MarketChangedEvent))
-    def on_something(event: v1.Event) -> Optional[TopicEventResponse]:
+    def on_MarketChangedEvent(event: v1.Event) -> Optional[TopicEventResponse]:
         as_json = cast(bytes, event.data).decode('UTF-8')
         as_dict = json.loads(as_json)
         event_typed = me.MarketChangedEvent._construct(as_dict)
-        with lock:
-            key = as_key(event_typed)
-            market[key] = event_typed
-            pass
+
+        ticker = event_typed.ticker
+        price = event_typed.adjClose # naive approximation just to have some proce before doing better prediction
+        date = event_typed.date
+
+        dapr.save_state("statestore", f"price:{ticker}", struct.pack('d', price))
 
         return TopicEventResponse("success")
 
