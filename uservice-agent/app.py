@@ -1,19 +1,20 @@
 import asyncio
+import asyncio.log
 from concurrent import futures
 from dataclasses import dataclass
 from datetime import date, timedelta
 import datetime
 from io import BytesIO
+import logging
 import grpc
 import grpc.experimental.aio
 import json
-import logging
 import os
 import struct
 from typing import Optional, cast
 from dapr.clients.grpc._response import TopicEventResponse
 
-from dapr.proto.runtime.v1.appcallback_pb2_grpc import AppCallbackServicer, add_AppCallbackServicer_to_server
+from dapr.proto.runtime.v1.appcallback_pb2_grpc import AppCallbackServicer, add_AppCallbackServicer_to_server, AppCallbackHealthCheckServicer, add_AppCallbackHealthCheckServicer_to_server
 import dapr.proto.runtime.v1.appcallback_pb2 as aaa
 from google.protobuf.empty_pb2 import Empty
 
@@ -30,13 +31,23 @@ from agent_rpc.schema_pb2 import State, OrderBook, Finished, BuyOrder, SellOrder
 from dapr.proto.runtime.v1.dapr_pb2 import _sym_db
 from grpc._server import _Context
 from grpc._cython.cygrpc import _ServicerContext
-from dapr.proto.common.v1 import common_pb2
-from dapr.proto.runtime.v1.appcallback_pb2_grpc import AppCallback
+from dapr.ext.grpc.app import App
 
 from src.apicallback import ListTopicSubscriptionsResponse, TopicSubscription
 
+app = App()
+
 APP_PORT=int(os.getenv('APP_PORT', 50000))
-log = logging.getLogger("myapp")
+from asyncio.log import logger as log
+
+class MyAppCallbackHealthCheckServicer(AppCallbackHealthCheckServicer):
+  async def HealthCheck(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+
+
 
 class MyCallbacks(AppCallbackServicer):
   async def OnInvoke(self, request, context):
@@ -50,6 +61,10 @@ class MyCallbacks(AppCallbackServicer):
     log.info(context.__class__)
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented! :)')
+    # sub: appcallback_v1.TopicSubscription = appcallback_v1.TopicSubscription()
+    # sub.
+    # ts1 = appcallback_v1.TopicSubscription("pubsub", topic1)
+    # return appcallback_v1.ListTopicSubscriptionsResponse([ts1])
     ts1 = TopicSubscription("pubsub", topic1)
     return ListTopicSubscriptionsResponse([ts1])
 
@@ -69,6 +84,12 @@ class MyCallbacks(AppCallbackServicer):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented! :)')
     raise NotImplementedError('Method not implemented! :)')
+
+
+@app.subscribe(pubsub_name='pubsub', topic="aaa")
+def on_aaa(event: v1.Event) -> Optional[TopicEventResponse]:
+   a = 1
+   return TopicEventResponse("success")
 
 
 class MyService(AgentServicer):
@@ -145,8 +166,10 @@ async def serve():
 
     add_AgentServicer_to_server(MyService(dapr), server)
     add_AppCallbackServicer_to_server(MyCallbacks(), server)
+    add_AppCallbackHealthCheckServicer_to_server(MyAppCallbackHealthCheckServicer(), server)
 
     await server.start()
+    app.run(int(APP_PORT))
     await server.wait_for_termination()
 
 
@@ -154,5 +177,5 @@ def as_key(item: me.MarketChangedEvent):
     return f"{item.ticker}-{item.date}"
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     asyncio.run(serve())

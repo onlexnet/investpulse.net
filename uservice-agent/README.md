@@ -9,10 +9,10 @@
 
 run the app for local testing
 ```
-dapr run --resources-path ../.components --app-protocol grpc --app-id abc --app-port 50000 python app.py
+dapr run --resources-path ../.components --app-protocol grpc --app-id app1 --app-port 50000 python app.py
 ```
 
 Send an event to the app for local testing
 ```
-dapr publish --publish-app-id abc --pubsub pubsub --topic onlexnet:v1:onlexnet.pdt.market.events.MarketChangedEvent --data '{"orderId": "100"}'
+dapr publish --publish-app-id app1 --pubsub pubsub --topic onlexnet:v1:onlexnet.pdt.market.events.MarketChangedEvent --data '{"orderId": "100"}'
 ```
