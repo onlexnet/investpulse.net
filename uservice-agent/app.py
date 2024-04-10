@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 import datetime
 from io import BytesIO
+from dapr.proto import appcallback_service_v1, common_v1, appcallback_v1
 import logging
 import grpc
 import grpc.experimental.aio
@@ -15,7 +16,6 @@ from typing import Optional, cast
 from dapr.clients.grpc._response import TopicEventResponse
 
 from dapr.proto.runtime.v1.appcallback_pb2_grpc import AppCallbackServicer, add_AppCallbackServicer_to_server, AppCallbackHealthCheckServicer, add_AppCallbackHealthCheckServicer_to_server
-import dapr.proto.runtime.v1.appcallback_pb2 as aaa
 from google.protobuf.empty_pb2 import Empty
 
 from cloudevents.sdk.event import v1
@@ -31,11 +31,9 @@ from agent_rpc.schema_pb2 import State, OrderBook, Finished, BuyOrder, SellOrder
 from dapr.proto.runtime.v1.dapr_pb2 import _sym_db
 from grpc._server import _Context
 from grpc._cython.cygrpc import _ServicerContext
-from dapr.ext.grpc.app import App
 
 from src.apicallback import ListTopicSubscriptionsResponse, TopicSubscription
 
-app = App()
 
 APP_PORT=int(os.getenv('APP_PORT', 50000))
 from asyncio.log import logger as log
@@ -57,23 +55,67 @@ class MyCallbacks(AppCallbackServicer):
 
   async def ListTopicSubscriptions(self, request: Empty, context: _ServicerContext):
     topic1 = d.as_topic_name(me.MarketChangedEvent)
-    log.info(context)
-    log.info(context.__class__)
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented! :)')
-    # sub: appcallback_v1.TopicSubscription = appcallback_v1.TopicSubscription()
-    # sub.
-    # ts1 = appcallback_v1.TopicSubscription("pubsub", topic1)
-    # return appcallback_v1.ListTopicSubscriptionsResponse([ts1])
-    ts1 = TopicSubscription("pubsub", topic1)
-    return ListTopicSubscriptionsResponse([ts1])
+    ts1 = appcallback_v1.TopicSubscription(pubsub_name = "pubsub", topic = topic1)
+    return appcallback_v1.ListTopicSubscriptionsResponse(subscriptions = [ts1])
 
-  async def OnTopicEvent(self, request, context):
-    log.info(context)
-    log.info(context.__class__)
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented1! :)')
-    raise NotImplementedError('Method not implemented1! :)')
+  class Aaa:
+    id: str # "6d85382e-5023-42d2-a146-589b104a5a91"
+    source: str # "app1"
+    type: str # "com.dapr.event.sent"
+    spec_version: str # "1.0"
+    data_content_type: str # "application/json"
+    data: str # "{\"orderId\":\"100\"}"
+    topic: str # "onlexnet:v1:onlexnet.pdt.market.events.MarketChangedEvent"
+    pubsub_name: str # "pubsub"
+# extensions {
+#   fields {
+#     key: "tracestate"
+#     value {
+#       string_value: ""
+#     }
+#   }
+#   fields {
+#     key: "traceparent"
+#     value {
+#       string_value: "00-01fb31dc3dbe3aaa9d2b372f7022df41-51a615a8ad7f14bb-01"
+#     }
+#   }
+#   fields {
+#     key: "traceid"
+#     value {
+#       string_value: "00-01fb31dc3dbe3aaa9d2b372f7022df41-51a615a8ad7f14bb-01"
+#     }
+#   }
+#   fields {
+#     key: "topic"
+#     value {
+#       string_value: "onlexnet:v1:onlexnet.pdt.market.events.MarketChangedEvent"
+#     }
+#   }
+#   fields {
+#     key: "time"
+#     value {
+#       string_value: "2024-04-10T20:42:08Z"
+#     }
+#   }
+#   fields {
+#     key: "pubsubname"
+#     value {
+#       string_value: "pubsub"
+#     }
+#   }
+  async def OnTopicEvent(self, request: appcallback_v1.TopicEventRequest, context) -> appcallback_v1.TopicEventResponse:
+    id: str = request.id # "6d85382e-5023-42d2-a146-589b104a5a91"
+    source: str = request.source # "app1"
+    type: str = request.type # "com.dapr.event.sent"
+    spec_version: str = request.spec_version # "1.0"
+    data_content_type: str = request.data_content_type # "application/json"
+    data: str = request.data # "{\"orderId\":\"100\"}"
+    topic: str = request.topic # "onlexnet:v1:onlexnet.pdt.market.events.MarketChangedEvent"
+    pubsub_name: str = request.pubsub_name # "pubsub"
+    extensions: list[tuple[str, str]] = request.extensions.items()
+
+    return appcallback_v1.TopicEventResponse(states = 0) # success
 
   async def ListInputBindings(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -84,12 +126,6 @@ class MyCallbacks(AppCallbackServicer):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented! :)')
     raise NotImplementedError('Method not implemented! :)')
-
-
-@app.subscribe(pubsub_name='pubsub', topic="aaa")
-def on_aaa(event: v1.Event) -> Optional[TopicEventResponse]:
-   a = 1
-   return TopicEventResponse("success")
 
 
 class MyService(AgentServicer):
@@ -169,7 +205,6 @@ async def serve():
     add_AppCallbackHealthCheckServicer_to_server(MyAppCallbackHealthCheckServicer(), server)
 
     await server.start()
-    app.run(int(APP_PORT))
     await server.wait_for_termination()
 
 
