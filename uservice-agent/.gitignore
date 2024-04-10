@@ -1,5 +1,5 @@
 !.venv/pip.conf
-.venv1
+.venv
 .dapr/logs
 __pycache__
 .data_cache

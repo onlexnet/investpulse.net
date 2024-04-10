@@ -1,10 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
 class MyState:
   budget: float = 0
-  owned: dict[str, int] = {}
+  owned: dict[str, int] = field(default_factory=dict)
 
 @dataclass(frozen=True)
 class ChangeBudget:

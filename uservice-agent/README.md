@@ -5,7 +5,14 @@
 - protects budget
 - creates operations raport on demand
 
-
 ## Run
 
-dapr run --app-protocol grpc --app-id abc --app-port 50000 python app.py
+run the app for local testing
+```
+dapr run --resources-path ../.components --app-protocol grpc --app-id abc --app-port 50000 python app.py
+```
+
+Send an event to the app for local testing
+```
+dapr publish --publish-app-id abc --pubsub pubsub --topic onlexnet:v1:onlexnet.pdt.market.events.MarketChangedEvent --data '{"orderId": "100"}'
+```
