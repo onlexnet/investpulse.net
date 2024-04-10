@@ -58,52 +58,7 @@ class MyCallbacks(AppCallbackServicer):
     ts1 = appcallback_v1.TopicSubscription(pubsub_name = "pubsub", topic = topic1)
     return appcallback_v1.ListTopicSubscriptionsResponse(subscriptions = [ts1])
 
-  class Aaa:
-    id: str # "6d85382e-5023-42d2-a146-589b104a5a91"
-    source: str # "app1"
-    type: str # "com.dapr.event.sent"
-    spec_version: str # "1.0"
-    data_content_type: str # "application/json"
-    data: str # "{\"orderId\":\"100\"}"
-    topic: str # "onlexnet:v1:onlexnet.pdt.market.events.MarketChangedEvent"
-    pubsub_name: str # "pubsub"
-# extensions {
-#   fields {
-#     key: "tracestate"
-#     value {
-#       string_value: ""
-#     }
-#   }
-#   fields {
-#     key: "traceparent"
-#     value {
-#       string_value: "00-01fb31dc3dbe3aaa9d2b372f7022df41-51a615a8ad7f14bb-01"
-#     }
-#   }
-#   fields {
-#     key: "traceid"
-#     value {
-#       string_value: "00-01fb31dc3dbe3aaa9d2b372f7022df41-51a615a8ad7f14bb-01"
-#     }
-#   }
-#   fields {
-#     key: "topic"
-#     value {
-#       string_value: "onlexnet:v1:onlexnet.pdt.market.events.MarketChangedEvent"
-#     }
-#   }
-#   fields {
-#     key: "time"
-#     value {
-#       string_value: "2024-04-10T20:42:08Z"
-#     }
-#   }
-#   fields {
-#     key: "pubsubname"
-#     value {
-#       string_value: "pubsub"
-#     }
-#   }
+
   async def OnTopicEvent(self, request: appcallback_v1.TopicEventRequest, context) -> appcallback_v1.TopicEventResponse:
     id: str = request.id # "6d85382e-5023-42d2-a146-589b104a5a91"
     source: str = request.source # "app1"
