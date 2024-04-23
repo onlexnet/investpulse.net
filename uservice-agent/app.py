@@ -70,7 +70,7 @@ class MyCallbacks(AppCallbackServicer):
     pubsub_name: str = request.pubsub_name # "pubsub"
     extensions: list[tuple[str, str]] = request.extensions.items()
 
-    return appcallback_v1.TopicEventResponse(states = 0) # success
+    return appcallback_v1.TopicEventResponse(status = 0) # success
 
   async def ListInputBindings(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
