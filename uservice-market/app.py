@@ -24,6 +24,7 @@ import onlexnet.dapr as d
 from dapr.ext.grpc import App
 from cloudevents.sdk.event import v1
 from dapr.clients.grpc._response import TopicEventResponseStatus, TopicEventResponse
+from onlexnet.convert import to_datetime5
 
 APP_PORT=os.getenv('APP_PORT', 50000)
 DAPR_GRPC_PORT=os.getenv('DAPR_GRPC_PORT', 0)
@@ -76,7 +77,6 @@ async def serve(df: DataFrame):
 
             additional_clients = 0
             if not row.empty:
-                when = events.datetime5(yyyymmdd, hhmm)
                 yyyymmddhhmm = yyyymmdd * 10000 + hhmm
                 open = row['open'].values[0]
                 high = row['high'].values[0]
@@ -85,7 +85,7 @@ async def serve(df: DataFrame):
                 adj_close = row['adj_close'].values[0]
                 volume = int(row['volume'].values[0])
                 ticker = row['ticker'].values[0]
-                new_event = events.MarketChangedEvent(ticker=ticker, when=when, whenyyyymmddhhmm=yyyymmddhhmm, date=yyyymmdd, open=open, high=high, low=low, close=close, adjClose=adj_close, volume=volume)
+                new_event = events.MarketChangedEvent(ticker=ticker, whenyyyymmddhhmm=yyyymmddhhmm, date=yyyymmdd, open=open, high=high, low=low, close=close, adjClose=adj_close, volume=volume)
                 additional_clients = additional_clients + 1
                 d.publish(dc, "pubsub", new_event)
 

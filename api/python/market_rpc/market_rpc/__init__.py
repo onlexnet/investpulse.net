@@ -3,7 +3,6 @@ from avrogen.dict_wrapper import DictWrapper
 from .schema_classes import _SCHEMA as get_schema_type
 from .schema_classes import _json_converter as json_converter
 from .schema_classes import MarketChangedEventClass
-from .schema_classes import datetime5Class
 from avro.io import DatumReader
 
 
@@ -12,9 +11,6 @@ class SpecificDatumReader(DatumReader):
         "MarketChangedEvent": MarketChangedEventClass,
         ".MarketChangedEvent": MarketChangedEventClass,
         "onlexnet.pdt.market.events.MarketChangedEvent": MarketChangedEventClass,
-        "datetime5": datetime5Class,
-        ".datetime5": datetime5Class,
-        "onlexnet.pdt.market.events.datetime5": datetime5Class,
     }
     
     

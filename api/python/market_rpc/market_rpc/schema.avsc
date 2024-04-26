@@ -4,23 +4,6 @@
     "name": "MarketChangedEvent",
     "fields": [
         {
-            "name": "when",
-            "type": {
-                "name": "datetime5",
-                "type": "record",
-                "fields": [
-                    {
-                        "name": "yyyymmdd",
-                        "type": "int"
-                    },
-                    {
-                        "name": "hhmm",
-                        "type": "int"
-                    }
-                ]
-            }
-        },
-        {
             "name": "ticker",
             "type": "string"
         },

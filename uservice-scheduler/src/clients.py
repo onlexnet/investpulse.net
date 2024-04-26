@@ -6,7 +6,7 @@ from typing import AsyncIterable, Awaitable, Callable, List, TypeAlias
 from uuid import uuid4
 
 from src.mapper import normalize, to_dto
-from src.models import Sender, TimeTick
+from src.models import GenerateReport, Sender, TimeTick
 import logging
 
 class ClientsHub:
@@ -19,13 +19,14 @@ class ClientsHub:
     __sender: Sender
 
 
-    def __init__(self, numer_of_clients: int, scope_from: datetime, scope_to: datetime, sender: Sender):
+    def __init__(self, numer_of_clients: int, scope_from: datetime, scope_to: datetime, sender: Sender, report: GenerateReport):
         self.number_of_clients = numer_of_clients
         self.__now = normalize(scope_from)
         self.__reported_when = datetime.now()
         self.__reported_events = 0
         self.__scope_to = scope_to
         self.__sender = sender
+        self.__report = report
 
     def add_client(self):
         """
@@ -71,6 +72,7 @@ class ClientsHub:
         now = self.__now
         if now > self.__scope_to:
             logging.info(f"End of scheduler")
+            self.__report()
             return
         
         correlation_id = str(uuid4())

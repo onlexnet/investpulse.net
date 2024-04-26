@@ -10,3 +10,4 @@ class TimeTick:
 
 Sender: TypeAlias = Callable[[TimeTick], None]
 
+GenerateReport: TypeAlias = Callable[[], None]

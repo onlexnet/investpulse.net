@@ -27,7 +27,7 @@ from grpc_reflection.v1alpha import reflection
 from src.calls import invocation_counter
 from src.clients import ClientsHub, Sender
 from src.mapper import to_dto
-from src.models import TimeTick
+from src.models import GenerateReport, TimeTick
 
 from dapr.ext.grpc import App
 
@@ -36,10 +36,10 @@ log = logging.getLogger("myapp")
 
 class TimeSchedulerGrpc(TimeSchedulerServicer):
 
-    def __init__(self, sender: Sender):
+    def __init__(self, sender: Sender, report: GenerateReport):
         start_date = datetime(2014, 1, 1)
         end_date = datetime(2023, 12, 31, 23, 59)
-        self.hub = ClientsHub(1, start_date, end_date, sender)
+        self.hub = ClientsHub(1, start_date, end_date, sender, report)
 
     def send(self, correlation_id: str):
         self.hub.on_client_ack(correlation_id)
@@ -77,8 +77,13 @@ async def main():
             nonlocal clients_to_confirm
             clients_to_confirm = known_clients
             d.publish(dc, "pubsub", event)
+        
+        def generate_report():
+            event = events.BalanceReportRequestedEvent()
+            d.publish(dc, "pubsub", event)
 
-        service = TimeSchedulerGrpc(send)
+        service = TimeSchedulerGrpc(send, generate_report)
+
         add_TimeSchedulerServicer_to_server(service, server)
         
         @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(events.NewTimeApplied))

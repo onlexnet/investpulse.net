@@ -2,3 +2,4 @@
 !.venv/pip.conf
 dist
 *.egg-info
+__pycache__

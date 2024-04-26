@@ -16,7 +16,7 @@ class ORDER(Enum):
     BUY = 1,
     SELL = 2
 
-def create_events(event: market_events.MarketChangedEvent) -> ORDER:
+def on_event(event: market_events.MarketChangedEvent) -> ORDER:
     date = event.date
     with lock:
         row = df.loc[df['date'] == date]

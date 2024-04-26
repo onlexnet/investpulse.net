@@ -48,15 +48,22 @@ class MyAppCallbackHealthCheckServicer(AppCallbackHealthCheckServicer):
 
 
 class MyCallbacks(AppCallbackServicer):
+
+  def __init__(self):
+    self.topicMarketChangedEvent = d.as_topic_name(me.MarketChangedEvent)
+    self.topicBalanceReportRequestedEvent = d.as_topic_name(events.BalanceReportRequestedEvent)
+
+     
   async def OnInvoke(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented! :)')
     raise NotImplementedError('Method not implemented! :)')
 
   async def ListTopicSubscriptions(self, request: Empty, context: _ServicerContext):
-    topic1 = d.as_topic_name(me.MarketChangedEvent)
-    ts1 = appcallback_v1.TopicSubscription(pubsub_name = "pubsub", topic = topic1)
-    return appcallback_v1.ListTopicSubscriptionsResponse(subscriptions = [ts1])
+    ts1 = appcallback_v1.TopicSubscription(pubsub_name = "pubsub", topic = self.topicMarketChangedEvent)
+    ts2 = appcallback_v1.TopicSubscription(pubsub_name = "pubsub", topic = self.topicBalanceReportRequestedEvent)
+
+    return appcallback_v1.ListTopicSubscriptionsResponse(subscriptions = [ts1, ts2])
 
 
   async def OnTopicEvent(self, request: appcallback_v1.TopicEventRequest, context) -> appcallback_v1.TopicEventResponse:
@@ -70,7 +77,13 @@ class MyCallbacks(AppCallbackServicer):
     pubsub_name: str = request.pubsub_name # "pubsub"
     extensions: list[tuple[str, str]] = request.extensions.items()
 
-    return appcallback_v1.TopicEventResponse(status = 0) # success
+    if (topic == self.topicMarketChangedEvent):
+       return appcallback_v1.TopicEventResponse(status = 0) # success
+
+    if (topic == self.topicBalanceReportRequestedEvent):
+       log.info("YEEEEEEEEEEEEEEEAHHHHHHHHHH")
+       log.info("TODO: Create balance report")
+       return appcallback_v1.TopicEventResponse(status = 0) # success
 
   async def ListInputBindings(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)

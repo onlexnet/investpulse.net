@@ -39,7 +39,6 @@ class MarketChangedEventClass(DictWrapper):
     
     RECORD_SCHEMA = get_schema_type("onlexnet.pdt.market.events.MarketChangedEvent")
     def __init__(self,
-        when: "datetime5Class",
         ticker: str,
         whenyyyymmddhhmm: int,
         date: int,
@@ -52,7 +51,6 @@ class MarketChangedEventClass(DictWrapper):
     ):
         super().__init__()
         
-        self.when = when
         self.ticker = ticker
         self.whenyyyymmddhhmm = whenyyyymmddhhmm
         self.date = date
@@ -64,7 +62,6 @@ class MarketChangedEventClass(DictWrapper):
         self.volume = volume
     
     def _restore_defaults(self) -> None:
-        self.when = datetime5Class._construct_with_defaults()
         self.ticker = str()
         self.whenyyyymmddhhmm = int()
         self.date = int()
@@ -74,16 +71,6 @@ class MarketChangedEventClass(DictWrapper):
         self.close = float()
         self.adjClose = float()
         self.volume = int()
-    
-    
-    @property
-    def when(self) -> "datetime5Class":
-        # No docs available.
-        return self._inner_dict.get('when')  # type: ignore
-    
-    @when.setter
-    def when(self, value: "datetime5Class") -> None:
-        self._inner_dict['when'] = value
     
     
     @property
@@ -176,49 +163,9 @@ class MarketChangedEventClass(DictWrapper):
         self._inner_dict['volume'] = value
     
     
-class datetime5Class(DictWrapper):
-    # No docs available.
-    
-    RECORD_SCHEMA = get_schema_type("onlexnet.pdt.market.events.datetime5")
-    def __init__(self,
-        yyyymmdd: int,
-        hhmm: int,
-    ):
-        super().__init__()
-        
-        self.yyyymmdd = yyyymmdd
-        self.hhmm = hhmm
-    
-    def _restore_defaults(self) -> None:
-        self.yyyymmdd = int()
-        self.hhmm = int()
-    
-    
-    @property
-    def yyyymmdd(self) -> int:
-        # No docs available.
-        return self._inner_dict.get('yyyymmdd')  # type: ignore
-    
-    @yyyymmdd.setter
-    def yyyymmdd(self, value: int) -> None:
-        self._inner_dict['yyyymmdd'] = value
-    
-    
-    @property
-    def hhmm(self) -> int:
-        # No docs available.
-        return self._inner_dict.get('hhmm')  # type: ignore
-    
-    @hhmm.setter
-    def hhmm(self, value: int) -> None:
-        self._inner_dict['hhmm'] = value
-    
-    
 __SCHEMA_TYPES = {
     'onlexnet.pdt.market.events.MarketChangedEvent': MarketChangedEventClass,
-    'onlexnet.pdt.market.events.datetime5': datetime5Class,
     'MarketChangedEvent': MarketChangedEventClass,
-    'datetime5': datetime5Class,
 }
 
 _json_converter = avrojson.AvroJsonConverter(use_logical_types=False, schema_types=__SCHEMA_TYPES)

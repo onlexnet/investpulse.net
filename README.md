@@ -22,7 +22,7 @@
   cd infra
   docker compose up -d
   # see results
-  http://localhost:3000
+  http://localhost:3000 (user/pass admin/admin)
   ```
 
 - run monitoring
