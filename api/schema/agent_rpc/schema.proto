@@ -1,14 +1,33 @@
 syntax = "proto3";
 
+// Buy at any price given amount on assets
 message BuyOrder {
+  // who order
   string clientId = 1;
+  // What order
   string ticker = 2;
-  double amount = 3;
+  // order option
+  oneof option {
+    BuyMax buyMax = 3;
+    BuyOne buyOne = 4;
+  }
 }
 
+// buy as much assets as you can based on available budget
+message BuyMax {
+}
+
+// buy only one asset
+message BuyOne {
+}
+
+// Sell at any price given amount on assets
 message SellOrder {
+  // who order
   string clientId = 1;
+  // What order
   string ticker = 2;
+  // how many items
   double amount = 3;
 }
 

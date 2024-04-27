@@ -14,7 +14,7 @@ from dapr.clients import DaprClient
 import onlexnet.dapr as d
 
 from agent_rpc.schema_pb2_grpc import AgentStub
-from agent_rpc.schema_pb2 import BuyOrder
+from agent_rpc.schema_pb2 import BuyOrder, BuyMax
 
 APP_PORT=os.getenv('APP_PORT', 8080)
 DAPR_GRPC_PORT=os.getenv('DAPR_GRPC_PORT', 0)
@@ -30,7 +30,7 @@ def main():
         channel = grpc.insecure_channel(f"localhost:{DAPR_GRPC_PORT}")
         agent_channel = grpc.intercept_channel(channel, agent_interceptor)
         agent = AgentStub(agent_channel)
-        agent.buy(BuyOrder(clientId=APP_ID, ticker="msft", amount=1000))
+        agent.buy(BuyOrder(clientId=APP_ID, ticker="msft", buyMax=BuyMax()))
 
         @app.subscribe(pubsub_name='pubsub', topic=d.as_topic_name(signal_events.Order))
         def on_Order(event: v1.Event) -> Optional[TopicEventResponse]:
