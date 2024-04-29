@@ -22,8 +22,9 @@ class AgentGrpcApi extends AgentGrpc.AgentImplBase {
 
     @Override
     public void buy(BuyOrder request, StreamObserver<State> responseObserver) {
-        // TODO Auto-generated method stub
-        super.buy(request, responseObserver);
+        var value = State.newBuilder().build();
+        responseObserver.onNext(value);
+        responseObserver.onCompleted();
     }
 
 }
