@@ -1,4 +1,5 @@
 {
     "python.analysis.typeCheckingMode": "basic",
-    "java.compile.nullAnalysis.mode": "disabled"
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

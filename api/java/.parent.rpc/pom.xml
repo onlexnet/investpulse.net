@@ -1,7 +1,7 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>onlexnet.ptn</groupId>
+    <groupId>onlexnet.pdt</groupId>
     <artifactId>client-parent</artifactId>
     <version>${revision}</version>
     <relativePath>../.parent/pom.xml</relativePath>
@@ -13,7 +13,7 @@
     <grpc.version>1.53.0</grpc.version>
 
     <!-- Java version used to compile protobuf. -->
-    <java.version>17</java.version>
+    <java.version>21</java.version>
   </properties>
 
   <dependencies>

@@ -6,10 +6,10 @@
     <version>${revision}</version>
     <relativePath>../.parent.rpc/pom.xml</relativePath>
   </parent>
-  <artifactId>uservice-market.rpc</artifactId>
+  <artifactId>uservice-agent.rpc</artifactId>
 
   <properties>
-    <proto.dir>../../schema/market_rpc</proto.dir>
+    <proto.dir>../../schema/agent_rpc</proto.dir>
   </properties>
 
 </project>

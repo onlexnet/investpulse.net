@@ -13,6 +13,7 @@
     <module>uservice-market.events</module>
     <module>uservice-scheduler.events</module>
     <module>uservice-signals.events</module>
+    <module>uservice-agent.rpc</module>
   </modules>
 
   <properties>

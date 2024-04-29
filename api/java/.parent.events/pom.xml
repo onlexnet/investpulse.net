@@ -1,7 +1,7 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>onlexnet.ptn</groupId>
+    <groupId>onlexnet.pdt</groupId>
     <artifactId>client-parent</artifactId>
     <version>${revision}</version>
     <relativePath>../.parent/pom.xml</relativePath>
