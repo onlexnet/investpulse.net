@@ -37,7 +37,7 @@ class GrpcServer implements RpcFacade, AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws InterruptedException {
     server.shutdownNow();
     server.awaitTermination();
   }

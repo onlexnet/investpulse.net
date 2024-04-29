@@ -1,12 +1,12 @@
 package onlexnet.demo;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.internal.GrpcUtil;
 import onlexnet.agent.rpc.BuyOrder;
 
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
@@ -21,6 +21,8 @@ public class MyTest {
         a = a.intercept(GrpcUtils.addTargetDaprApplicationId("app"));
         var channel = a.build();
         var svc = onlexnet.agent.rpc.AgentGrpc.newBlockingStub(channel);
-        svc.buy(BuyOrder.newBuilder().build());
+        var state = svc.buy(BuyOrder.newBuilder().setClientId("app").build());
+
+        Assertions.assertThat(state.getBudget()).isEqualTo(2_000);
     }
 }
