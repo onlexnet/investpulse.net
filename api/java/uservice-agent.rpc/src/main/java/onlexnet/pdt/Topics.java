@@ -10,6 +10,6 @@ public class Topics {
     private static final String SCHEMA_PREFIX_V1 = "onlexnet:v1";
 
     public static String asTopicName(Object avroEvent) {
-        return SCHEMA_PREFIX_V1 + ":" + avroEvent.getClass().getPackageName();
+        return SCHEMA_PREFIX_V1 + ":" + avroEvent.getClass().getCanonicalName();
     }
 }

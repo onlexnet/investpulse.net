@@ -10,8 +10,8 @@ services:
       "--app-port", "${APP_PORT}",
       "--app-protocol", "grpc",
       "--dapr-grpc-port", "${DAPR_GRPC_PORT}",
-      "--enable-app-health-check", "true",
-      "--app-health-probe-interval", "1",
+      # "--enable-app-health-check", "true",
+      # "--app-health-probe-interval", "1",
       "--placement-host-address", "placement:50006", # Dapr's placement service can be reach via the docker DNS entry
       "--components-path", "./components"
      ]
