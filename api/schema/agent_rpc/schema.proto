@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option java_multiple_files = true;
 option java_package = "onlexnet.agent.rpc";
-option java_outer_classname = "OnlexNetAgent";
 
 // Buy at any price given amount on assets
 message BuyOrder {
@@ -36,9 +35,11 @@ message SellOrder {
 }
 
 message OrderBook {
+  repeated BuyOrder orders = 1;
 }
 
 message Finished {
+
 }
 
 message State {

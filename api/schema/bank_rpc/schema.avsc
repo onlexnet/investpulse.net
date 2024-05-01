@@ -1,0 +1,15 @@
+{
+    "namespace": "onlexnet.pdt.bank.events",
+    "type": "record",
+    "name": "BankAccountStateChanged",
+    "fields": [
+        {
+            "name": "clientId",
+            "type": "string"
+        },
+        {
+            "name": "accountState",
+            "type": "double"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>onlexnet.pdt</groupId>
+    <artifactId>client-events-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../.parent.events/pom.xml</relativePath>
+  </parent>
+  <artifactId>uservice-bank.events</artifactId>
+
+  <properties>
+    <avro.dir>../../schema/bank_rpc</avro.dir>
+  </properties>
+
+</project>

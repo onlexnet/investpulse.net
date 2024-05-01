@@ -14,9 +14,11 @@ import lombok.experimental.Accessors;
 import onlexnet.agent.rpc.AgentGrpc;
 import onlexnet.agent.rpc.BuyOrder;
 import onlexnet.agent.rpc.State;
+import onlexnet.pdt.bank.events.BankAccountStateChanged;
 
 @Component
-class AgentGrpcApi extends AgentGrpc.AgentImplBase {
+class AgentService extends AgentGrpc.AgentImplBase
+        implements EventListener<onlexnet.pdt.bank.events.BankAccountStateChanged> {
 
     // TODO use DAPR KV storage instead of local Map
     private Map<Store.ClientKey, Store.ClientValue> state = new ConcurrentHashMap<>();
@@ -24,7 +26,7 @@ class AgentGrpcApi extends AgentGrpc.AgentImplBase {
     @PostConstruct
     void init() {
         var key = new Store.ClientKey().clientId("app");
-        var value = new Store.ClientValue().budget(BigDecimal.valueOf(2_000));
+        var value = new Store.ClientValue().budget(BigDecimal.ZERO);
         state.put(key, value);
     }
 
@@ -37,6 +39,19 @@ class AgentGrpcApi extends AgentGrpc.AgentImplBase {
         var response = State.newBuilder().setBudget(budget.doubleValue()).build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public Class<BankAccountStateChanged> getEventClass() {
+        return BankAccountStateChanged.class;
+    }
+
+    @Override
+    public void onEvent(BankAccountStateChanged event) {
+        var budget = event.getAccountState();
+        var key = new Store.ClientKey().clientId("app");
+        var value = new Store.ClientValue().budget(BigDecimal.valueOf(budget));
+        state.put(key, value);
     }
 
 }

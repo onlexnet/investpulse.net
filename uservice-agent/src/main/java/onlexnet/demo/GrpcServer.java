@@ -1,6 +1,7 @@
 package onlexnet.demo;
 
 import java.util.OptionalInt;
+import java.util.concurrent.Executors;
 
 import org.springframework.stereotype.Component;
 
@@ -10,7 +11,6 @@ import io.grpc.ServerBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +25,9 @@ class GrpcServer implements RpcFacade, AutoCloseable {
   @SneakyThrows
   public void start() {
     var port = grpcProperties.getServerPort();
-    var builder = ServerBuilder.forPort(port);
+    var builder = ServerBuilder
+        .forPort(port);
+    // .executor(Executors.newVirtualThreadPerTaskExecutor());
     for (var bindableService : services) {
       builder.addService(bindableService);
     }

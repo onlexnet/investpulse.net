@@ -14,6 +14,7 @@
     <module>uservice-scheduler.events</module>
     <module>uservice-signals.events</module>
     <module>uservice-agent.rpc</module>
+    <module>uservice-bank.events</module>
   </modules>
 
   <properties>

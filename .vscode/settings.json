@@ -18,5 +18,6 @@
         ],
         "scanLimit": 200
     },
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "java.compile.nullAnalysis.mode": "automatic"
 }
