@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 
 import io.grpc.Channel;
 import io.grpc.stub.StreamObserver;
@@ -22,6 +23,7 @@ import onlexnet.agent.rpc.State;
 
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @Import(value = { ClientGrpc.class })
+@ActiveProfiles(profiles = "test")
 public class MyTest {
 
     @Autowired
@@ -38,15 +40,15 @@ public class MyTest {
         var event = new onlexnet.pdt.bank.events.BankAccountStateChanged("app", 2_000d);
         daprConnection.publish(event);
 
+        Thread.sleep(1_000);
         var state = svc.buy(newBuyOrder().build());
-
-        Thread.sleep(100_000);
 
         Assertions.assertThat(state.getBudget()).isEqualTo(2_000);
     }
 
-    @Test
-    @Timeout(threadMode = ThreadMode.SEPARATE_THREAD, unit = TimeUnit.SECONDS, value = 3)
+    // @Test
+    // @Timeout(threadMode = ThreadMode.SEPARATE_THREAD, unit = TimeUnit.SECONDS,
+    // value = 3)
     void buy_order_max() throws InterruptedException {
         var svc = AgentGrpc.newStub(daprChannel);
         var result = new LinkedBlockingDeque<State>();

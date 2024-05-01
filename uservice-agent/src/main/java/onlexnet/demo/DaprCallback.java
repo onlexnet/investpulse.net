@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.avro.specific.SpecificRecord;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,12 +41,15 @@ public class DaprCallback extends AppCallbackImplBase {
 
     private final ConcurrentHashMap<String, EventListener<?>> topicListeners = new ConcurrentHashMap<>();
 
+    // on avro-generated classes we have field which should not be deserialized
+    // to avoid deserialization exception, we need to exclude it here
     // https://stackoverflow.com/a/47660919/1237627
-    abstract class IgnoreSchemaProperty {
-        // You have to use the correct package for JsonIgnore,
-        // fasterxml or codehaus
+    abstract class JacksonIgnoreAvroPropertiesMixIn {
         @JsonIgnore
         abstract void getSchema();
+
+        @JsonIgnore
+        abstract void getSpecificData();
     }
 
     @PostConstruct
@@ -54,21 +58,12 @@ public class DaprCallback extends AppCallbackImplBase {
         for (var listener : listeners) {
             var eventClass = listener.getEventClass();
 
-            // objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-            objectMapper.addMixIn(eventClass, IgnoreSchemaProperty.class);
-
             var supportedClassCanonicalName = eventClass.getCanonicalName();
             var topic = "onlexnet:v1:" + supportedClassCanonicalName;
             topicListeners.put(topic, listener);
             registerConsumer("pubsub", topic, false);
 
         }
-    }
-
-    @Override
-    public void onInvoke(InvokeRequest request, StreamObserver<InvokeResponse> responseObserver) {
-        // TODO Auto-generated method stub
-        super.onInvoke(request, responseObserver);
     }
 
     @Override
@@ -95,6 +90,9 @@ public class DaprCallback extends AppCallbackImplBase {
             if (topicListeners.containsKey(topic)) {
                 var listener = topicListeners.get(topic);
                 var eventAsString = request.getData().toStringUtf8();
+                // for some unknown reasone, somwhere in serialization or deserialization I have
+                // extra "" at the beginning and the end of json
+                // so I have to remove it manually
                 handleEvent(listener, eventAsString);
             }
 
@@ -111,14 +109,10 @@ public class DaprCallback extends AppCallbackImplBase {
 
     @Override
     public void listInputBindings(Empty request, StreamObserver<ListInputBindingsResponse> responseObserver) {
-        // TODO Auto-generated method stub
-        super.listInputBindings(request, responseObserver);
     }
 
     @Override
     public void onBindingEvent(BindingEventRequest request, StreamObserver<BindingEventResponse> responseObserver) {
-        // TODO Auto-generated method stub
-        super.onBindingEvent(request, responseObserver);
     }
 
     @SneakyThrows

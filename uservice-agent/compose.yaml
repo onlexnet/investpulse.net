@@ -19,5 +19,4 @@ services:
       - ${DAPR_GRPC_PORT}:${DAPR_GRPC_PORT}
     volumes:
       - "../.components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
-      - "./.secrets/:/.secrets:ro"
     network_mode: host

@@ -38,7 +38,12 @@ class DaprConnectionImpl implements DaprConnection, AutoCloseable {
     var topicName = onlexnet.pdt.Topics.asTopicName(event);
 
     var body = objectMapper.writeValueAsString(event);
-    var a = client.publishEvents("pubsub", topicName, "application/json", List.of(body));
+
+    // interesting observation: if contentType is application/json, it adds at
+    // deserializatrion stage at dapr level additional quotes and the beginning
+    // and the end of message, so deserialization fails.
+    // using text/plain make it working
+    var a = client.publishEvents("pubsub", topicName, "text/plain", List.of(body));
     a.block();
   }
 
