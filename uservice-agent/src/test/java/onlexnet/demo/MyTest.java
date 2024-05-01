@@ -38,6 +38,7 @@ public class MyTest {
         var svc = AgentGrpc.newBlockingStub(daprChannel);
 
         var event = new onlexnet.pdt.bank.events.BankAccountStateChanged("app", 2_000d);
+        Thread.sleep(1_000);
         daprConnection.publish(event);
 
         Thread.sleep(1_000);
