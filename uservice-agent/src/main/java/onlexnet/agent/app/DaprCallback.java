@@ -1,10 +1,9 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.avro.specific.SpecificRecord;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,8 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Empty;
 
 import io.dapr.v1.AppCallbackGrpc.AppCallbackImplBase;
-import io.dapr.v1.CommonProtos.InvokeRequest;
-import io.dapr.v1.CommonProtos.InvokeResponse;
 import io.dapr.v1.DaprAppCallbackProtos;
 import io.dapr.v1.DaprAppCallbackProtos.BindingEventRequest;
 import io.dapr.v1.DaprAppCallbackProtos.BindingEventResponse;

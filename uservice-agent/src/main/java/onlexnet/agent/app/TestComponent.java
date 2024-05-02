@@ -1,4 +1,4 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import org.springframework.stereotype.Component;
 

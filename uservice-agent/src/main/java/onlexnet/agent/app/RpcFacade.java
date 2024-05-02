@@ -1,4 +1,4 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import java.util.OptionalInt;
 
@@ -7,4 +7,3 @@ public interface RpcFacade {
 
     OptionalInt getServerPort();
 }
-  

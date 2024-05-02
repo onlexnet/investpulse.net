@@ -1,16 +1,14 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.Timeout.ThreadMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.grpc.Channel;
@@ -20,6 +18,7 @@ import onlexnet.agent.rpc.AgentGrpc;
 import onlexnet.agent.rpc.BuyOne;
 import onlexnet.agent.rpc.BuyOrder;
 import onlexnet.agent.rpc.State;
+import onlexnet.pdt.bank.events.BankAccountStateChanged;
 
 @SpringBootTest(webEnvironment = WebEnvironment.NONE)
 @Import(value = { ClientGrpc.class })
@@ -32,16 +31,18 @@ public class MyTest {
     @Autowired
     DaprConnection daprConnection;
 
+    @Autowired
+    Environment env;
+
     @Test
     @SneakyThrows
     void buy_order_without_amount() {
+
         var svc = AgentGrpc.newBlockingStub(daprChannel);
 
-        var event = new onlexnet.pdt.bank.events.BankAccountStateChanged("app", 2_000d);
-        Thread.sleep(1_000);
+        var event = new BankAccountStateChanged("app", 2_000d);
         daprConnection.publish(event);
 
-        Thread.sleep(1_000);
         var state = svc.buy(newBuyOrder().build());
 
         Assertions.assertThat(state.getBudget()).isEqualTo(2_000);

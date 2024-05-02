@@ -1,8 +1,10 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
 import org.springframework.modulith.docs.Documenter;
+
+import onlexnet.agent.App;
 
 class ModularityTests {
 

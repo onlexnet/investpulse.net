@@ -1,4 +1,4 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;

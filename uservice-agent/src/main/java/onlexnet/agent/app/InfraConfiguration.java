@@ -1,4 +1,4 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import org.apache.avro.specific.SpecificRecord;
 import org.springframework.context.annotation.Bean;
@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.jackson.datatype.protobuf.ProtobufModule;
 
-import onlexnet.demo.DaprCallback.JacksonIgnoreAvroPropertiesMixIn;
+import onlexnet.agent.app.DaprCallback.JacksonIgnoreAvroPropertiesMixIn;
 
 @Configuration
 class InfraConfiguration {

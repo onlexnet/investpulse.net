@@ -1,4 +1,4 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import java.util.OptionalInt;
 import java.util.concurrent.Executors;
@@ -26,8 +26,8 @@ class GrpcServer implements RpcFacade, AutoCloseable {
   public void start() {
     var port = grpcProperties.getServerPort();
     var builder = ServerBuilder
-        .forPort(port);
-    // .executor(Executors.newVirtualThreadPerTaskExecutor());
+        .forPort(port)
+        .executor(Executors.newVirtualThreadPerTaskExecutor());
     for (var bindableService : services) {
       builder.addService(bindableService);
     }

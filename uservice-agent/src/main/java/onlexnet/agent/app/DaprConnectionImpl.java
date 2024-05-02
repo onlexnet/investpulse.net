@@ -1,4 +1,4 @@
-package onlexnet.demo;
+package onlexnet.agent.app;
 
 import java.util.List;
 
@@ -43,8 +43,8 @@ class DaprConnectionImpl implements DaprConnection, AutoCloseable {
     // deserializatrion stage at dapr level additional quotes and the beginning
     // and the end of message, so deserialization fails.
     // using text/plain make it working
-    var a = client.publishEvents("pubsub", topicName, "text/plain", List.of(body));
-    a.block();
+    var callResult = client.publishEvents("pubsub", topicName, "text/plain", List.of(body));
+    callResult.block();
   }
 
 }

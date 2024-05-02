@@ -1,4 +1,4 @@
-package onlexnet.demo;
+package onlexnet.agent.domain;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import onlexnet.agent.app.EventListener;
 import onlexnet.agent.rpc.AgentGrpc;
 import onlexnet.agent.rpc.BuyOrder;
 import onlexnet.agent.rpc.State;
