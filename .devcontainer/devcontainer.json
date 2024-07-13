@@ -3,7 +3,11 @@
 {
   "name": "Ubuntu",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+  // "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "build": {
+    // Path is relative to the devcontainer.json file.
+    "dockerfile": "Dockerfile"
+  },
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
@@ -62,7 +66,8 @@
         "vmware.vscode-spring-boot",
         "ms-python.python",
         "dunn.redis",
-        "GitHub.vscode-pull-request-github"
+        "GitHub.vscode-pull-request-github",
+        "jebbs.plantuml"
       ]
     }
   },
