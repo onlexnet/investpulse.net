@@ -35,9 +35,9 @@
       "version": "latest"
     },
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-      "version": "1.23",
-      "helm": "latest",
-      "minikube": "latest"
+      "version": "1.30",
+      "helm": "3.14",
+      "minikube": "1.33.1"
     }
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -67,7 +67,8 @@
         "ms-python.python",
         "dunn.redis",
         "GitHub.vscode-pull-request-github",
-        "jebbs.plantuml"
+        "jebbs.plantuml",
+        "ms-kubernetes-tools.vscode-kubernetes-tools"
       ]
     }
   },
