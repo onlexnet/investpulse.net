@@ -1,0 +1,16 @@
+apiVersion: v2
+name: onlexnet-infra-dev
+description: Shared infrastructure DEV components for OnLex.net projects
+
+type: application
+
+version: 0.1.0
+
+appVersion: 0.1.0
+
+dependencies:
+
+- name: nexus3
+  version: "4.45.0"
+  repository: file://charts/nexus3
+

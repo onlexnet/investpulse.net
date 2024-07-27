@@ -1,0 +1,12 @@
+{
+    "terminal.integrated.profiles.linux": {
+        "bash": {
+            "path": "bash",
+            "icon": "terminal-bash",
+            "args": [
+                "--rcfile",
+                "./init.sh",
+            ]
+        },
+    },
+}
