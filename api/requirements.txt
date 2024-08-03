@@ -17,3 +17,6 @@ setuptools==69.1.1
 
 # required to generate classes from avro definition
 avro-gen3==0.7.12
+
+# required to create http requests
+requests

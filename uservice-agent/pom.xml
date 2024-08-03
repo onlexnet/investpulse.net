@@ -18,10 +18,10 @@
 		<spring-modulith.version>1.1.3</spring-modulith.version>
 	</properties>
 	<dependencies>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 		<groupId>com.hubspot.jackson</groupId>
@@ -94,6 +94,23 @@
 			<artifactId>spring-boot-docker-compose</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+
+		<!-- We do not use database, but transactiontemplate (side effect of having jpa) is required when we use Scenario fro module testing -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-data-jdbc</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+
+
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

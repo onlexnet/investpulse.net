@@ -13,8 +13,8 @@ apps:
     appDirPath: ./uservice-agent
     appProtocol: grpc
     appPort: 50051
-    command: [".venv/bin/python", "app.py"]
     metricsPort: 19051
+    command: ["mvn", "spring-boot:run", "-ntp"]
   - appID: market
     appDirPath: ./uservice-market
     appProtocol: grpc

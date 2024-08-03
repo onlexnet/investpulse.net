@@ -53,7 +53,7 @@
     19054,
     19057
   ],
-  // Use 'postCreateCommand' to run commands after the container is created.
+  // Use 'postCreateCommand' to run commands after the container is created. 
   // "postCreateCommand": "uname -a",
   // Configure tool-specific properties.
   "customizations": {

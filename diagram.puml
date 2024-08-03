@@ -1,12 +1,24 @@
+' https://github.com/plantuml-stdlib/C4-PlantUML
+
+
 @startuml Basic Sample
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
 Person(admin, "Administrator")
-System_Boundary(c1, "Sample System") {
-    Container(web_app, "Web Application", "C#, ASP.NET Core 2.1 MVC", "Allows users to compare multiple Twitter timelines")
-}
-System(twitter, "Twitter")
 
-Rel(admin, web_app, "Uses", "HTTPS")
+System_Boundary(c1, "Predective training") {
+
+    Container(edge_telegram, "Telegram endpoint", "Java 21", "Handles interaction with external users via Telegram API and converts them to local messaging.")
+
+    Container(edge_webapp, "Web Application", "Python Streamlit", "Simple US to interact with the application.")
+
+    Container(web_app, "Scheduler", "Python", "Generates time sygnals for the platform, used instead of real time and allow to speedup processes in platform testing.")
+}
+
+System(twitter, "Twitter (example)")
+
+Rel(admin, edge_telegram, "Uses", "aaaaaaaaaaaa")
+Rel(admin, edge_webapp, "Uses")
+
 Rel(web_app, twitter, "Gets tweets from", "HTTPS")
 @enduml

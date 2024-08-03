@@ -1,0 +1,21 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "disabled",
+    "terminal.integrated.profiles.linux": {
+        "bash": {
+            "path": "bash",
+            "icon": "terminal-bash",
+            "args": [
+                "--rcfile",
+                "./init.sh",
+            ]
+        },
+    },
+    "java.test.config": {
+        "envFile": "${workspaceFolder}/.env",
+        "env": {
+            "SPRING_PROFILES_ACTIVE": "test"
+        }
+    },
+    "terminal.integrated.defaultProfile.linux": "bash"
+}

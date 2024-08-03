@@ -14,13 +14,14 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\"l\n\x08\x42uyOrder\x12\x10\n\x08\x63lientId\x18\x01 \x01(\t\x12\x0e\n\x06ticker\x18\x02 \x01(\t\x12\x19\n\x06\x62uyMax\x18\x03 \x01(\x0b\x32\x07.BuyMaxH\x00\x12\x19\n\x06\x62uyOne\x18\x04 \x01(\x0b\x32\x07.BuyOneH\x00\x42\x08\n\x06option\"\x08\n\x06\x42uyMax\"\x08\n\x06\x42uyOne\"=\n\tSellOrder\x12\x10\n\x08\x63lientId\x18\x01 \x01(\t\x12\x0e\n\x06ticker\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x01\"\x0b\n\tOrderBook\"\n\n\x08\x46inished\"S\n\x05State\x12\x1d\n\torderBook\x18\x01 \x01(\x0b\x32\n.OrderBook\x12\x1b\n\x08\x66inished\x18\x02 \x01(\x0b\x32\t.Finished\x12\x0e\n\x06\x62udget\x18\x03 \x01(\x01\x32\x41\n\x05\x41gent\x12\x1a\n\x03\x62uy\x12\t.BuyOrder\x1a\x06.State\"\x00\x12\x1c\n\x04sell\x12\n.SellOrder\x1a\x06.State\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cschema.proto\"l\n\x08\x42uyOrder\x12\x10\n\x08\x63lientId\x18\x01 \x01(\t\x12\x0e\n\x06ticker\x18\x02 \x01(\t\x12\x19\n\x06\x62uyMax\x18\x03 \x01(\x0b\x32\x07.BuyMaxH\x00\x12\x19\n\x06\x62uyOne\x18\x04 \x01(\x0b\x32\x07.BuyOneH\x00\x42\x08\n\x06option\"\x08\n\x06\x42uyMax\"\x08\n\x06\x42uyOne\"=\n\tSellOrder\x12\x10\n\x08\x63lientId\x18\x01 \x01(\t\x12\x0e\n\x06ticker\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x01\"&\n\tOrderBook\x12\x19\n\x06orders\x18\x01 \x03(\x0b\x32\t.BuyOrder\"\n\n\x08\x46inished\"S\n\x05State\x12\x1d\n\torderBook\x18\x01 \x01(\x0b\x32\n.OrderBook\x12\x1b\n\x08\x66inished\x18\x02 \x01(\x0b\x32\t.Finished\x12\x0e\n\x06\x62udget\x18\x03 \x01(\x01\x32\x41\n\x05\x41gent\x12\x1a\n\x03\x62uy\x12\t.BuyOrder\x1a\x06.State\"\x00\x12\x1c\n\x04sell\x12\n.SellOrder\x1a\x06.State\"\x00\x42\x16\n\x12onlexnet.agent.rpcP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'schema_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
-  DESCRIPTOR._options = None
+  _globals['DESCRIPTOR']._options = None
+  _globals['DESCRIPTOR']._serialized_options = b'\n\022onlexnet.agent.rpcP\001'
   _globals['_BUYORDER']._serialized_start=16
   _globals['_BUYORDER']._serialized_end=124
   _globals['_BUYMAX']._serialized_start=126
@@ -30,11 +31,11 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_SELLORDER']._serialized_start=146
   _globals['_SELLORDER']._serialized_end=207
   _globals['_ORDERBOOK']._serialized_start=209
-  _globals['_ORDERBOOK']._serialized_end=220
-  _globals['_FINISHED']._serialized_start=222
-  _globals['_FINISHED']._serialized_end=232
-  _globals['_STATE']._serialized_start=234
-  _globals['_STATE']._serialized_end=317
-  _globals['_AGENT']._serialized_start=319
-  _globals['_AGENT']._serialized_end=384
+  _globals['_ORDERBOOK']._serialized_end=247
+  _globals['_FINISHED']._serialized_start=249
+  _globals['_FINISHED']._serialized_end=259
+  _globals['_STATE']._serialized_start=261
+  _globals['_STATE']._serialized_end=344
+  _globals['_AGENT']._serialized_start=346
+  _globals['_AGENT']._serialized_end=411
 # @@protoc_insertion_point(module_scope)
