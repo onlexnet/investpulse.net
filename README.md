@@ -1,7 +1,7 @@
 # predictivetrading.net
 
 ## Decisions
-- use minikube for local hosting to have whole system working and under control
+- use minikube for local hosting to have whole system working on builds based on source files
   - enable [ingress-dns so that we can use services via ingress instead of node ports](https://minikube.sigs.k8s.io/docs/handbook/addons/ingress-dns/)
 - use [DAPR multi-app run](https://docs.dapr.io/developing-applications/local-development/multi-app-dapr-run/multi-app-overview/)
 
