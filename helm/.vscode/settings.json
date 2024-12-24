@@ -1,6 +1,6 @@
 {
     "terminal.integrated.profiles.linux": {
-        "bash": {
+        "helm bash": {
             "path": "bash",
             "icon": "terminal-bash",
             "args": [
@@ -9,4 +9,5 @@
             ]
         },
     },
+    "terminal.integrated.defaultProfile.linux": "helm bash"
 }

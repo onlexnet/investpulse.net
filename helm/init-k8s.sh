@@ -1,6 +1,5 @@
-# usage: 
-# to test locally script on namespace dev01 use
-# . init.sh dev
+# Scripts allows quickly define handful aliases for kubectl and helm
+# Example usage: . init-k8s.sh onlexnet-ptn-dev
 # so later on you may use aliases
 # k == kubectl --namespace onlexnet-ptn-dev
 # h == helm --namespace onlexnet-ptn-dev
@@ -11,4 +10,4 @@ alias k="kc --namespace $namespace"
 alias h="helm --namespace $namespace"
 
 # examples how to use aliases:
-# istall application -> h install pdn ./main/
+# install application -> h install pdn ./main/

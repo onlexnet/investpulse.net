@@ -1,9 +1,25 @@
 # predictivetrading.net
 
-## Decisions
+# The goal
+Solution to simulate market movements based on real data to evaluate some buy / sell algorithms.
+
+## Technical decisions
+- use kubernetes as target platform for hosting microservices
+- use OpenTelementry as observability
 - use minikube for local hosting to have whole system working on builds based on source files
-  - enable [ingress-dns so that we can use services via ingress instead of node ports](https://minikube.sigs.k8s.io/docs/handbook/addons/ingress-dns/)
+  - enable addon [ingress-dns so that we can use services via ingress instead of node ports](https://minikube.sigs.k8s.io/docs/handbook/addons/ingress-dns/)
 - use [DAPR multi-app run](https://docs.dapr.io/developing-applications/local-development/multi-app-dapr-run/multi-app-overview/)
+
+## Infrastructure parts
+- be sure minikube is working
+
+
+## Testing
+- run the whole system
+  ```bash
+  minikube start # to run hosting platform
+  
+  ```
 
 ## add minikube ingress services to dns
 After each restart, when infra-dev is installer, integrate ingress with local DNS so that you can invoke services by its designed dns name
