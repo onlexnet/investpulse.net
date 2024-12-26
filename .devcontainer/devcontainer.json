@@ -3,7 +3,16 @@
 {
 	"name": "Ubuntu",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+	"dockerComposeFile": [
+		"docker-compose.yml"
+	],
+	// The 'service' property is the name of the service for the container that VS Code should
+	// use. Update this value and .devcontainer/docker-compose.yml to the real service name.
+	"service": "your-service-name-here",
+
+	// The optional 'workspaceFolder' property is the path VS Code should open by default when
+	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
+	"workspaceFolder": "/workspace",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
@@ -14,6 +23,10 @@
 			"version": "20.10",
 			"dockerDashComposeVersion": "v2"
 		},
+		"ghcr.io/devcontainers/features/python:1": {
+			"installTools": true,
+			"version": "3.11.11"
+		},
 		"ghcr.io/devcontainers/features/java:1": {
 			"installMaven": true,
 			"version": "21",
@@ -23,13 +36,9 @@
 			"antVersion": "latest",
 			"groovyVersion": "latest"
 		},
-		"ghcr.io/devcontainers/features/python:1": {
-			"installTools": true,
-			"version": "3.11"
-		},
-		"ghcr.io/dapr/cli/dapr-cli:0": {
-			"version": "latest"
-		},
+		// "ghcr.io/dapr/cli/dapr-cli:0": {
+		// 	"version": "latest"
+		// },
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
 			"version": "1.23",
 			"helm": "latest",
@@ -37,9 +46,9 @@
 		}
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [
-		3141 // local devpi server
-	],
+	// "forwardPorts": [
+	// 	3141 // local devpi server
+	// ],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
 	// Configure tool-specific properties.
@@ -60,13 +69,13 @@
 	// --network=host allows to run devpi-server
 	// "runArgs": [ "--network=host"],
 	// https://stackoverflow.com/a/75644266
-	"mounts": [
-		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh",
-		// allows to access host ports
-		// https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
-		// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
-	],
+	// "mounts": [
+	// 	"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh",
+	// 	// allows to access host ports
+	// 	// https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
+	// 	// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
+	// ],
 
-	// Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	// // Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	// "remoteUser": "vscode"
 }
