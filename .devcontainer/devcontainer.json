@@ -69,12 +69,12 @@
 	// --network=host allows to run devpi-server
 	// "runArgs": [ "--network=host"],
 	// https://stackoverflow.com/a/75644266
-	// "mounts": [
-	// 	"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh",
-	// 	// allows to access host ports
-	// 	// https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
-	// 	// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
-	// ],
+	"mounts": [
+		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/root/.ssh",
+		// allows to access host ports
+		// https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
+		// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
+	],
 
 	// // Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	// "remoteUser": "vscode"
