@@ -12,7 +12,7 @@
 
 	// The optional 'workspaceFolder' property is the path VS Code should open by default when
 	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
-	"workspaceFolder": "/workspace",
+	"workspaceFolder": "/predictivetrading.net",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
@@ -66,8 +66,12 @@
 			]
 		}
 	},
-	// --network=host allows to run devpi-server
-	// "runArgs": [ "--network=host"],
+
+	"hostRequirements": {
+		// it should allow to use GPU in devcontainer, but I'm not sure if it works
+		"gpu": true
+	},
+
 	// https://stackoverflow.com/a/75644266
 	"mounts": [
 		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/root/.ssh",
