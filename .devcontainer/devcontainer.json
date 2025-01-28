@@ -17,13 +17,17 @@
 	"features": {
 		// "ghcr.io/devcontainers-extra/features/podman-homebrew:1": {
 		// },
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {
-			"moby": true,
-			"azureDnsAutoDetection": true,
-			"installDockerBuildx": true,
-			"installDockerComposeSwitch": true,
-			"version": "20.10",
-			"dockerDashComposeVersion": "v2"
+		// "ghcr.io/devcontainers/features/docker-in-docker:2": {
+		// 	"moby": true,
+		// 	"azureDnsAutoDetection": true,
+		// 	"installDockerBuildx": true,
+		// 	"installDockerComposeSwitch": true,
+		// 	"version": "20.10",
+		// 	"dockerDashComposeVersion": "v2"
+		// },
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+		},
+		"ghcr.io/devcontainers/features/node:1": {
 		},
 		// "ghcr.io/devcontainers/features/python:1": {
 		// 	"installTools": true,
@@ -42,9 +46,9 @@
 		// // 	"version": "latest"
 		// // },
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-			"version": "1.32",
-			"helm": "latest",
-			"minikube": "latest"
+			"version": "1.32", // Select or enter a Kubernetes version to install
+			"helm": "latest", // Select or enter a Helm version to install
+			"minikube": "latest" // Select or enter a Minikube version to install
 		}
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

@@ -9,7 +9,7 @@ services:
     # ensure the UID and GID of the container user you create matches your local user. 
     # See https://aka.ms/vscode-remote/containers/non-root for details.
     #
-    # user: vscode
+    user: worker
 
     # Uncomment if you want to override the service's Dockerfile to one in the .devcontainer 
     # folder. Note that the path of the Dockerfile and context is relative to the *primary* 
@@ -38,7 +38,7 @@ services:
     command: /bin/sh -c "while sleep 1000; do :; done"
     
     # other definitions
-    extra_hosts: 
-      # This maps your localhost from your machine host to a name host.docker.internal. Now substitute all occurrences of localhost to host.docker.internal and it's done!
-      # So if you've been connecting to your database using localhost:27017 as the conn URL, you'll need to change it to host.docker.internal:27071, for example.
-      - "host.docker.internal:host-gateway"
+    # extra_hosts: 
+    #   # This maps your localhost from your machine host to a name host.docker.internal. Now substitute all occurrences of localhost to host.docker.internal and it's done!
+    #   # So if you've been connecting to your database using localhost:27017 as the conn URL, you'll need to change it to host.docker.internal:27071, for example.
+    #   - "host.docker.internal:host-gateway"
