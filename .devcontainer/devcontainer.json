@@ -15,6 +15,8 @@
 	"workspaceFolder": "/predictivetrading.net",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
+		// "ghcr.io/devcontainers-extra/features/podman-homebrew:1": {
+		// },
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
 			"moby": true,
 			"azureDnsAutoDetection": true,
@@ -23,24 +25,24 @@
 			"version": "20.10",
 			"dockerDashComposeVersion": "v2"
 		},
-		"ghcr.io/devcontainers/features/python:1": {
-			"installTools": true,
-			"version": "3.11.11"
-		},
-		"ghcr.io/devcontainers/features/java:1": {
-			"installMaven": true,
-			"version": "21",
-			"jdkDistro": "oracle",
-			"gradleVersion": "latest",
-			"mavenVersion": "3.8.6",
-			"antVersion": "latest",
-			"groovyVersion": "latest"
-		},
-		// "ghcr.io/dapr/cli/dapr-cli:0": {
-		// 	"version": "latest"
+		// "ghcr.io/devcontainers/features/python:1": {
+		// 	"installTools": true,
+		// 	"version": "3.11.11"
 		// },
+		// "ghcr.io/devcontainers/features/java:1": {
+		// 	"installMaven": true,
+		// 	"version": "21",
+		// 	"jdkDistro": "oracle",
+		// 	"gradleVersion": "latest",
+		// 	"mavenVersion": "3.8.6",
+		// 	"antVersion": "latest",
+		// 	"groovyVersion": "latest"
+		// },
+		// // "ghcr.io/dapr/cli/dapr-cli:0": {
+		// // 	"version": "latest"
+		// // },
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-			"version": "1.23",
+			"version": "1.32",
 			"helm": "latest",
 			"minikube": "latest"
 		}

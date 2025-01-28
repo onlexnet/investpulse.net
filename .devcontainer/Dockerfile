@@ -1,2 +1,16 @@
 FROM ubuntu:22.04
-RUN apt update && apt upgrade -y && apt install openssh-client -y
+RUN apt update && apt upgrade -y && apt install openssh-client sudo -y
+
+# Let use some unsername instead of default root
+RUN useradd -ms /bin/bash worker
+
+#  Add new user worker to sudo group
+RUN adduser worker sudo
+
+# Ensure sudo group users are not 
+# asked for a password when using 
+# sudo command by ammending sudoers file
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Switch to the worker user
+USER worker

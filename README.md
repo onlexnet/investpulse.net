@@ -6,11 +6,5 @@
 
 ## Hints
 
-- run app stack
-  ```
-  dapr run -f dapr.yaml
-  ```
-- see local zipking traces:
-  ```
-  http://localhost:9411
-  ```
+- run minikube
+- install Kafka
