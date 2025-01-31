@@ -42,3 +42,14 @@ services:
     #   # This maps your localhost from your machine host to a name host.docker.internal. Now substitute all occurrences of localhost to host.docker.internal and it's done!
     #   # So if you've been connecting to your database using localhost:27017 as the conn URL, you'll need to change it to host.docker.internal:27071, for example.
     #   - "host.docker.internal:host-gateway"
+
+  # minikube:
+  #   image: gcr.io/k8s-minikube/kicbase:v0.0.30
+  #   privileged: true
+  #   command: /bin/sh -c "while sleep 1000; do :; done"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - /var/lib/minikube:/var/lib/minikube
+  #   environment:
+  #     - CHANGE_MINIKUBE_NONE_USER=true
+  #     - KUBECONFIG=/var/lib/minikube/kubeconfig

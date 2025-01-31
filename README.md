@@ -7,4 +7,20 @@
 ## Hints
 
 - run minikube
-- install Kafka
+  - if error *... failed to get current CoreDNS ...*
+    ```
+    minikube status: 
+    minikube
+    type: Control Plane
+    host: Running
+    kubelet: Running
+    apiserver: Stopped
+    kubeconfig: Configured
+    ```
+  - try to fix
+    ```
+    minikube stop
+    minikube delete
+    minikube start
+    ```
+- [Install Kafka using Helm](https://bitnami.com/stack/kafka/helm)

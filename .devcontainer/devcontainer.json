@@ -1,62 +1,54 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "Ubuntu",
+	"name": "predictivetrading.net",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"dockerComposeFile": [
-		"docker-compose.yml"
+		"docker-compose.yaml"
 	],
 	// The 'service' property is the name of the service for the container that VS Code should
 	// use. Update this value and .devcontainer/docker-compose.yml to the real service name.
 	"service": "your-service-name-here",
-
 	// The optional 'workspaceFolder' property is the path VS Code should open by default when
 	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
 	"workspaceFolder": "/predictivetrading.net",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
-		// "ghcr.io/devcontainers-extra/features/podman-homebrew:1": {
-		// },
-		// "ghcr.io/devcontainers/features/docker-in-docker:2": {
-		// 	"moby": true,
-		// 	"azureDnsAutoDetection": true,
-		// 	"installDockerBuildx": true,
-		// 	"installDockerComposeSwitch": true,
-		// 	"version": "20.10",
-		// 	"dockerDashComposeVersion": "v2"
-		// },
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"enableNonRootDocker": "true",
+			"moby": "true"
 		},
-		"ghcr.io/devcontainers/features/node:1": {
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/devcontainers/features/python:1": {
+			"installTools": true,
+			"version": "3.11.11"
 		},
-		// "ghcr.io/devcontainers/features/python:1": {
-		// 	"installTools": true,
-		// 	"version": "3.11.11"
-		// },
-		// "ghcr.io/devcontainers/features/java:1": {
-		// 	"installMaven": true,
-		// 	"version": "21",
-		// 	"jdkDistro": "oracle",
-		// 	"gradleVersion": "latest",
-		// 	"mavenVersion": "3.8.6",
-		// 	"antVersion": "latest",
-		// 	"groovyVersion": "latest"
-		// },
-		// // "ghcr.io/dapr/cli/dapr-cli:0": {
-		// // 	"version": "latest"
-		// // },
+		"ghcr.io/devcontainers/features/java:1": {
+			"installMaven": true,
+			"version": "21",
+			"jdkDistro": "oracle",
+			"gradleVersion": "latest",
+			"mavenVersion": "3.8.6",
+			"antVersion": "latest",
+			"groovyVersion": "latest"
+		},
+		"ghcr.io/dapr/cli/dapr-cli:0": {
+			"version": "latest"
+		},
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-			"version": "1.32", // Select or enter a Kubernetes version to install
+			"version": "latest", // Select or enter a Kubernetes version to install
 			"helm": "latest", // Select or enter a Helm version to install
 			"minikube": "latest" // Select or enter a Minikube version to install
-		}
+		},
+		"ghcr.io/dhoeric/features/k9s:1": {
+		},
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [
 	// 	3141 // local devpi server
 	// ],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
+	"postCreateCommand": "minikube start --driver=docker",
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
@@ -72,20 +64,17 @@
 			]
 		}
 	},
-
-	"hostRequirements": {
-		// it should allow to use GPU in devcontainer, but I'm not sure if it works
-		"gpu": true
-	},
-
+	// "hostRequirements": {
+	// 	// it should allow to use GPU in devcontainer, but I'm not sure if it works
+	// 	"gpu": true
+	// },
 	// https://stackoverflow.com/a/75644266
 	"mounts": [
-		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/root/.ssh",
+		// "type=bind,source=/home/${localEnv:USER}/.ssh,target=/root/.ssh",
 		// allows to access host ports
 		// https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
 		// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
 	],
-
 	// // Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	// "remoteUser": "vscode"
 }
