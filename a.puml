@@ -1,0 +1,21 @@
+@startuml
+node "User" {
+  [Client App]
+}
+
+node "Cloud" {
+  node "Message Broker" {
+    [Kafka] 
+    [RabbitMQ]
+  }
+}
+
+node "Backend Services" {
+  [Service A]
+  [Service B]
+}
+
+[Client App] -> [Service A]
+[Service A] -> [Kafka] : Publish Event
+[Kafka] -> [Service B] : Consume Event
+@enduml

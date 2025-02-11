@@ -60,7 +60,9 @@
 				"vmware.vscode-spring-boot",
 				"ms-python.python",
 				// to observe local redis instance used by DAPR
-				"dunn.redis"
+				"dunn.redis",
+				// VisualVM to monito JFR events
+				"oracle-labs-graalvm.visualvm-vscode"
 			]
 		}
 	},

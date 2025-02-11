@@ -1,5 +1,11 @@
 FROM ubuntu:22.04
-RUN apt update && apt upgrade -y && apt install openssh-client sudo -y
+RUN apt update && apt upgrade -y && apt install -y \
+    openssh-client \
+    sudo \
+    # require graphviz to run PlantUML vscode plugin
+    # more: https://plantuml.com/graphviz-dot
+    graphviz
+
 
 # Let use some unsername instead of default root
 RUN useradd -ms /bin/bash worker
