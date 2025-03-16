@@ -23,4 +23,4 @@
     minikube delete
     minikube start
     ```
-- [Install Kafka using Helm](https://bitnami.com/stack/kafka/helm)
+- Install local services using terraform in infra subdir

@@ -42,13 +42,20 @@
 		},
 		"ghcr.io/dhoeric/features/k9s:1": {
 		},
+        "ghcr.io/devcontainers/features/terraform:1": {
+            "version": "1.10.3"
+        },
+        "ghcr.io/dhoeric/features/terraform-docs:1": {
+            "version": "latest"
+        }
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [
-	// 	3141 // local devpi server
-	// ],
+	"forwardPorts": [
+		// 3141 // local devpi server
+		9092 // exposed from Minikube Kafka
+	],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "minikube start --driver=docker",
+	"postCreateCommand": "minikube delete && minikube start",
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
@@ -72,7 +79,7 @@
 	// },
 	// https://stackoverflow.com/a/75644266
 	"mounts": [
-		// "type=bind,source=/home/${localEnv:USER}/.ssh,target=/root/.ssh",
+		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/worker/.ssh",
 		// allows to access host ports
 		// https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
 		// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"

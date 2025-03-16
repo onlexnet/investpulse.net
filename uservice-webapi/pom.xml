@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.2</version>
+		<version>3.4.3</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>onlexnet</groupId>
@@ -14,24 +14,21 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>webapi</name>
 	<description>Demo project for Spring Boot</description>
-	<url />
-	<licenses>
-		<license />
-	</licenses>
-	<developers>
-		<developer />
-	</developers>
-	<scm>
-		<connection />
-		<developerConnection />
-		<tag />
-		<url />
-	</scm>
+
 	<properties>
 		<java.version>21</java.version>
-		<graphql-dgs-platform-dependencies.version>10.0.3</graphql-dgs-platform-dependencies.version>
+		<graphql-dgs-platform-dependencies.version>10.0.4</graphql-dgs-platform-dependencies.version>
+		<jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
+		<fgjs>5.3.0</fgjs>
 	</properties>
+
 	<dependencies>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
@@ -43,7 +40,7 @@
 		<dependency>
 			<groupId>com.apollographql.federation</groupId>
 			<artifactId>federation-graphql-java-support</artifactId>
-			<version>5.3.0</version>
+			<version>${fgjs}</version>
 		</dependency>
 
 
@@ -53,11 +50,14 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--
+		Not required as skaffold rebuild the app each run
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		 -->
 
 		<dependency>
 			<groupId>com.netflix.graphql.dgs.codegen</groupId>
@@ -78,52 +78,51 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
+			<!--
+				Required for GQL subscriptions
+				https://stackoverflow.com/questions/74169967/simple-spring-graphql-subscription-returning-error
+			-->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka-test</artifactId>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>io.github.deweyjose</groupId>
-				<artifactId>graphqlcodegen-maven-plugin</artifactId>
-				<version>1.61.5</version>
-				<executions>
-					<execution>
-						<id>dgs-codegen</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<schemaPaths>
-								<param>src/main/resources/schema</param>
-							</schemaPaths>
-							<packageName>onlexnet.webapi.codegen</packageName>
-							<addGeneratedAnnotation>true</addGeneratedAnnotation>
-						</configuration>
-					</execution>
-				</executions>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>${jib-maven-plugin.version}</version>
+				<configuration>
+					<from>
+					<!--
+						Instead of name, we use sha from eclipse-temurin:17.0.4
+						https://hub.docker.com/layers/library/eclipse-temurin/17.0.4.1_1-jre-alpine/images/sha256-e1506ba20f0cb2af6f23e24c7f8855b417f0b085708acd9b85344a884ba77767?context=explore
+					-->
+					<!-- <image>eclipse-temurin:17.0.4.1_1-jre-alpine@sha256:e1506ba20f0cb2af6f23e24c7f8855b417f0b085708acd9b85344a884ba77767</image> -->
+					<!-- https://hub.docker.com/layers/bellsoft/liberica-runtime-container/jdk-21-crac-cds-slim-glibc/images/sha256-3830fb998313fc7300e6ae5b75783ac18c681b3ac1b6a0bbc8de4fc5fcd951dd -->
+					<image>bellsoft/liberica-runtime-container:jdk-21-crac-cds-slim-glibc@sha256:b161f1bc74e9094bba909c9ba3bfab4cc37f34c02999bc8776779bec8e76a43a</image>
+					</from>
+	                  <!-- We don't want jib to execute on this module-->
+    	              <!-- <skip>true</skip> -->
+				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>add-dgs-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>${project.build.directory}/generated-sources</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

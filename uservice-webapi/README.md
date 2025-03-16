@@ -2,6 +2,19 @@ Single entry point to access available services
 
 Run locally:
 ```bash
-mvn spring-boot:run
-http://localhost:8080/graphiql
+socat TCP-LISTEN:80,fork TCP:$(minikube ip):80 & # http
+socat TCP-LISTEN:9094,fork TCP:$(minikube ip):9094 & # kafka external
+skaffold dev
+
+http://localhost:80/graphiql
 ```
+
+  # example: to build images to locally deploy to k8s
+  # 1) Optionally change context to work on minikube images
+  eval $(minikube docker-env)
+  # 2) to build image and push it to local k8s instance
+  mvn jib:dockerBuild -pl host clean install -DskipTests
+  mvn jib:dockerBuild -pl host -Dimage=sinnet.azurecr.io/uservice-projects-host:latest
+  mvn jib:dockerBuild -pl initdb-host clean install -DskipTests
+  mvn jib:dockerBuild -pl initdb-host -Dimage=sinnet.azurecr.io/uservice-projects-initdb
+

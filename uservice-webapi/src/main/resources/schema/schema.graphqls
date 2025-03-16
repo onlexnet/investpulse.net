@@ -2,7 +2,16 @@ type Query {
     hello: Hello
 }
 
+type Subscription {
+    stocks: Stock
+}
+
 type Hello {
     text: String!
+}
+
+type Stock {
+    name: String
+    value: Int
 }
 
