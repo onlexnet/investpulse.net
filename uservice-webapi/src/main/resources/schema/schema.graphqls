@@ -3,15 +3,11 @@ type Query {
 }
 
 type Subscription {
-    stocks: Stock
+    timer: String
 }
 
 type Hello {
     text: String!
 }
 
-type Stock {
-    name: String
-    value: Int
-}
 

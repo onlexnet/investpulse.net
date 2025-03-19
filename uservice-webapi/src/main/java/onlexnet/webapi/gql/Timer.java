@@ -1,6 +1,7 @@
 package onlexnet.webapi.gql;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.reactivestreams.Publisher;
@@ -16,9 +17,8 @@ public class Timer {
     AtomicInteger a = new AtomicInteger();
 
     @DgsSubscription
-    public Publisher<Stock> stocks() {
-        return Flux.interval(Duration.ofSeconds(1)).map(t -> new Stock("NFLX", 500 + a.incrementAndGet()));
+    public Publisher<String> timer() {
+        return Flux.interval(Duration.ofSeconds(1)).map(t -> LocalDateTime.now().toString());
     }
 }
 
-record Stock(String name, int value) { }
