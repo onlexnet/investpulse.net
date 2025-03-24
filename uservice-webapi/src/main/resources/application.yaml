@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: webapi
+  main:
+    banner-mode: off
+  jmx:
+    enabled: false
+  # required to enable websockets on GQL subscriptions
+  graphql.websocket.path: /graphql
+  threads.virtual.enabled: true
+
+logging.level:
+  org.springframework.kafka: DEBUG
+
+
+# https://netflix.github.io/dgs/advanced/virtual-threads/#virtual-threads-jdk-21
+dgs.graphql.virtualthreads.enabled: true
+
+
+spring.kafka:
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+  consumer:
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+    group-id: moja-grupa
+    auto-offset-reset: earliest
+        
+
+        
+

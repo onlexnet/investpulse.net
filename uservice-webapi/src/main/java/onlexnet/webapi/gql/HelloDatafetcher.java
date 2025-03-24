@@ -12,12 +12,14 @@ public class HelloDatafetcher {
 
   @DgsQuery
   public Hello hello(DataFetchingEnvironment dataFetchingEnvironment) {
-    return new Hello().setText("Hello world!");
+    var result = new Hello();
+    result.setText("Hello world!");
+    return result;
+  }
+
+  @Data
+  public static class Hello {
+    private String text;
   }
 }
 
-@Data
-@Accessors(chain = true)
-class Hello {
-  String text;
-}

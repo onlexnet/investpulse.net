@@ -4,7 +4,7 @@ Run locally:
 ```bash
 socat TCP-LISTEN:80,fork TCP:$(minikube ip):80 & # http
 socat TCP-LISTEN:9094,fork TCP:$(minikube ip):9094 & # kafka external
-skaffold dev
+skaffold dev --skip-tests
 
 http://localhost:80/graphiql
 ```
@@ -18,3 +18,6 @@ http://localhost:80/graphiql
   mvn jib:dockerBuild -pl initdb-host clean install -DskipTests
   mvn jib:dockerBuild -pl initdb-host -Dimage=sinnet.azurecr.io/uservice-projects-initdb
 
+
+## Useful links
+- [Kafka example with Java](https://www.youtube.com/watch?v=u0kRK-qbopk)

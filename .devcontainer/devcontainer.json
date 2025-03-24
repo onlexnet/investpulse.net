@@ -29,7 +29,6 @@
 			"jdkDistro": "oracle",
 			"gradleVersion": "latest",
 			"mavenVersion": "3.8.6",
-			"antVersion": "latest",
 			"groovyVersion": "latest"
 		},
 		"ghcr.io/dapr/cli/dapr-cli:0": {

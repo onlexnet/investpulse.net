@@ -1,12 +1,8 @@
 # Available values https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
 
-provider "kubernetes" {
-  config_path = "~/.kube/config"
-}
-
-provider "helm" {
-  kubernetes {
-    config_path = "~/.kube/config"
+resource "kubernetes_namespace" "kafka" {
+  metadata {
+    name = "kafka"
   }
 }
 
@@ -14,7 +10,7 @@ resource "helm_release" "kafka" {
   name       = "kafka"
   repository = "oci://registry-1.docker.io/bitnamicharts"
   chart      = "kafka"
-  version    = "31.5.0"
+  version    = "31.3.0"
   # namespace  = kubernetes_namespace.kafka.metadata[0].name
 
   set {
@@ -65,4 +61,3 @@ resource "helm_release" "kafka" {
   }
 
 }
-

@@ -1,0 +1,41 @@
+provider "helm" {
+  kubernetes {
+    host                   = "${data.kubernetes_cluster.minikube.endpoint}"
+    client_certificate     = "${data.kubernetes_cluster.minikube.client_certificate}"
+    client_key             = "${data.kubernetes_cluster.minikube.client_key}"
+    cluster_ca_certificate = "${data.kubernetes_cluster.minikube.cluster_ca_certificate}"
+  }
+}
+
+data "kubernetes_cluster" "minikube" {}
+
+resource "helm_release" "kafka" {
+  name       = "kafka"
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "kafka"
+  namespace  = "default"
+  version    = "25.2.0"  # Wybierz odpowiednią wersję
+
+  set {
+    name  = "zookeeper.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "replicaCount"
+    value = "1"
+  }
+}
+
+resource "helm_release" "schema_registry" {
+  name       = "schema-registry"
+  repository = "https://packages.confluent.io/helm"
+  chart      = "cp-schema-registry"
+  namespace  = "default"
+  version    = "0.8.0"  # Wybierz odpowiednią wersję
+
+  set {
+    name  = "kafka.bootstrapServers"
+    value = "PLAINTEXT://kafka.default.svc.cluster.local:9092"
+  }
+}

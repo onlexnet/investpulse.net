@@ -3,8 +3,10 @@ type Query {
 }
 
 type Subscription {
-    timer: String
+    timer: DateTime
 }
+
+scalar DateTime
 
 type Hello {
     text: String!

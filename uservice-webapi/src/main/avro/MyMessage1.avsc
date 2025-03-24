@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "name": "MyMessage",
+  "namespace": "onlexnet.webapi.avro",
+  "fields": [
+    {
+      "name": "date8",
+      "type": "int",
+      "doc": "date as int value yyyyMMdd"
+    },
+    {
+      "name": "time6",
+      "type": "int",
+      "doc": "time as int value HHmmss"
+    }
+  ],
+  "doc:": "A basic schema for storing thecodebuzz blogs messages"
+}
