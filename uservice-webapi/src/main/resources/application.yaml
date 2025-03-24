@@ -26,7 +26,7 @@ spring.kafka:
     value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
     group-id: moja-grupa
     auto-offset-reset: earliest
-        
-
+  properties:
+    schema.registry.url: http://192.168.49.2:30081
         
 
