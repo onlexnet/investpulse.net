@@ -19,14 +19,20 @@ dgs.graphql.virtualthreads.enabled: true
 
 spring.kafka:
   producer:
+    bootstrap-servers: PLAINTEXT://kafka.default.svc.cluster.local:9092
     key-serializer: org.apache.kafka.common.serialization.StringSerializer
     value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
   consumer:
+    bootstrap-servers: PLAINTEXT://kafka.default.svc.cluster.local:9092
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
     group-id: moja-grupa
-    auto-offset-reset: earliest
+    auto-offset-reset: latest
+    value-deserializer.specific.avro.reader: true
+    specific.avro.reader: true
+    properties:
+      specific.avro.reader: true        
   properties:
-    schema.registry.url: http://192.168.49.2:30081
+    schema.registry.url: http://schema-registry-for-avro.default.svc.cluster.local:8081
         
 

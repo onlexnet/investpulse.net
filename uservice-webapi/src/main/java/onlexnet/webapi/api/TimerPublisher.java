@@ -26,7 +26,7 @@ final class TimerPublisher implements AutoCloseable {
             .subscribe(it -> {
                 var now = LocalDateTime.now();
                 var event = TimeEvent.of(now);
-                kafkaTemplate.send("timer-topic", event);
+                kafkaTemplate.send("timer-topic-1", event);
             });
         disposer.add(timerDisposer);
     }

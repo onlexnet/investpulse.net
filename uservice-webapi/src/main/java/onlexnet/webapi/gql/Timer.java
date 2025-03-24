@@ -11,6 +11,7 @@ import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsSubscription;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import onlexnet.webapi.api.TimeEvent;
 import onlexnet.webapi.avro.MyMessage;
 import reactor.core.publisher.Flux;
@@ -18,6 +19,7 @@ import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.FluxSink.OverflowStrategy;
 
 @DgsComponent
+@Slf4j
 public class Timer {
 
   FluxSink<MyMessage> proxy;
@@ -26,9 +28,11 @@ public class Timer {
   @PostConstruct
   void init() {
     listener = Flux.<MyMessage>create(it -> this.proxy = it, OverflowStrategy.BUFFER);
+    listener.subscribe();
+    log.error("SPARTAAAAAAAAAAAAA {}", proxy);
   }
 
-  @KafkaListener(topics = "timer-topic")
+  @KafkaListener(topics = "timer-topic-1")
   public void onEvent(ConsumerRecord<String, MyMessage> eventRecord) {
     var event = eventRecord.value();
     proxy.next(event);

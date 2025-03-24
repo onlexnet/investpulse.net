@@ -1,6 +1,6 @@
 resource "kubernetes_service" "schema_registry" {
   metadata {
-    name      = "schema-registry-for-avro"
+    name      = "schema-registry-for-avro-np"
     namespace = "default"
   }
 
@@ -16,6 +16,27 @@ resource "kubernetes_service" "schema_registry" {
       port        = 8081
       target_port = 8081
       node_port   = 30081 # Możesz zmienić na dowolny dostępny port
+    }
+  }
+}
+
+resource "kubernetes_service" "schema_registry_internal" {
+  metadata {
+    name      = "schema-registry-for-avro"
+    namespace = "default"
+  }
+
+  spec {
+    selector = {
+      app = "schema-registry"
+    }
+
+    type = "ClusterIP"
+
+    port {
+      protocol    = "TCP"
+      port        = 8081
+      target_port = 8081
     }
   }
 }
