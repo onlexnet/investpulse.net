@@ -19,7 +19,9 @@ resource "helm_release" "kafka" {
 
   set {
     name  = "controller.replicaCount"
-    value = 1 # default: 3
+    # do not change to 1 as per
+    # https://github.com/bitnami/charts/issues/16344
+    value = 3
   }
 
   set { 
@@ -28,11 +30,11 @@ resource "helm_release" "kafka" {
   }
   set_list {
     name = "externalAccess.controller.service.externalIPs"
-    value = ["192.168.49.2"] # minikube ip
+    value = ["192.168.49.2", "192.168.49.2", "192.168.49.2"] # minikube ip
   }
   set_list {
     name = "externalAccess.controller.service.nodePorts"
-    value = ["30094"]
+    value = ["30094", "30095", "30096"]
   }
 
   set {

@@ -61,7 +61,8 @@ resource "kubernetes_deployment" "schema_registry" {
 
           env {
             name  = "SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS"
-            value = "PLAINTEXT://kafka.default.svc.cluster.local:9092"
+            # value = "PLAINTEXT://kafka.default.svc.cluster.local:9092"
+            value = "PLAINTEXT://kafka-controller-headless:9092"
           }
 
           env {
