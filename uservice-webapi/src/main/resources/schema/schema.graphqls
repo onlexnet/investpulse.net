@@ -1,0 +1,15 @@
+type Query {
+    hello: Hello
+}
+
+type Subscription {
+    timer: DateTime
+}
+
+scalar DateTime
+
+type Hello {
+    text: String!
+}
+
+

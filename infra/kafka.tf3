@@ -1,0 +1,76 @@
+# Available values https://github.com/bitnami/charts/blob/main/bitnami/kafka/values.yaml
+
+resource "kubernetes_namespace" "kafka" {
+  metadata {
+    name = "kafka"
+  }
+}
+
+resource "helm_release" "kafka" {
+  name       = "kafka"
+  repository = "oci://registry-1.docker.io/bitnamicharts"
+  chart      = "kafka"
+  version    = "31.3.0"
+  # namespace  = kubernetes_namespace.kafka.metadata[0].name
+
+  set {
+    name  = "controller.replicaCount"
+    value = 1 # default: 3
+  }
+
+  set { 
+    name = "externalAccess.enabled"
+    value = "true"
+  }
+  set_list {
+    name = "externalAccess.controller.service.externalIPs"
+    value = ["192.168.49.2"] # minikube ip
+  }
+  set_list {
+    name = "externalAccess.controller.service.nodePorts"
+    value = ["30094"]
+  }
+
+  set {
+    name = "externalAccess.controller.service.type"
+    value = "NodePort"
+  }
+
+  set {
+    name = "listeners.client.protocol"
+    value = "PLAINTEXT"
+  }
+
+  set {
+    name = "listeners.external.protocol"
+    value = "PLAINTEXT"
+  }
+
+  set {
+    name = "advertisedListeners.client"
+    value = "true"
+  }
+  set {
+    name = "advertisedListeners.external"
+    value = "true"
+  }
+
+  set {
+    name = "allowPlaintextListener"
+    value = "true"
+  }
+
+}
+
+resource "helm_release" "schema_registry" {
+  name       = "schema-registry"
+  repository = "https://packages.confluent.io/helm"
+  chart      = "cp-schema-registry"
+  namespace  = "default"
+  version    = "0.8.0"  # Wybierz odpowiednią wersję
+
+  set {
+    name  = "kafka.bootstrapServers"
+    value = "PLAINTEXT://kafka.default.svc.cluster.local:9092"
+  }
+}
