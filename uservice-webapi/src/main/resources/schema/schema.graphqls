@@ -1,5 +1,5 @@
 type Query {
-    hello: Hello
+    hello: Tickers
 }
 
 type Subscription {
@@ -8,8 +8,8 @@ type Subscription {
 
 scalar DateTime
 
-type Hello {
-    text: String!
+type Tickers {
+    count: Int!
 }
 
 

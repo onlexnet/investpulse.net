@@ -3,7 +3,7 @@ Single entry point to access available services
 Run locally:
 ```bash
 socat TCP-LISTEN:80,fork TCP:$(minikube ip):80 & # http
-socat TCP-LISTEN:9094,fork TCP:$(minikube ip):9094 & # kafka external
+
 skaffold dev --skip-tests
 
 http://localhost:80/graphiql

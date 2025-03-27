@@ -1,0 +1,16 @@
+spring.kafka:
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.apache.kafka.common.serialization.StringDeserializer
+  consumer:
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    group-id: moja-grupa-ccc
+    auto-offset-reset: latest
+    value-deserializer.specific.avro.reader: true
+    specific.avro.reader: true
+    properties:
+      specific.avro.reader: true        
+  properties:
+    schema.registry.url: mock://testurl
+        
