@@ -49,6 +49,9 @@ import onlexnet.webapi.avro.MyMessage;
 @ActiveProfiles("test")
 public class KafkaTestcontainersTest {
 
+  static final String TEST_TOPIC_1 = "test-topic-1";
+  static final String TEST_TOPIC_2 = "test-topic-2";
+
   static Network network = Network.newNetwork();
 
   @Container
@@ -81,13 +84,13 @@ public class KafkaTestcontainersTest {
   private final CountDownLatch latch2 = new CountDownLatch(1);
   private MyMessage receivedMessage2;
 
-  @KafkaListener(topics = "test-topic-1", groupId = "test-group-1", containerFactory = "stringKafkaListenerContainerFactory")
+  @KafkaListener(topics = TEST_TOPIC_1, groupId = "test-group-1", containerFactory = "stringKafkaListenerContainerFactory")
   public void listen(String message) {
     this.receivedMessage1 = message;
     latch1.countDown();
   }
 
-  @KafkaListener(topics = "test-topic-2", groupId = "test-group-2", containerFactory = "avroKafkaListenerContainerFactory")
+  @KafkaListener(topics = TEST_TOPIC_2, groupId = "test-group-2", containerFactory = "avroKafkaListenerContainerFactory")
   public void listen2(ConsumerRecord<String, MyMessage> record) {
     this.receivedMessage2 = record.value();
     latch2.countDown();
@@ -96,7 +99,7 @@ public class KafkaTestcontainersTest {
   @Test
   public void testKafkaSendAndReceive() throws Exception {
     var message = "Hello, Kafka!";
-    kafkaTemplate.send("test-topic-1", message);
+    kafkaTemplate.send(TEST_TOPIC_1, message);
 
     boolean messageReceived = latch1.await(5, TimeUnit.SECONDS);
 
@@ -107,7 +110,7 @@ public class KafkaTestcontainersTest {
   @Test
   public void testKafkaSendAndReceive2() throws Exception {
     var message = new MyMessage(20010203, 1201);
-    kafkaTemplate2.send("test-topic-2", message);
+    kafkaTemplate2.send(TEST_TOPIC_2, message);
 
     boolean messageReceived = latch2.await(5, TimeUnit.SECONDS);
 
@@ -142,7 +145,7 @@ public class KafkaTestcontainersTest {
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
+    public KafkaTemplate<String, String> kafkaTemplate1() {
       return new KafkaTemplate<>(stringProducerFactory());
     }
 
@@ -195,29 +198,29 @@ public class KafkaTestcontainersTest {
       return factory;
     }
 
-    @Bean
-    DefaultKafkaProducerFactoryCustomizer kafkaProducerFactoryCustomizer() {
-      return factory -> {
-        Map<String, Object> props = new HashMap<>();
-        props.put("schema.registry.url",
-            "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
-        factory.updateConfigs(props);
-      };
-    }
+    // @Bean
+    // DefaultKafkaProducerFactoryCustomizer kafkaProducerFactoryCustomizer() {
+    //   return factory -> {
+    //     Map<String, Object> props = new HashMap<>();
+    //     props.put("schema.registry.url",
+    //         "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
+    //     factory.updateConfigs(props);
+    //   };
+    // }
 
-    @Bean
-    DefaultKafkaConsumerFactoryCustomizer kafkaConsumerFactoryCustomizer() {
-      return factory -> {
-        Map<String, Object> props = new HashMap<>();
-        props.put("schema.registry.url",
-            "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
-        factory.updateConfigs(props);
-      };
-    }
+    // @Bean
+    // DefaultKafkaConsumerFactoryCustomizer kafkaConsumerFactoryCustomizer() {
+    //   return factory -> {
+    //     Map<String, Object> props = new HashMap<>();
+    //     props.put("schema.registry.url",
+    //         "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
+    //     factory.updateConfigs(props);
+    //   };
+    // }
 
-    @Bean
-    public NewTopic testTopic() {
-      return new NewTopic("test-topic", 1, (short) 1);
-    }
+    // @Bean
+    // public NewTopic testTopic() {
+    //   return new NewTopic("test-topic", 1, (short) 1);
+    // }
   }
 }
