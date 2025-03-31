@@ -10,7 +10,7 @@ spring:
   threads.virtual.enabled: true
 
 logging.level: 
-  org.springframework.kafka: DEBUG
+  '[org.apache.kafka]': warn
 
 
 # https://netflix.github.io/dgs/advanced/virtual-threads/#virtual-threads-jdk-21

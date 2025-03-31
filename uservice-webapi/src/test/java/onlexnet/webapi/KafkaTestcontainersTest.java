@@ -7,10 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.BytesDeserializer;
+import org.apache.kafka.common.serialization.BytesSerializer;
+import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
@@ -29,6 +35,8 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.serializer.DelegatingByTopicSerializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -49,8 +57,9 @@ import onlexnet.webapi.avro.MyMessage;
 @ActiveProfiles("test")
 public class KafkaTestcontainersTest {
 
-  static final String TEST_TOPIC_1 = "test-topic-1";
+  static final String TEST_TOPIC_STRING = "topic-3";
   static final String TEST_TOPIC_2 = "test-topic-2";
+  static final String TEST_TOPIC_3 = "test-topic-3";
 
   static Network network = Network.newNetwork();
 
@@ -73,10 +82,13 @@ public class KafkaTestcontainersTest {
       .withStartupTimeout(Duration.ofSeconds(120));
 
   @Autowired
-  KafkaTemplate<String, String> kafkaTemplate;
+  KafkaTemplate<String, String> kafkaTemplate1;
 
   @Autowired
   KafkaTemplate<String, MyMessage> kafkaTemplate2;
+
+  @Autowired
+  KafkaTemplate<String, byte[]> kafkaTemplate3;
 
   private final CountDownLatch latch1 = new CountDownLatch(1);
   private String receivedMessage1;
@@ -84,7 +96,10 @@ public class KafkaTestcontainersTest {
   private final CountDownLatch latch2 = new CountDownLatch(1);
   private MyMessage receivedMessage2;
 
-  @KafkaListener(topics = TEST_TOPIC_1, groupId = "test-group-1", containerFactory = "stringKafkaListenerContainerFactory")
+  private final CountDownLatch latch3 = new CountDownLatch(1);
+  private byte[] receivedMessage3;
+
+  @KafkaListener(topics = TEST_TOPIC_STRING, groupId = "test-group-1", containerFactory = "stringKafkaListenerContainerFactory")
   public void listen(String message) {
     this.receivedMessage1 = message;
     latch1.countDown();
@@ -96,33 +111,63 @@ public class KafkaTestcontainersTest {
     latch2.countDown();
   }
 
-  @Test
-  public void testKafkaSendAndReceive() throws Exception {
-    var message = "Hello, Kafka!";
-    kafkaTemplate.send(TEST_TOPIC_1, message);
+  @KafkaListener(topics = TEST_TOPIC_3, groupId = "test-group-3", containerFactory = "byteKafkaListenerContainerFactory")
+  public void listen3(ConsumerRecord<String, byte[]> record) {
+    this.receivedMessage3 = record.value();
+    latch3.countDown();
+  }
 
-    boolean messageReceived = latch1.await(5, TimeUnit.SECONDS);
+  @Test
+  public void testKafkaSendAndReceiveString() throws Exception {
+    var message = "Hello, Kafka!";
+    kafkaTemplate1.send(TEST_TOPIC_STRING, message);
+
+    boolean messageReceived = latch1.await(3, TimeUnit.SECONDS);
 
     assertThat(messageReceived).isTrue();
     assertThat(receivedMessage1).isEqualTo(message);
   }
 
   @Test
-  public void testKafkaSendAndReceive2() throws Exception {
+  public void testKafkaSendAndReceiveAvro() throws Exception {
     var message = new MyMessage(20010203, 1201);
     kafkaTemplate2.send(TEST_TOPIC_2, message);
 
-    boolean messageReceived = latch2.await(5, TimeUnit.SECONDS);
+    boolean messageReceived = latch2.await(3, TimeUnit.SECONDS);
 
     assertThat(messageReceived).isTrue();
     assertThat(receivedMessage2).isEqualTo(message);
   }
+
+  @Test
+  public void testKafkaSendAndReceiveBytes() throws Exception {
+    var message = new byte[] { 42 };
+    kafkaTemplate3.send(TEST_TOPIC_3, message);
+
+    boolean messageReceived = latch3.await(3, TimeUnit.SECONDS);
+
+    assertThat(messageReceived).isTrue();
+    // assertThat(receivedMessage2).isEqualTo(message);
+  }
+
 
   @EnableKafka
   @Configuration
   static class KafkaTestConfig {
 
     static KafkaContainer kafkaContainer = KafkaTestcontainersTest.kafka;
+
+    
+    @Bean
+    public ProducerFactory<String, String> stringProducerFactory() {
+      Map<String, Object> props = new HashMap<>();
+      props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaTestcontainersTest.kafka.getBootstrapServers());
+      props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+      props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+      props.put("schema.registry.url",
+          "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
+      return new DefaultKafkaProducerFactory<>(props);
+    }
 
     @Bean
     public ProducerFactory<String, MyMessage> avroProducerFactory() {
@@ -135,18 +180,21 @@ public class KafkaTestcontainersTest {
       return new DefaultKafkaProducerFactory<>(props);
     }
 
-    @Bean
-    public ProducerFactory<String, String> stringProducerFactory() {
-      Map<String, Object> configProps = new HashMap<>();
-      configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaTestcontainersTest.kafka.getBootstrapServers());
-      configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-      configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-      return new DefaultKafkaProducerFactory<>(configProps);
+   @Bean
+    public ProducerFactory<String, byte[]> bytesProducerFactory() {
+      var props = new HashMap<String, Object>();
+      props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaTestcontainersTest.kafka.getBootstrapServers());
+      props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+      props.put("schema.registry.url",
+          "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
+      // !!! https://docs.spring.io/spring-kafka/reference/kafka/serdes.html
+      props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
+      return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate1() {
-      return new KafkaTemplate<>(stringProducerFactory());
+    public KafkaTemplate<String, String> kafkaTemplate1(ProducerFactory<String, String> producerFactory) {
+      return new KafkaTemplate<>(producerFactory);
     }
 
     @Bean
@@ -155,20 +203,27 @@ public class KafkaTestcontainersTest {
     }
 
     @Bean
+    public KafkaTemplate<String, byte[]> kafkaTemplate3() {
+      return new KafkaTemplate<>(bytesProducerFactory());
+    }
+
+    @Bean
     public ConsumerFactory<String, String> stringConsumerFactory() {
-      Map<String, Object> configProps = new HashMap<>();
-      configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+      var props = new HashMap<String, Object>();
+      props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
           kafkaContainer.getBootstrapServers());
-      configProps.put("group.id", "string-group");
-      configProps.put("auto.offset.reset", "latest");
-      configProps.put("key.deserializer", StringDeserializer.class);
-      configProps.put("value.deserializer", StringDeserializer.class);
-      return new DefaultKafkaConsumerFactory<>(configProps);
+      props.put("group.id", "string-group");
+      props.put("auto.offset.reset", "latest");
+      props.put("key.deserializer", StringDeserializer.class);
+      props.put("value.deserializer", StringDeserializer.class);
+      props.put("schema.registry.url",
+          "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
+      return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
     public ConsumerFactory<String, MyMessage> avroConsumerFactory() {
-      Map<String, Object> props = new HashMap<>();
+      var props = new HashMap<String, Object>();
       props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
       props.put("group.id", "avro-group");
       props.put("auto.offset.reset", "latest");
@@ -183,9 +238,28 @@ public class KafkaTestcontainersTest {
     }
 
     @Bean
+    public ConsumerFactory<String, byte[]> bytesConsumerFactory() {
+      var configProps = new HashMap<String, Object>();
+      configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,kafkaContainer.getBootstrapServers());
+      configProps.put("group.id", "byte-group");
+      configProps.put("auto.offset.reset", "latest");
+      configProps.put("key.deserializer", StringDeserializer.class);
+      configProps.put("value.deserializer", ByteArrayDeserializer.class);
+      return new DefaultKafkaConsumerFactory<>(configProps);
+    }
+
+    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> stringKafkaListenerContainerFactory() {
       ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
       factory.setConsumerFactory(stringConsumerFactory());
+      factory.setConcurrency(3);
+      return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, byte[]> byteKafkaListenerContainerFactory() {
+      ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
+      factory.setConsumerFactory(bytesConsumerFactory());
       factory.setConcurrency(3);
       return factory;
     }
@@ -198,29 +272,5 @@ public class KafkaTestcontainersTest {
       return factory;
     }
 
-    // @Bean
-    // DefaultKafkaProducerFactoryCustomizer kafkaProducerFactoryCustomizer() {
-    //   return factory -> {
-    //     Map<String, Object> props = new HashMap<>();
-    //     props.put("schema.registry.url",
-    //         "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
-    //     factory.updateConfigs(props);
-    //   };
-    // }
-
-    // @Bean
-    // DefaultKafkaConsumerFactoryCustomizer kafkaConsumerFactoryCustomizer() {
-    //   return factory -> {
-    //     Map<String, Object> props = new HashMap<>();
-    //     props.put("schema.registry.url",
-    //         "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
-    //     factory.updateConfigs(props);
-    //   };
-    // }
-
-    // @Bean
-    // public NewTopic testTopic() {
-    //   return new NewTopic("test-topic", 1, (short) 1);
-    // }
   }
 }
