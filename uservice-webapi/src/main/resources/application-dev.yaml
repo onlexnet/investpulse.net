@@ -7,7 +7,7 @@ spring.kafka:
     bootstrap-servers: PLAINTEXT://kafka.default.svc.cluster.local:9092
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
-    group-id: moja-grupa-aaa
+    group-id: moja-grupa-ccc
     auto-offset-reset: latest
     value-deserializer.specific.avro.reader: true
     specific.avro.reader: true
@@ -15,5 +15,3 @@ spring.kafka:
       specific.avro.reader: true        
   properties:
     schema.registry.url: http://schema-registry-for-avro.default.svc.cluster.local:8081
-        
-

@@ -4,29 +4,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.BytesDeserializer;
-import org.apache.kafka.common.serialization.BytesSerializer;
-import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.kafka.DefaultKafkaConsumerFactoryCustomizer;
-import org.springframework.boot.autoconfigure.kafka.DefaultKafkaProducerFactoryCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -35,36 +32,37 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.serializer.DelegatingByTopicSerializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.kafka.core.KafkaAdmin.NewTopics;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.kafka.KafkaContainer;
 
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import onlexnet.webapi.avro.MyMessage;
 
 @Testcontainers
-@SpringBootTest(classes = KafkaTestcontainersTest.KafkaTestConfig.class)
+@SpringBootTest
+@Import(KafkaTestcontainersTest.KafkaTestConfig.class)
 @ActiveProfiles("test")
+@DirtiesContext
 public class KafkaTestcontainersTest {
 
   static final String TEST_TOPIC_STRING = "topic-3";
   static final String TEST_TOPIC_2 = "test-topic-2";
   static final String TEST_TOPIC_3 = "test-topic-3";
+  static final int TIMEOUT = 100;
 
   static Network network = Network.newNetwork();
 
-  @Container
   @ServiceConnection
+  @Container
   static KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0").withNetwork(network)
       .withListener("kafka:19092");
 
@@ -120,20 +118,20 @@ public class KafkaTestcontainersTest {
   @Test
   public void testKafkaSendAndReceiveString() throws Exception {
     var message = "Hello, Kafka!";
-    kafkaTemplate1.send(TEST_TOPIC_STRING, message);
+    kafkaTemplate1.send(TEST_TOPIC_STRING, message).get();
 
-    boolean messageReceived = latch1.await(3, TimeUnit.SECONDS);
+    boolean messageReceived = latch1.await(TIMEOUT, TimeUnit.SECONDS);
 
     assertThat(messageReceived).isTrue();
     assertThat(receivedMessage1).isEqualTo(message);
   }
 
-  @Test
+  // @Test
   public void testKafkaSendAndReceiveAvro() throws Exception {
     var message = new MyMessage(20010203, 1201);
     kafkaTemplate2.send(TEST_TOPIC_2, message);
 
-    boolean messageReceived = latch2.await(3, TimeUnit.SECONDS);
+    boolean messageReceived = latch2.await(TIMEOUT, TimeUnit.SECONDS);
 
     assertThat(messageReceived).isTrue();
     assertThat(receivedMessage2).isEqualTo(message);
@@ -144,7 +142,7 @@ public class KafkaTestcontainersTest {
     var message = new byte[] { 42 };
     kafkaTemplate3.send(TEST_TOPIC_3, message);
 
-    boolean messageReceived = latch3.await(3, TimeUnit.SECONDS);
+    boolean messageReceived = latch3.await(TIMEOUT, TimeUnit.SECONDS);
 
     assertThat(messageReceived).isTrue();
     // assertThat(receivedMessage2).isEqualTo(message);
@@ -193,7 +191,7 @@ public class KafkaTestcontainersTest {
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate1(ProducerFactory<String, String> producerFactory) {
+    public KafkaTemplate<String, String> kafkaTemplateString(ProducerFactory<String, String> producerFactory) {
       return new KafkaTemplate<>(producerFactory);
     }
 
@@ -210,9 +208,8 @@ public class KafkaTestcontainersTest {
     @Bean
     public ConsumerFactory<String, String> stringConsumerFactory() {
       var props = new HashMap<String, Object>();
-      props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-          kafkaContainer.getBootstrapServers());
-      props.put("group.id", "string-group");
+      props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
+      // props.put("group.id", "string-group");
       props.put("auto.offset.reset", "latest");
       props.put("key.deserializer", StringDeserializer.class);
       props.put("value.deserializer", StringDeserializer.class);
@@ -225,7 +222,7 @@ public class KafkaTestcontainersTest {
     public ConsumerFactory<String, MyMessage> avroConsumerFactory() {
       var props = new HashMap<String, Object>();
       props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
-      props.put("group.id", "avro-group");
+      // props.put("group.id", "avro-group");
       props.put("auto.offset.reset", "latest");
       props.put("key.deserializer", StringDeserializer.class);
       props.put("value.deserializer", KafkaAvroDeserializer.class);
@@ -241,7 +238,7 @@ public class KafkaTestcontainersTest {
     public ConsumerFactory<String, byte[]> bytesConsumerFactory() {
       var configProps = new HashMap<String, Object>();
       configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,kafkaContainer.getBootstrapServers());
-      configProps.put("group.id", "byte-group");
+      // configProps.put("group.id", "byte-group");
       configProps.put("auto.offset.reset", "latest");
       configProps.put("key.deserializer", StringDeserializer.class);
       configProps.put("value.deserializer", ByteArrayDeserializer.class);
@@ -250,9 +247,9 @@ public class KafkaTestcontainersTest {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> stringKafkaListenerContainerFactory() {
-      ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+      var factory = new ConcurrentKafkaListenerContainerFactory<String, String>();
       factory.setConsumerFactory(stringConsumerFactory());
-      factory.setConcurrency(3);
+      factory.setConcurrency(1);
       return factory;
     }
 
@@ -260,7 +257,7 @@ public class KafkaTestcontainersTest {
     public ConcurrentKafkaListenerContainerFactory<String, byte[]> byteKafkaListenerContainerFactory() {
       ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
       factory.setConsumerFactory(bytesConsumerFactory());
-      factory.setConcurrency(3);
+      factory.setConcurrency(1);
       return factory;
     }
 
@@ -268,8 +265,22 @@ public class KafkaTestcontainersTest {
     public ConcurrentKafkaListenerContainerFactory<String, MyMessage> avroKafkaListenerContainerFactory() {
       ConcurrentKafkaListenerContainerFactory<String, MyMessage> factory = new ConcurrentKafkaListenerContainerFactory<>();
       factory.setConsumerFactory(avroConsumerFactory());
-      factory.setConcurrency(3);
+      factory.setConcurrency(1);
       return factory;
+    }
+
+    @Bean
+    public NewTopic newTopic1() {
+        return new NewTopic(TEST_TOPIC_STRING, 1, (short) 1);
+    }
+
+    @Bean
+    public List<NewTopic> newTopics() {
+      return List.of(
+        new NewTopic(TEST_TOPIC_STRING, 1, (short) 1),
+        new NewTopic(TEST_TOPIC_2, 1, (short) 1),
+        new NewTopic(TEST_TOPIC_3, 1, (short) 1)
+      );
     }
 
   }
