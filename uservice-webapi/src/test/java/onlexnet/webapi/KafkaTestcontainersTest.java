@@ -16,6 +16,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +28,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -60,6 +62,9 @@ public class KafkaTestcontainersTest {
   static final int TIMEOUT = 100;
 
   static Network network = Network.newNetwork();
+
+  @Autowired
+  KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
 
   @ServiceConnection
   @Container
@@ -96,6 +101,11 @@ public class KafkaTestcontainersTest {
 
   private final CountDownLatch latch3 = new CountDownLatch(1);
   private byte[] receivedMessage3;
+
+  @AfterEach
+  void afterEach() {
+    kafkaListenerEndpointRegistry.getAllListenerContainers().forEach(c -> c.stop());
+  }
 
   @KafkaListener(topics = TEST_TOPIC_STRING, groupId = "test-group-1", containerFactory = "stringKafkaListenerContainerFactory")
   public void listen(String message) {
