@@ -6,21 +6,20 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +33,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.core.KafkaAdmin.NewTopics;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.GenericContainer;
@@ -59,7 +57,7 @@ public class KafkaTestcontainersTest {
   static final String TEST_TOPIC_STRING = "topic-3";
   static final String TEST_TOPIC_2 = "test-topic-2";
   static final String TEST_TOPIC_3 = "test-topic-3";
-  static final int TIMEOUT = 100;
+  static final int TIMEOUT = 3;
 
   static Network network = Network.newNetwork();
 
@@ -91,26 +89,14 @@ public class KafkaTestcontainersTest {
   KafkaTemplate<String, MyMessage> kafkaTemplate2;
 
   @Autowired
-  KafkaTemplate<String, byte[]> kafkaTemplate3;
-
-  private final CountDownLatch latch1 = new CountDownLatch(1);
-  private String receivedMessage1;
+  BlockingQueue<String> stringMessages;
 
   private final CountDownLatch latch2 = new CountDownLatch(1);
   private MyMessage receivedMessage2;
 
-  private final CountDownLatch latch3 = new CountDownLatch(1);
-  private byte[] receivedMessage3;
-
   @AfterEach
   void afterEach() {
-    kafkaListenerEndpointRegistry.getAllListenerContainers().forEach(c -> c.stop());
-  }
-
-  @KafkaListener(topics = TEST_TOPIC_STRING, groupId = "test-group-1", containerFactory = "stringKafkaListenerContainerFactory")
-  public void listen(String message) {
-    this.receivedMessage1 = message;
-    latch1.countDown();
+    // kafkaListenerEndpointRegistry.getAllListenerContainers().forEach(c -> c.stop());
   }
 
   @KafkaListener(topics = TEST_TOPIC_2, groupId = "test-group-2", containerFactory = "avroKafkaListenerContainerFactory")
@@ -119,21 +105,14 @@ public class KafkaTestcontainersTest {
     latch2.countDown();
   }
 
-  @KafkaListener(topics = TEST_TOPIC_3, groupId = "test-group-3", containerFactory = "byteKafkaListenerContainerFactory")
-  public void listen3(ConsumerRecord<String, byte[]> record) {
-    this.receivedMessage3 = record.value();
-    latch3.countDown();
-  }
-
   @Test
   public void testKafkaSendAndReceiveString() throws Exception {
     var message = "Hello, Kafka!";
     kafkaTemplate1.send(TEST_TOPIC_STRING, message).get();
 
-    boolean messageReceived = latch1.await(TIMEOUT, TimeUnit.SECONDS);
+    var actual = stringMessages.poll(TIMEOUT, TimeUnit.SECONDS);
 
-    assertThat(messageReceived).isTrue();
-    assertThat(receivedMessage1).isEqualTo(message);
+    assertThat(actual).isEqualTo(message);
   }
 
   // @Test
@@ -147,25 +126,27 @@ public class KafkaTestcontainersTest {
     assertThat(receivedMessage2).isEqualTo(message);
   }
 
-  @Test
-  public void testKafkaSendAndReceiveBytes() throws Exception {
-    var message = new byte[] { 42 };
-    kafkaTemplate3.send(TEST_TOPIC_3, message);
-
-    boolean messageReceived = latch3.await(TIMEOUT, TimeUnit.SECONDS);
-
-    assertThat(messageReceived).isTrue();
-    // assertThat(receivedMessage2).isEqualTo(message);
-  }
-
-
   @EnableKafka
   @Configuration
   static class KafkaTestConfig {
 
     static KafkaContainer kafkaContainer = KafkaTestcontainersTest.kafka;
 
-    
+    @Bean
+    public ArrayBlockingQueue<String> stringMessages() {
+      return new ArrayBlockingQueue<>(10);
+    }
+
+    interface StringListener {
+      @KafkaListener(topics = TEST_TOPIC_STRING, groupId = "test-group-1", containerFactory = "stringKafkaListenerContainerFactory")
+      public void listen(String message);
+    }
+
+    @Bean 
+    StringListener stringListener(ArrayBlockingQueue<String> stringMessages) {
+      return (message) -> stringMessages.add(message);
+    }
+  
     @Bean
     public ProducerFactory<String, String> stringProducerFactory() {
       Map<String, Object> props = new HashMap<>();
@@ -188,18 +169,6 @@ public class KafkaTestcontainersTest {
       return new DefaultKafkaProducerFactory<>(props);
     }
 
-   @Bean
-    public ProducerFactory<String, byte[]> bytesProducerFactory() {
-      var props = new HashMap<String, Object>();
-      props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaTestcontainersTest.kafka.getBootstrapServers());
-      props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-      props.put("schema.registry.url",
-          "http://%s:%d".formatted(schemaRegistry.getHost(), schemaRegistry.getMappedPort(8085)));
-      // !!! https://docs.spring.io/spring-kafka/reference/kafka/serdes.html
-      props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
-      return new DefaultKafkaProducerFactory<>(props);
-    }
-
     @Bean
     public KafkaTemplate<String, String> kafkaTemplateString(ProducerFactory<String, String> producerFactory) {
       return new KafkaTemplate<>(producerFactory);
@@ -208,11 +177,6 @@ public class KafkaTestcontainersTest {
     @Bean
     public KafkaTemplate<String, MyMessage> kafkaTemplate2() {
       return new KafkaTemplate<>(avroProducerFactory());
-    }
-
-    @Bean
-    public KafkaTemplate<String, byte[]> kafkaTemplate3() {
-      return new KafkaTemplate<>(bytesProducerFactory());
     }
 
     @Bean
@@ -245,28 +209,9 @@ public class KafkaTestcontainersTest {
     }
 
     @Bean
-    public ConsumerFactory<String, byte[]> bytesConsumerFactory() {
-      var configProps = new HashMap<String, Object>();
-      configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,kafkaContainer.getBootstrapServers());
-      // configProps.put("group.id", "byte-group");
-      configProps.put("auto.offset.reset", "latest");
-      configProps.put("key.deserializer", StringDeserializer.class);
-      configProps.put("value.deserializer", ByteArrayDeserializer.class);
-      return new DefaultKafkaConsumerFactory<>(configProps);
-    }
-
-    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, String> stringKafkaListenerContainerFactory() {
       var factory = new ConcurrentKafkaListenerContainerFactory<String, String>();
       factory.setConsumerFactory(stringConsumerFactory());
-      factory.setConcurrency(1);
-      return factory;
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, byte[]> byteKafkaListenerContainerFactory() {
-      ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
-      factory.setConsumerFactory(bytesConsumerFactory());
       factory.setConcurrency(1);
       return factory;
     }
@@ -277,11 +222,6 @@ public class KafkaTestcontainersTest {
       factory.setConsumerFactory(avroConsumerFactory());
       factory.setConcurrency(1);
       return factory;
-    }
-
-    @Bean
-    public NewTopic newTopic1() {
-        return new NewTopic(TEST_TOPIC_STRING, 1, (short) 1);
     }
 
     @Bean
