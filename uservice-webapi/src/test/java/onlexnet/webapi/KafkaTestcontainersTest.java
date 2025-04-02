@@ -61,9 +61,6 @@ public class KafkaTestcontainersTest {
 
   static Network network = Network.newNetwork();
 
-  @Autowired
-  KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
-
   @ServiceConnection
   @Container
   static KafkaContainer kafka = new KafkaContainer("apache/kafka-native:3.8.0").withNetwork(network)
