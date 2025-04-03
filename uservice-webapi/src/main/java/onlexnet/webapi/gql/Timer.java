@@ -29,7 +29,6 @@ public class Timer {
   void init() {
     listener = Flux.<MyMessage>create(it -> this.proxy = it, OverflowStrategy.BUFFER);
     listener.subscribe();
-    log.error("SPARTAAAAAAAAAAAAA {}", proxy);
   }
 
   @KafkaListener(topics = "timer-topic-1")

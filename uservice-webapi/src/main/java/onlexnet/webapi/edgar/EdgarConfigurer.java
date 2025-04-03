@@ -1,7 +1,5 @@
 package onlexnet.webapi.edgar;
 
-import java.net.http.HttpClient;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -11,6 +9,10 @@ class EdgarConfigurer {
   
   @Bean
   RestClient restClient() {
-    return RestClient.create();
+    return RestClient
+        .builder()
+        .defaultHeader("User-Agent", "OnLex.net slawomir.siudek@onlex.net")
+        .defaultHeader("Host", "www.sec.gov")
+        .build();
   }
 }

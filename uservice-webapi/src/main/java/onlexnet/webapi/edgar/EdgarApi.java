@@ -1,12 +1,13 @@
 package onlexnet.webapi.edgar;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
+import org.springframework.http.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -15,29 +16,31 @@ import lombok.RequiredArgsConstructor;
  * https://www.sec.gov/about/webmaster-frequently-asked-questions#developers
  */
 public interface EdgarApi {
-  
-  record CompanyTicker() { }
+
+  record CompanyTicker(long cik_str, String ticker, String title) {
+  }
 
   // https://www.sec.gov/files/company_tickers.json
-  List<CompanyTicker> getTickers();
+  Map<String, CompanyTicker> getTickers();
 }
 
 @Component
 @RequiredArgsConstructor
-class EdgarApiCttpClient implements EdgarApi {
+class EdgarApiHttpClient implements EdgarApi {
 
   // We use single instance as it is thread safe
   // https://docs.spring.io/spring-framework/reference/integration/rest-clients.html#_creating_a_restclient
   private final RestClient restClient;
 
-
-  ParameterizedTypeReference<List<CompanyTicker>> listOfCompanyTickers = new ParameterizedTypeReference<List<CompanyTicker>>() { };
+  ParameterizedTypeReference<Map<String, CompanyTicker>> listOfCompanyTickers = new ParameterizedTypeReference<>() {
+  };
 
   @Override
-  public List<CompanyTicker> getTickers() {
-    var result = restClient.get().accept(MediaType.APPLICATION_JSON).retrieve().body(listOfCompanyTickers);
-    return result;
+  public Map<String, CompanyTicker> getTickers() {
+    return restClient.get()
+        .uri("https://www.sec.gov/files/company_tickers.json")
+        .retrieve()
+        .body(listOfCompanyTickers);
   }
 
-  
 }

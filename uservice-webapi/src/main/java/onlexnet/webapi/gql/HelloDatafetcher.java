@@ -4,22 +4,24 @@ import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsQuery;
 
 import graphql.schema.DataFetchingEnvironment;
-import lombok.Data;
-import lombok.experimental.Accessors;
+import onlexnet.webapi.edgar.EdgarApi;
 
 @DgsComponent
 public class HelloDatafetcher {
 
+  private final EdgarApi edgarApi;
+
+  public HelloDatafetcher(EdgarApi edgarApi) {
+    this.edgarApi = edgarApi;
+  }
+
   @DgsQuery
   public Hello hello(DataFetchingEnvironment dataFetchingEnvironment) {
-    var result = new Hello();
-    result.setText("Hello world!");
+    var tickers = edgarApi.getTickers();
+    var result = new Hello(tickers.size());
     return result;
   }
 
-  @Data
-  public static class Hello {
-    private String text;
-  }
+  public record Hello(int count) { }
 }
 

@@ -13,12 +13,15 @@ import reactor.core.Disposable;
 import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 
-@RequiredArgsConstructor
 @Component
 final class TimerPublisher implements AutoCloseable {
     
     private final KafkaTemplate<String, MyMessage> kafkaTemplate;
     private final Disposable.Composite disposer = Disposables.composite();
+
+    public TimerPublisher(KafkaTemplate<String, MyMessage> kafkaTemplate) {
+      this.kafkaTemplate = kafkaTemplate;
+    }
 
     @PostConstruct
     public void init() {
