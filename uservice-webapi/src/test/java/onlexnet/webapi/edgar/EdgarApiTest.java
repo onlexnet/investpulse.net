@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import lombok.Cleanup;
-
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = EdgarConfig.class)
 public class EdgarApiTest {

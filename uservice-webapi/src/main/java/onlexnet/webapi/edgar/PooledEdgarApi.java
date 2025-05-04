@@ -1,5 +1,6 @@
 package onlexnet.webapi.edgar;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 /**
@@ -7,12 +8,13 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class PooledEdgarApi extends PooledExecutor<EdgarApi> {
-  private PooledEdgarApi(EdgarApi it) {
-    super(it);
+  private PooledEdgarApi(EdgarApi it, EdgarHttpPolicy policy) {
+    super(it, policy);
   }
 
-  static PooledEdgarApi started(EdgarApi it) {
-    var result = new PooledEdgarApi(it);
+  @Bean
+  PooledEdgarApi started(EdgarApi it, EdgarHttpPolicy policy) {
+    var result = new PooledEdgarApi(it, policy);
     result.startAsync();
     return result;
   }

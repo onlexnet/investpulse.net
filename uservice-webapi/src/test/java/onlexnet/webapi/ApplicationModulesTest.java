@@ -10,4 +10,12 @@ public class ApplicationModulesTest {
     var modules = ApplicationModules.of(WebapiApplication.class);
     modules.forEach(System.out::println);
   }
+@Test
+void verifyConfigurationClasses() {
+    var modules = ApplicationModules.of(WebapiApplication.class);
+    // Check if any module contains @Configuration classes
+    modules.stream()
+          .flatMap(module -> module.publicClasses().stream())
+          .filter(clazz -> clazz.hasAnnotation("org.springframework.context.annotation.Configuration"))
+          .forEach(System.out::println);
 }

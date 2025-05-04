@@ -24,3 +24,6 @@
     minikube start
     ```
 - Install local services using terraform in infra subdir
+
+## Articles
+- [ How to react to Earnings Updates](https://www.youtube.com/watch?v=v9Y_Ebht1LM&list=PLVdrK24l-IHfHaih5wmYOgnrMEPqCNtkT)
