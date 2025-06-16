@@ -51,8 +51,12 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
 		// 3141 // local devpi server
-		9092 // exposed from Minikube Kafka
+		9092, // exposed from Minikube Kafka
+		30080, 30081, 30090, 30094, 30095, 30096,
+		30999 // WWW TestService 
 	],
+
+  
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "minikube delete && minikube start",
 	// Configure tool-specific properties.
@@ -69,7 +73,15 @@
 				"dunn.redis",
 				// VisualVM to monito JFR events
 				"oracle-labs-graalvm.visualvm-vscode"
-			]
+			],
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"terminal.integrated.profiles.linux": {
+					"bash": {
+						"path": "/bin/bash"
+					}
+				}
+			}
 		}
 	},
 	// "hostRequirements": {

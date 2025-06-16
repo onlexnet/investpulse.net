@@ -14,7 +14,7 @@ resource "helm_release" "kafka" {
   name       = "kafka"
   repository = "oci://registry-1.docker.io/bitnamicharts"
   chart      = "kafka"
-  version    = "31.5.0"
+  version    = "32.2.11"
   # namespace  = kubernetes_namespace.kafka.metadata[0].name
 
   set {
