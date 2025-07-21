@@ -1,0 +1,19 @@
+grpcio-tools==1.62.0
+grpcio-reflection==1.62.0
+dapr-ext-grpc==1.12.0
+
+# local server to handle packaging of python packages
+# more: https://pypi.org/project/devpi-server/
+# to run local server (https://devpi.net/docs/devpi/devpi/stable/+doc/quickstart-pypimirror.html):
+#   devpi-init
+devpi-server==6.10.0
+
+# used to push packages to devpi server
+devpi-client==7.0.2
+twine==5.0.0
+
+# used to create packaged libraries for python distribution
+setuptools==69.1.1
+
+# required to generate classes from avro definition
+avro-gen3==0.7.12

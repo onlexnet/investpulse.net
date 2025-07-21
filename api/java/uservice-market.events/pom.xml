@@ -1,0 +1,15 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>onlexnet.ptn</groupId>
+    <artifactId>client-events-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../.parent.events/pom.xml</relativePath>
+  </parent>
+  <artifactId>uservice-market.events</artifactId>
+
+  <properties>
+    <avro.dir>../../grpc/market_rpc</avro.dir>
+  </properties>
+
+</project>
