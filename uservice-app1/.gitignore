@@ -1,4 +1,0 @@
-.venv
-!.venv/pip.conf
-.dapr/logs
-__pycache__
