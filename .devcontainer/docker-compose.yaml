@@ -22,7 +22,7 @@ services:
 
     volumes:
       # Update this to wherever you want VS Code to mount the folder of your project
-      - ..:/predictivetrading.net:cached
+      - ..:/investpulse.net:cached
 
       # Uncomment the next line to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker-compose for details.
       # Note: I use docker-in-docker devcontainer extension, what is maybe less effective but it works out of the box and separated devcontainer from host
