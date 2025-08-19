@@ -14,6 +14,9 @@
 	"workspaceFolder": "/investpulse.net",
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
+		"ghcr.io/devcontainers/features/azure-cli:1": {
+			"version": "latest"
+		},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
 			"enableNonRootDocker": "true",
 			"moby": "true"
@@ -34,13 +37,13 @@
 		"ghcr.io/dapr/cli/dapr-cli:0": {
 			"version": "latest"
 		},
-		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-			"version": "latest", // Select or enter a Kubernetes version to install
-			"helm": "latest", // Select or enter a Helm version to install
-			"minikube": "latest" // Select or enter a Minikube version to install
-		},
-		"ghcr.io/dhoeric/features/k9s:1": {
-		},
+		// "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+		// 	"version": "latest", // Select or enter a Kubernetes version to install
+		// 	"helm": "latest", // Select or enter a Helm version to install
+		// 	"minikube": "latest" // Select or enter a Minikube version to install
+		// },
+		// "ghcr.io/dhoeric/features/k9s:1": {
+		// },
         "ghcr.io/devcontainers/features/terraform:1": {
             "version": "1.10.3"
         },
@@ -58,7 +61,8 @@
 
   
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "minikube delete && minikube start",
+	// "postCreateCommand": "minikube delete && minikube start",
+
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
