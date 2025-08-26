@@ -1,6 +1,8 @@
 
-variable "kubeconfig_path" {
-  description = "Path to the kubeconfig file"
+
+
+variable "resource_group_location" {
+  description = "Azure location for the resource group."
   type        = string
-  default     = "~/.kube/config"
 }
+
