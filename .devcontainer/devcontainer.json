@@ -8,7 +8,7 @@
 	],
 	// The 'service' property is the name of the service for the container that VS Code should
 	// use. Update this value and .devcontainer/docker-compose.yml to the real service name.
-	"service": "your-service-name-here",
+	"service": "my-service-name-here",
 	// The optional 'workspaceFolder' property is the path VS Code should open by default when
 	// connected. This is typically a file mount in .devcontainer/docker-compose.yml
 	"workspaceFolder": "/investpulse.net",
@@ -34,16 +34,6 @@
 			"mavenVersion": "3.8.6",
 			"groovyVersion": "latest"
 		},
-		"ghcr.io/dapr/cli/dapr-cli:0": {
-			"version": "latest"
-		},
-		// "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-		// 	"version": "latest", // Select or enter a Kubernetes version to install
-		// 	"helm": "latest", // Select or enter a Helm version to install
-		// 	"minikube": "latest" // Select or enter a Minikube version to install
-		// },
-		// "ghcr.io/dhoeric/features/k9s:1": {
-		// },
         "ghcr.io/devcontainers/features/terraform:1": {
             "version": "1.10.3"
         },
@@ -53,15 +43,7 @@
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		// 3141 // local devpi server
-		9092, // exposed from Minikube Kafka
-		30080, 30081, 30090, 30094, 30095, 30096,
-		30999 // WWW TestService 
 	],
-
-  
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "minikube delete && minikube start",
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -73,8 +55,6 @@
 				"vmware.vscode-boot-dev-pack",
 				"vmware.vscode-spring-boot",
 				"ms-python.python",
-				// to observe local redis instance used by DAPR
-				"dunn.redis",
 				// VisualVM to monito JFR events
 				"oracle-labs-graalvm.visualvm-vscode"
 			],
@@ -95,10 +75,5 @@
 	// https://stackoverflow.com/a/75644266
 	"mounts": [
 		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/worker/.ssh",
-		// allows to access host ports
-		// https://stackoverflow.com/questions/61696029/docker-in-docker-setup-with-vscode-dev-containers-how-to-access-running-docker
-		// "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
-	],
-	// // Set `remoteUser` to `root` to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	// "remoteUser": "vscode"
+	]
 }

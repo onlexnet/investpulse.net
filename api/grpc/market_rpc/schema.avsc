@@ -1,8 +1,0 @@
-{
-    "namespace": "onlexnet.market.events",
-    "type": "record",
-    "name": "MarketChangedEvent",
-    "fields": [
-        {"name": "date", "type": "long"}
-    ]
-}
