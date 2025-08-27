@@ -7,6 +7,7 @@ Celem tej dokumentacji jest opisanie zalecanej struktury folderów dla monorepo,
 ## Główne katalogi
 
 - `webapp/` – kod frontendu (np. Next.js, React, inne frameworki JS/TS)
+- `webapi/` – backend (aplikacja FastAPI, REST API)
 - `try/` – **Folder ten jest całkowicie ignorowany przez Copilota i nie powinien być modyfikowany ani wykorzystywany przez narzędzia AI.**
 - `infra/` – infrastruktura jako kod (np. Terraform, skrypty DevOps)
 - `docs/` – dokumentacja techniczna i architektoniczna
