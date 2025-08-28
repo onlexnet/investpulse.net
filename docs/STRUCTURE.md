@@ -1,41 +1,42 @@
-# Dokumentacja struktury monorepo
 
-## Cel
+# Monorepo Structure Documentation
 
-Celem tej dokumentacji jest opisanie zalecanej struktury folderów dla monorepo, które zawiera zarówno backend, frontend, jak i infrastrukturę. Struktura ta pozwala na łatwe zarządzanie kodem przez GitHub Copilot oraz inne narzędzia automatyzujące rozwój.
+## Purpose
 
-## Główne katalogi
+This document describes the recommended folder structure for the monorepo, which includes backend, frontend, and infrastructure. This structure enables easy code management by GitHub Copilot and other automation tools.
 
-- `webapp/` – kod frontendu (np. Next.js, React, inne frameworki JS/TS)
-- `webapi/` – backend (aplikacja FastAPI, REST API)
-- `try/` – **Folder ten jest całkowicie ignorowany przez Copilota i nie powinien być modyfikowany ani wykorzystywany przez narzędzia AI.**
-- `infra/` – infrastruktura jako kod (np. Terraform, skrypty DevOps)
-- `docs/` – dokumentacja techniczna i architektoniczna
-- `scripts/` – skrypty pomocnicze do automatyzacji zadań
-- `tests/` – testy end-to-end, integracyjne, wspólne dla całego repozytorium
+## Main directories
 
-## Przykładowa struktura
+- `webapp/` – frontend code (e.g. Next.js, React, other JS/TS frameworks)
+- `webapi/` – backend (FastAPI application, REST API)
+- `try/` – **This folder is completely ignored by Copilot and should not be modified or used by AI tools.**
+- `infra/` – infrastructure as code (e.g. Terraform, DevOps scripts)
+- `docs/` – technical and architectural documentation
+- `scripts/` – helper scripts for automation
+- `tests/` – end-to-end, integration, and shared tests for the whole repository
+
+## Example structure
 
 ```
 / (root)
 │
-├── webapp/           # Frontend (Next.js, React, itp.)
+├── webapp/           # Frontend (Next.js, React, etc.)
 │   └── ...
 │
-├── infra/            # Infrastruktura jako kod (Terraform, Ansible, itp.)
+├── infra/            # Infrastructure as code (Terraform, Ansible, etc.)
 │   └── ...
 │
-├── docs/             # Dokumentacja
+├── docs/             # Documentation
 │   └── ...
 │
-├── scripts/          # Skrypty automatyzujące
+├── scripts/          # Automation scripts
 │   └── ...
 │
-├── tests/            # Testy wspólne
+├── tests/            # Shared tests
 │   └── ...
 │
-├── README.md         # Główny opis repozytorium
-└── ADR.md            # Decyzje architektoniczne
+├── README.md         # Main repository description
+└── ADR.md            # Architectural decisions
 ```
 
 
