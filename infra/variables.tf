@@ -1,14 +1,18 @@
+# Environment Configuration
+variable "envName" {
+  description = "Environment name used as prefix for DNS, GitHub environment, and resource group"
+  type        = string
+  validation {
+    condition     = can(regex("^[a-z0-9-]+$", var.envName))
+    error_message = "Environment name must contain only lowercase letters, numbers, and hyphens."
+  }
+}
+
 # Azure Configuration
 variable "subscription_id" {
   description = "Azure subscription ID"
   type        = string
   default     = "ac0e7cdd-3111-4671-a602-0d93afb5df20"
-}
-
-variable "resource_group_name" {
-  description = "Name of the Azure resource group"
-  type        = string
-  default     = "investpulse-webapp-rg"
 }
 
 variable "location" {
@@ -17,16 +21,10 @@ variable "location" {
   default     = "westeurope"
 }
 
-variable "static_web_app_name" {
-  description = "Name of the Azure Static Web App"
+variable "base_domain" {
+  description = "Base domain for DNS entries"
   type        = string
-  default     = "investpulse-webapp"
-}
-
-variable "custom_domain" {
-  description = "Custom domain for the web app"
-  type        = string
-  default     = "dev.investpulse.net"
+  default     = "investpulse.net"
 }
 
 # GitHub Configuration

@@ -1,163 +1,218 @@
-# Infrastructure
+# InvestPulse Infrastructure
 
-This folder contains Terraform configuration for deploying the InvestPulse web application infrastructure on Azure and GitHub.
+This Terraform configuration creates a single environment infrastructure for the InvestPulse web application using Azure Static Web Apps, GitHub Environments, and Cloudflare DNS.
 
 ## Architecture
 
-[Architecture details](../docs/arch/README.md)
-
-## Components
-
-- **Azure Static Web App**: Hosts the React/Next.js application from `/webapp` folder
-- **Resource Group**: Container for all Azure resources
-- **Custom Domain**: Configuration for `dev.investpulse.net`
-- **GitHub Environments**: Automated creation of development and production environments
-- **Protection Rules**: Manual approval gates for production deployments
+The infrastructure is designed around a single `envName` variable that drives:
+- **Resource Group**: `investpulse-{envName}-rg`
+- **Static Web App**: `investpulse-{envName}-webapp`
+- **Custom Domain**: 
+  - Production: `investpulse.net`
+  - Other environments: `{envName}.investpulse.net`
+- **GitHub Environment**: `{envName}`
+- **DNS Record**: Points to Azure Static Web App
 
 ## Quick Start
 
-### 1. Prerequisites
-```bash
-# Install tools
-terraform --version  # >= 1.10
-az --version         # Azure CLI
-gh --version         # GitHub CLI
+### 1. Set Environment Name
 
-# Authenticate
-az login
-gh auth login
+Edit `terraform.tfvars`:
+```hcl
+envName = "development"  # or "production", "staging", etc.
 ```
 
-### 2. Configure & Deploy
-```bash
-# Setup configuration
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your GitHub token and settings
+### 2. Configure Secrets
 
-# Deploy infrastructure
-terraform init
-terraform plan
-terraform apply
-
-# Setup GitHub secrets
-./scripts/setup-github-secrets.sh
+Create `secret.auto.tfvars`:
+```hcl
+github_token         = "ghp_your_github_token"
+cloudflare_api_token = "your_cloudflare_token"
 ```
 
-See [GitHub Environments Guide](./GITHUB_ENVIRONMENTS.md) for detailed instructions.
-
-## Deployment
-
-### Prerequisites
-
-1. Azure CLI installed and logged in
-2. Terraform installed (>= 1.10)
-3. Access to Azure subscription: `ac0e7cdd-3111-4671-a602-0d93afb5df20`
-
-### Deploy Infrastructure
+### 3. Deploy Infrastructure
 
 ```bash
-cd infra
 terraform init
 terraform plan
 terraform apply
 ```
 
-### Deploy Web Application
+## Environment Examples
 
-The web application from `/webapp` folder is automatically deployed via GitHub Actions using **GitHub Environments**:
+### Development Environment
+```hcl
+envName = "development"
+```
+Creates:
+- Resource Group: `investpulse-development-rg`
+- Static Web App: `investpulse-development-webapp`
+- Domain: `development.investpulse.net`
+- GitHub Environment: `development`
 
-#### Environments
-- **Development**: Auto-deploy from `develop` branch
-- **Production**: Auto-deploy from `main` branch (with approval)
-- **Preview**: Auto-deploy from Pull Requests
+### Production Environment
+```hcl
+envName = "production" 
+```
+Creates:
+- Resource Group: `investpulse-production-rg`
+- Static Web App: `investpulse-production-webapp`
+- Domain: `investpulse.net` (root domain)
+- GitHub Environment: `production` (with 5-minute wait timer)
 
-#### Setup GitHub Environments
-1. Go to repository **Settings** → **Environments**
-2. Create environments: `development`, `production`
-3. Configure protection rules for production (manual approval)
-4. Add `AZURE_STATIC_WEB_APPS_API_TOKEN` secret to each environment
+### Staging Environment
+```hcl
+envName = "staging"
+```
+Creates:
+- Resource Group: `investpulse-staging-rg`
+- Static Web App: `investpulse-staging-webapp`
+- Domain: `staging.investpulse.net`
+- GitHub Environment: `staging`
 
-See [GitHub Environments Configuration](../.github/ENVIRONMENTS.md) for detailed setup.
+## Variables
 
-### Cloudflare DNS Configuration
+| Variable | Description | Type | Default |
+|----------|-------------|------|---------|
+| `envName` | Environment name that drives all resource naming | `string` | **Required** |
+| `subscription_id` | Azure subscription ID | `string` | `"ac0e7cdd-3111-4671-a602-0d93afb5df20"` |
+| `location` | Azure region for resources | `string` | `"westeurope"` |
+| `base_domain` | Base domain for DNS entries | `string` | `"investpulse.net"` |
+| `github_owner` | GitHub repository owner/organization | `string` | `"onlexnet"` |
+| `github_repository` | GitHub repository name | `string` | **Required** |
+| `github_token` | GitHub Personal Access Token | `string` | **Required** (sensitive) |
+| `cloudflare_api_token` | Cloudflare API token for DNS | `string` | **Required** (sensitive) |
+| `cloudflare_zone_id` | Cloudflare Zone ID | `string` | `"2fa34bc4e1284682e9047b76b5826ffd"` |
 
-The infrastructure automatically creates DNS records for each GitHub environment:
-- `development.investpulse.net` → Azure Static Web App
-- `production.investpulse.net` → Azure Static Web App
+## Outputs
 
-#### Setup Cloudflare DNS
+After deployment, important information is provided:
 
-1. **Get Cloudflare API Token**:
-   - Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
-   - Create token with permissions:
-     - Zone:Zone:Read for investpulse.net
-     - Zone:DNS:Edit for investpulse.net
+- `environment_info`: Environment configuration details
+- `domain_info`: Domain and DNS configuration  
+- `azure_static_web_app_info`: Azure Static Web App details
+- `resource_group_info`: Resource group details
+- `deployment_instructions`: Step-by-step deployment guide
 
-2. **Get Zone ID**:
-   - Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
-   - Select `investpulse.net` domain
-   - Copy Zone ID from the right sidebar
+## Post-Deployment Setup
 
-3. **Configure Terraform**:
+### 1. Configure GitHub Environment Secrets
+
+1. Get the Azure Static Web App deployment token:
    ```bash
-   # Add to secret.auto.tfvars
-   cloudflare_api_token = "your-cloudflare-api-token"
-   
-   # Add to terraform.tfvars  
-   cloudflare_zone_id = "your-zone-id"
+   # From Azure Portal > Static Web App > Manage deployment token
    ```
 
-4. **Apply configuration**:
+2. Add to GitHub Environment:
+   - Go to: `https://github.com/{owner}/{repo}/settings/environments/{envName}`
+   - Add secret: `AZURE_STATIC_WEB_APPS_API_TOKEN`
+
+### 2. Deploy Application
+
+Use GitHub Actions targeting the specific environment:
+```yaml
+- name: Deploy to Azure Static Web Apps
+  uses: Azure/static-web-apps-deploy@v1
+  with:
+    azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+    repo_token: ${{ secrets.GITHUB_TOKEN }}
+    action: "upload"
+    app_location: "/webapp"
+    output_location: "out"
+```
+
+## DNS Configuration
+
+### Automatic (with Cloudflare)
+If `cloudflare_api_token` and `cloudflare_zone_id` are configured, DNS records are created automatically.
+
+### Manual
+If Cloudflare is not configured, manually create a CNAME record:
+- **Name**: `{envName}` (or `@` for production)
+- **Type**: `CNAME`
+- **Value**: `{static_web_app_default_hostname}` (from outputs)
+
+## Cost Optimization
+
+- **Azure Static Web App (Free Tier)**: $0/month
+  - 0.5 GB bandwidth
+  - Up to 2 custom domains
+  - No API/functions support
+- **Resource Group**: Free
+- **GitHub Environments**: Free (on public repos)
+- **Cloudflare DNS**: Free
+
+**Total Cost**: $0/month for typical development workloads
+
+## Multiple Environments
+
+To deploy multiple environments, use Terraform workspaces or separate directories:
+
+### Option 1: Terraform Workspaces
+```bash
+# Create development environment
+terraform workspace new development
+terraform apply -var="envName=development"
+
+# Create production environment  
+terraform workspace new production
+terraform apply -var="envName=production"
+```
+
+### Option 2: Separate Directories
+```
+infra/
+├── environments/
+│   ├── development/
+│   │   ├── main.tf -> ../../main.tf
+│   │   ├── variables.tf -> ../../variables.tf
+│   │   └── terraform.tfvars (envName = "development")
+│   └── production/
+│       ├── main.tf -> ../../main.tf
+│       ├── variables.tf -> ../../variables.tf
+│       └── terraform.tfvars (envName = "production")
+```
+
+## Security Best Practices
+
+1. **Never commit secrets** to version control
+2. **Use environment variables** for sensitive values:
    ```bash
-   terraform plan
-   terraform apply
+   export TF_VAR_github_token="ghp_your_token"
+   export TF_VAR_cloudflare_api_token="your_token"
    ```
+3. **Restrict GitHub token permissions** to minimum required
+4. **Use separate Cloudflare tokens** per environment if possible
+5. **Enable Terraform state locking** with Azure Storage
 
-The DNS records will automatically point to your Azure Static Web App with Cloudflare proxy enabled for SSL and performance optimization.
+## Troubleshooting
 
-**Manual deployment steps:**
+### Common Issues
 
-1. Build the static app:
-   ```bash
-   cd webapp
-   npm install
-   npm run build:static
-   ```
+1. **GitHub Environment creation fails**
+   - Ensure GitHub token has `admin:org` permissions
+   - Verify repository exists and is accessible
 
-2. The built files will be in `webapp/out/` directory
+2. **DNS not resolving**
+   - Check Cloudflare zone ID is correct
+   - Verify API token has DNS edit permissions
+   - Allow time for DNS propagation (up to 24 hours)
 
-3. Upload to Azure Static Web App using Azure CLI or GitHub Actions
+3. **Static Web App deployment fails**
+   - Verify deployment token is correct
+   - Check GitHub Actions logs
+   - Ensure app_location and output_location are correct
 
-### Configuration
+### Getting Help
 
-- **Static Web App settings**:
-  - App location: `/webapp`
-  - Build command: `npm run build:static`
-  - Output location: `out`
-  - No API backend
+- Check Terraform plan output before applying
+- Review Azure Portal for resource status
+- Check GitHub Actions deployment logs
+- Verify DNS settings in Cloudflare dashboard
 
-### Secrets Required
+## Contributing
 
-Add the following secrets to **GitHub Environments** (not repository-wide):
-
-#### Development Environment
-- `AZURE_STATIC_WEB_APPS_API_TOKEN`: Development app deployment token
-
-#### Production Environment  
-- `AZURE_STATIC_WEB_APPS_API_TOKEN`: Production app deployment token
-
-Get tokens from: Azure Portal > Static Web App > Manage deployment token
-
-## Cost Estimation
-
-- Azure Static Web App (Free tier): **$0 USD/month**
-- Resource Group: **Free**
-- Custom Domain: **Included** (up to 2 domains)
-
-**Total**: $0 USD/month
-
-### Free Tier Limitations
-- 0.5 GB bandwidth per month
-- Up to 2 custom domains
-- No APIs/functions support
-- Basic authentication only
+1. Follow Terraform best practices
+2. Update documentation for any changes
+3. Test with `terraform plan` before committing
+4. Use conventional commit messages
