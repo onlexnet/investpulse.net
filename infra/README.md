@@ -79,6 +79,42 @@ The web application from `/webapp` folder is automatically deployed via GitHub A
 
 See [GitHub Environments Configuration](../.github/ENVIRONMENTS.md) for detailed setup.
 
+### Cloudflare DNS Configuration
+
+The infrastructure automatically creates DNS records for each GitHub environment:
+- `development.investpulse.net` → Azure Static Web App
+- `production.investpulse.net` → Azure Static Web App
+
+#### Setup Cloudflare DNS
+
+1. **Get Cloudflare API Token**:
+   - Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
+   - Create token with permissions:
+     - Zone:Zone:Read for investpulse.net
+     - Zone:DNS:Edit for investpulse.net
+
+2. **Get Zone ID**:
+   - Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
+   - Select `investpulse.net` domain
+   - Copy Zone ID from the right sidebar
+
+3. **Configure Terraform**:
+   ```bash
+   # Add to secret.auto.tfvars
+   cloudflare_api_token = "your-cloudflare-api-token"
+   
+   # Add to terraform.tfvars  
+   cloudflare_zone_id = "your-zone-id"
+   ```
+
+4. **Apply configuration**:
+   ```bash
+   terraform plan
+   terraform apply
+   ```
+
+The DNS records will automatically point to your Azure Static Web App with Cloudflare proxy enabled for SSL and performance optimization.
+
 **Manual deployment steps:**
 
 1. Build the static app:

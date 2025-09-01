@@ -46,3 +46,16 @@ variable "github_token" {
   type        = string
   sensitive   = true
 }
+
+# Cloudflare Configuration
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token for DNS management"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare Zone ID for investpulse.net domain"
+  type        = string
+  default     = "2fa34bc4e1284682e9047b76b5826ffd"
+}
