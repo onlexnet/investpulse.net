@@ -24,6 +24,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.42"
     }
+    github = {
+      source  = "integrations/github"
+      version = "~> 6.0"
+    }
   }
   required_version = ">= 1.10"
 }
@@ -31,6 +35,12 @@ terraform {
 provider "azurerm" {
   features {}
   subscription_id = var.subscription_id
+}
+
+# GitHub provider with enhanced permissions
+provider "github" {
+  owner = var.github_owner
+  token = var.github_token
 }
 
 resource "azurerm_resource_group" "webapp" {
@@ -75,6 +85,67 @@ output "custom_domain_validation_token" {
   sensitive   = true
 }
 
+# GitHub Environments with workaround for free plan limitations
+# ================================================================
+
+# Try to create environments - will work on public repos or paid plans
+# COMMENTED OUT: Requires GitHub token with admin:org permissions
+resource "github_repository_environment" "environments" {
+  
+  for_each = toset([
+    "development",
+    "production"
+  ])
+  
+  repository  = var.github_repository
+  environment = each.key
+#   
+#   
+#   # Basic configuration that works on free plans
+#   # can_admins_bypass   = true
+#   # prevent_self_review = false
+  
+  # Wait timer only for production
+  # wait_timer = each.key == "production" ? 300 : 0  # 5 minutes for prod
+  
+  # Deployment branch policy (works on public repos)
+  # dynamic "deployment_branch_policy" {
+  #   for_each = each.key == "production" ? [1] : []
+  #   content {
+  #     protected_branches     = true
+  #     custom_branch_policies = false
+  #   }
+  # }
+  
+  # Note: reviewers require GitHub Pro/Team/Enterprise
+  # For free accounts, this will be ignored
+  # lifecycle {
+  #   ignore_changes = [
+  #     reviewers  # Ignore reviewer changes as they require paid plan
+  #   ]
+  # }
+}
+
+# Environment variables/secrets setup instructions
+locals {
+  environment_setup_instructions = {
+    development = {
+      name = "development"
+      secrets_needed = [
+        "AZURE_STATIC_WEB_APPS_API_TOKEN"
+      ]
+      description = "Development environment for feature branches"
+    }
+    production = {
+      name = "production"
+      secrets_needed = [
+        "AZURE_STATIC_WEB_APPS_API_TOKEN"
+      ]
+      description = "Production environment for main branch"
+    }
+  }
+}
+
 # Note: GitHub Environments require GitHub Pro/Team/Enterprise plan
 # For free GitHub accounts, environments are not available in private repos
 # and have limited functionality in public repos
@@ -106,5 +177,31 @@ output "github_environments_setup_instructions" {
 output "azure_static_web_app_deployment_token_instruction" {
   description = "Instructions for obtaining deployment token"
   value = "Get deployment token from: Azure Portal > ${azurerm_static_web_app.webapp.name} > Manage deployment token"
+}
+
+# GitHub Environments Information
+# COMMENTED OUT: Requires GitHub environments to be created first
+# output "github_environments_created" {
+#   description = "Information about created GitHub environments"
+#   value = {
+#     for env_name, env in github_repository_environment.environments : env_name => {
+#       id          = env.id
+#       environment = env.environment
+#       repository  = env.repository
+#       wait_timer  = env.wait_timer
+#     }
+#   }
+# }
+
+output "environment_setup_guide" {
+  description = "Guide for setting up environment secrets"
+  value = {
+    for env_name, config in local.environment_setup_instructions : env_name => {
+      name            = config.name
+      description     = config.description
+      secrets_needed  = config.secrets_needed
+      setup_url       = "https://github.com/${var.github_owner}/${var.github_repository}/settings/environments/${config.name}"
+    }
+  }
 }
 

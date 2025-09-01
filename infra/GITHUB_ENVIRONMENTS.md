@@ -181,7 +181,7 @@ production = {
 
 ```bash
 # Check GitHub environments were created
-gh api repos/onlexnet/predictivetrading.net/environments
+gh api repos/onlexnet/investpulse.net/environments
 
 # Check Azure resources
 az staticwebapp list --resource-group investpulse-webapp-rg

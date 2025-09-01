@@ -29,19 +29,20 @@ variable "custom_domain" {
   default     = "dev.investpulse.net"
 }
 
-variable "github_repository" {
-  description = "Name of the GitHub repository"
-  type        = string
-  default     = "investpulse.net"
-}
-
+# GitHub Configuration
 variable "github_owner" {
-  description = "Owner of the GitHub repository"
+  description = "GitHub repository owner/organization"
   type        = string
   default     = "onlexnet"
 }
-# Note: GitHub configuration removed - environments require Pro/Enterprise plan
-# Manual setup required for GitHub Actions deployment
 
-# Note: GitHub Environments configuration removed due to plan limitations
-# Manual setup required in GitHub UI for free/basic plans
+variable "github_repository" {
+  description = "GitHub repository name"
+  type        = string
+}
+
+variable "github_token" {
+  description = "GitHub Personal Access Token with repo and admin:org permissions"
+  type        = string
+  sensitive   = true
+}
