@@ -99,11 +99,11 @@ resource "github_repository_environment" "environments" {
   
   repository  = var.github_repository
   environment = each.key
-#   
-#   
-#   # Basic configuration that works on free plans
-#   # can_admins_bypass   = true
-#   # prevent_self_review = false
+  
+  
+  # Basic configuration that works on free plans
+  can_admins_bypass   = true
+  prevent_self_review = false
   
   # Wait timer only for production
   # wait_timer = each.key == "production" ? 300 : 0  # 5 minutes for prod
