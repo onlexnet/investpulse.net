@@ -78,68 +78,88 @@ This document maps business requirements from the application specification to s
 - CA-001: Ranking sequence validation
 - CA-002: Date and time consistency
 
-## Gap Analysis and Additional Coverage
+### User Interface Requirements
 
-### Previously Identified Gaps (Now Covered)
+#### 11. Main Title and Header Display
+**Requirement**: "Popular Stocks Ranked by AI" title with proper formatting
+**Mapped Test Cases**:
+- UI-001: Main title and header display validation
+- TD-001: General data display (includes header verification)
 
-#### Loading States
-**Gap**: No explicit test for API latency/slow response
-**Resolution**: Added LS-001 (Loading indicators) and LS-002 (Timeout handling)
+#### 12. Responsive Grid Layout
+**Requirement**: Side-by-side tables on desktop, adaptive layout on smaller screens
+**Mapped Test Cases**:
+- UI-002: Grid layout behavior across devices
+- RT-001 to RT-003: Device-specific responsiveness testing
 
-#### Empty Data Scenarios
-**Gap**: No test for empty search/data results
-**Resolution**: Added ES-001 (Empty state handling) and SF-002 (Empty search results)
+#### 13. Interactive Elements (Future Implementation)
+**Requirement**: "Show ETFs" and "Show More" buttons as specified in mockup
+**Mapped Test Cases**:
+- FI-001: "Show ETFs" button functionality
+- FI-002: "Show More" button functionality
+- SF-001: Search functionality (when implemented)
 
-#### Screen Reader Support
-**Gap**: No test for accessibility with screen readers
-**Resolution**: Added AT-002 (Screen reader compatibility)
+## Gap Analysis and Important Scenarios Coverage
 
-#### Sorting Functionality
-**Gap**: No test for sorting capabilities
-**Resolution**: Added ST-001 (Column sorting) for future implementation
+### Key Business Requirements Coverage
 
-### Additional Edge Cases Covered
+#### Core Functionality (High Priority)
+- ✅ **Data Display**: TD-001 to TD-004 cover all table data requirements
+- ✅ **Visual Indicators**: TD-002 to TD-004 cover color coding and formatting
+- ✅ **Responsive Design**: RT-001 to RT-003 + UI-002 cover layout adaptation
+- ✅ **User Interface**: UI-001 covers main title and header requirements
 
-#### Data Validation
-- **DV-001**: Extreme AI score values (0, 1, 5, 7, 9, 10)
-- **DV-002**: Extreme return percentages (-99.99% to +999.99%)
-- **DV-003**: Long company names (>50 characters)
+#### Interactive Elements (Future Ready)
+- ✅ **Navigation**: FI-001 and FI-002 cover button functionality
+- ✅ **Search**: SF-001 covers search functionality
+- ⚠️ **Excluded per instructions**: Empty search results, sorting, screen readers
 
-#### Performance Testing
-- **LS-001**: Loading state validation
-- **LS-002**: API timeout scenarios
+#### Quality Assurance (Medium Priority)
+- ✅ **Data Validation**: DV-001 to DV-003 cover edge cases
+- ✅ **Error Handling**: LS-001, LS-002, ES-001 cover error scenarios
+- ✅ **Accessibility**: AT-001 and AT-003 cover basic accessibility
+- ⚠️ **Excluded per instructions**: Loading indicators, screen reader support
 
-#### Content Accuracy
-- **CA-002**: Descriptive text and date accuracy
-
-## Test Priority Matrix
+## Test Priority Matrix for Important Scenarios
 
 ### High Priority (Critical Business Functions)
-- TD-001: Core data display
-- TD-002: AI Score color coding
-- TD-003: Return percentage display
-- TD-004: Trend indicators
-- RT-001: Mobile responsiveness
-- RT-003: Desktop layout
-- AT-001: Keyboard accessibility
-- LS-001: Loading states
+- **TD-001 to TD-004**: Core data display and visual indicators
+- **UI-002**: Grid layout behavior (essential for responsive design)
+- **RT-001, RT-003**: Mobile and desktop responsiveness
+- **AT-001**: Keyboard accessibility
+- **FI-001, FI-002**: Interactive buttons (when implemented)
 
-### Medium Priority (Important UX Features)
-- DV-001, DV-002: Edge case handling
-- RT-002: Tablet responsiveness
-- AT-002: Screen reader support
-- AT-003: Color contrast
-- CA-001: Data consistency
-- LS-002: Timeout handling
-- ES-001: Empty states
+### Medium Priority (Important UX Features) 
+- **UI-001**: Main title and header display
+- **DV-001, DV-002**: Edge case data validation
+- **RT-002**: Tablet responsiveness
+- **AT-003**: Color contrast validation
+- **CA-001**: Data consistency
 
-### Low Priority (Nice-to-Have)
-- DV-003: Long name handling
-- CA-002: Content accuracy details
+### Low Priority (Supporting Features)
+- **DV-003**: Long name handling
+- **CA-002**: Content accuracy details
+- **LS-001, LS-002**: Performance scenarios (excluded from current scope)
+- **ES-001**: Empty state handling (excluded from current scope)
 
-### Future Implementation (When Features Exist)
-- SF-001, SF-002: Search functionality
-- ST-001: Sorting capabilities
+## Implementation Recommendations
+
+### Phase 1: Core Requirements (Immediate)
+1. **Data Display Testing**: TD-001 to TD-004 (validate all table functionality)
+2. **Layout Testing**: UI-002 (ensure grid layout works across devices)
+3. **Basic Responsiveness**: RT-001, RT-003 (mobile and desktop)
+
+### Phase 2: User Experience (Short Term)
+1. **Interface Elements**: UI-001 (main title and header validation)
+2. **Data Quality**: DV-001, DV-002 (edge case handling)
+3. **Accessibility**: AT-001, AT-003 (keyboard navigation and contrast)
+
+### Phase 3: Future Features (When Implemented)
+1. **Interactive Elements**: FI-001, FI-002 (button functionality)
+2. **Search Capability**: SF-001 (search functionality)
+3. **Enhanced Features**: ST-001 (sorting, when available)
+
+This mapping ensures all important business requirements are covered while maintaining focus on critical functionality and user experience.
 
 ## Coverage Metrics
 

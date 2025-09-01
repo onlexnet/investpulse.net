@@ -181,6 +181,44 @@ Verify the correct functionality of the main screen displaying stocks/ETF rankin
 - **Expected Result**: Accurate and current information
 - **Priority**: Low
 
+### 8. User Interface Elements
+**Test ID: UI-001**
+- **Objective**: Verify main title and header display
+- **Steps**:
+  1. Check that main title displays "Popular Stocks Ranked by AI"
+  2. Verify subtitle with date information is present
+  3. Verify proper centering and styling of header elements
+- **Expected Result**: Header displays correctly with proper formatting
+- **Priority**: Medium
+
+**Test ID: UI-002**
+- **Objective**: Verify grid layout behavior across devices
+- **Steps**:
+  1. Test desktop layout (>1024px) shows tables side-by-side
+  2. Test tablet layout (768px-1024px) shows appropriate adaptation
+  3. Test mobile layout (<768px) shows single column
+- **Expected Result**: Grid layout responds appropriately to screen size
+- **Priority**: High
+
+### 9. Future Interactive Elements
+**Test ID: FI-001**
+- **Objective**: Test "Show ETFs" button functionality (when implemented)
+- **Steps**:
+  1. Locate "Show ETFs" button in interface
+  2. Click button and verify view changes
+  3. Test button state and visual feedback
+- **Expected Result**: Button correctly toggles to ETF-focused view
+- **Priority**: High (when feature exists)
+
+**Test ID: FI-002**
+- **Objective**: Test "Show More" button functionality (when implemented)
+- **Steps**:
+  1. Locate "Show More" button in interface
+  2. Click button and verify additional data loads
+  3. Test pagination or data expansion behavior
+- **Expected Result**: More data loads without breaking layout
+- **Priority**: High (when feature exists)
+
 ## Future Enhancement Test Cases
 
 ### Search Functionality (When Implemented)

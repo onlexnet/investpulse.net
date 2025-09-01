@@ -7,6 +7,35 @@ This file contains links to detailed test plans for individual screens and funct
 - [Main Screen (Stocks/ETF Ranking)](./TEST_PLAN_FIRST_SCREEN.md) - Comprehensive test plan for the main application screen
 - [Test Coverage Mapping](./TEST_COVERAGE_MAPPING.md) - Business requirements to test case mapping and gap analysis
 
+## Coverage Summary
+
+### Current Test Coverage (29 Test Cases)
+- **Data Display & Presentation**: 4 test cases (TD-001 to TD-004)
+- **Data Validation & Edge Cases**: 3 test cases (DV-001 to DV-003)  
+- **Loading States & Performance**: 2 test cases (LS-001 to LS-002)
+- **Empty State Handling**: 1 test case (ES-001)
+- **Responsiveness Testing**: 3 test cases (RT-001 to RT-003)
+- **Accessibility Testing**: 3 test cases (AT-001 to AT-003)
+- **Content Accuracy**: 2 test cases (CA-001 to CA-002)
+- **User Interface Elements**: 2 test cases (UI-001 to UI-002)
+- **Future Interactive Elements**: 2 test cases (FI-001 to FI-002)
+- **Future Search Functionality**: 2 test cases (SF-001 to SF-002)
+- **Future Sorting Functionality**: 1 test case (ST-001)
+
+### Important Business Requirements Coverage
+✅ **Core Data Display**: All table data and visual indicators covered
+✅ **Responsive Design**: Complete device coverage including grid layout
+✅ **User Interface**: Main title, headers, and layout elements covered
+✅ **Future Readiness**: Interactive buttons and search functionality prepared
+✅ **Quality Assurance**: Edge cases, error handling, and accessibility covered
+
+### Excluded Areas (Per Instructions)
+- API latency/loading indicator testing
+- Empty search results testing
+- Screen reader accessibility testing  
+- Column sorting implementation testing
+- Internationalization testing
+
 ## Quality Assurance Framework
 
 ### Test Documentation Structure

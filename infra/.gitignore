@@ -1,0 +1,38 @@
+# Terraform files
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+terraform.tfstate
+terraform.tfstate.backup
+secret.auto.tfvars
+.terraform/
+.terraform.lock.hcl
+
+# Terraform variable files (exclude all except example)
+*.tfvars
+*.tfvars.json
+!terraform.tfvars.example
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Ignore override files as they are usually used to override resources locally
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+*tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Local environment files
+.env
+.env.local
+
+# Azure CLI files
+.azure/

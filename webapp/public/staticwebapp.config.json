@@ -1,0 +1,21 @@
+{
+  "routes": [
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/file.svg", "/globe.svg", "/next.svg", "/vercel.svg", "/window.svg", "/_next/*"]
+  },
+  "mimeTypes": {
+    ".json": "application/json"
+  },
+  "defaultHeaders": {
+    "content-security-policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https:",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY"
+  }
+}
