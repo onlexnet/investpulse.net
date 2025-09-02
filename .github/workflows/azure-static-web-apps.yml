@@ -5,7 +5,9 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
+      - master
       - develop
+      - dev1
     paths:
       - 'webapp/**'
 
@@ -15,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Preview
     environment: 
-      name: preview-pr-${{ github.event.number }}
+      name: ${{ (github.base_ref == 'main' || github.base_ref == 'master' || github.base_ref == 'dev1') && 'dev1' || format('preview-pr-{0}', github.event.number) }}
       url: ${{ steps.builddeploy.outputs.static_web_app_url }}
     steps:
       - uses: actions/checkout@v4
@@ -40,9 +42,9 @@ jobs:
           cd webapp
           npm run build:static
         env:
-          NODE_ENV: preview
+          NODE_ENV: ${{ (github.base_ref == 'main' || github.base_ref == 'master' || github.base_ref == 'dev1') && 'dev1' || 'preview' }}
       
-      - name: Deploy Preview to Azure Static Web Apps
+      - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -56,11 +58,67 @@ jobs:
           output_location: "out" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
 
+      - name: Verify deployment
+        if: steps.builddeploy.outcome == 'success'
+        run: |
+          echo "Deployment completed successfully"
+          echo "App URL: ${{ steps.builddeploy.outputs.static_web_app_url }}"
+          
+          # Wait a moment for deployment to be ready
+          sleep 10
+          
+          # Verify the deployment is accessible
+          if [ -n "${{ steps.builddeploy.outputs.static_web_app_url }}" ]; then
+            echo "Testing deployment accessibility..."
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.builddeploy.outputs.static_web_app_url }}" || echo "000")
+            echo "HTTP Status: $HTTP_STATUS"
+            
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Deployment verification successful - App is accessible"
+            else
+              echo "⚠️ Deployment verification warning - App returned HTTP $HTTP_STATUS"
+              echo "This might be normal for a new deployment that needs time to propagate"
+            fi
+          else
+            echo "⚠️ No deployment URL available for verification"
+          fi
+          
+          # Add deployment info to job summary
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          ## 🚀 Deployment Summary
+          
+          **Environment:** ${{ (github.base_ref == 'main' || github.base_ref == 'master' || github.base_ref == 'dev1') && 'dev1' || 'preview' }}
+          **URL:** ${{ steps.builddeploy.outputs.static_web_app_url }}
+          **Target Branch:** ${{ github.base_ref }}
+          **Status:** ✅ Deployed Successfully
+          EOF
+
+      - name: Comment deployment info on PR
+        if: steps.builddeploy.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ (github.base_ref == 'main' || github.base_ref == 'master' || github.base_ref == 'dev1') && 'dev1' || 'preview' }}';
+            const deploymentUrl = '${{ steps.builddeploy.outputs.static_web_app_url }}';
+            const targetBranch = '${{ github.base_ref }}';
+            
+            const isDevEnvironment = environment === 'dev1';
+            const noteText = isDevEnvironment ? '\n\n🔔 Note: This PR targets a main branch and has been deployed to the dev1 environment.' : '';
+            
+            const commentBody = `## 🚀 Preview Deployment Ready!\n\nEnvironment: \`${environment}\`\nTarget Branch: \`${targetBranch}\`\nDeployment URL: ${deploymentUrl}\n\nYour changes have been deployed and are ready for review! 🎉${noteText}`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
+
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request Job
-    environment: preview-pr-${{ github.event.number }}
+    environment: ${{ (github.base_ref == 'main' || github.base_ref == 'master' || github.base_ref == 'dev1') && 'dev1' || format('preview-pr-{0}', github.event.number) }}
     steps:
       - name: Close Pull Request
         id: closepullrequest
