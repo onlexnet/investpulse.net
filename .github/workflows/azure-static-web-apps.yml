@@ -1,3 +1,13 @@
+# Azure Static Web Apps - Preview Workflow
+# ----------------------------------------
+# This workflow builds and deploys a preview version of the frontend (webapp/)
+# to Azure Static Web Apps for every pull request targeting 'main' or 'develop'.
+# - On PR open/sync/reopen: Builds and deploys a preview environment.
+# - On PR close: Cleans up the preview environment.
+# Only changes in 'webapp/**' trigger this workflow.
+# The preview URL is available in the PR environment.
+# ----------------------------------------
+
 name: Azure Static Web Apps - Preview
 
 on:
