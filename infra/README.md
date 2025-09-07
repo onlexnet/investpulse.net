@@ -216,3 +216,17 @@ infra/
 2. Update documentation for any changes
 3. Test with `terraform plan` before committing
 4. Use conventional commit messages
+
+### Variables used in terraform cloud:
+- TF_VAR_CLOUDFLARE_API_TOKEN
+  - Cloudflare token named investpulse-dns-edit to update DNS records in investpulse.net
+  - Generate at: https://dash.cloudflare.com/profile/api-tokens
+  - Required permissions: Zone:Zone:Read, Zone:DNS:Edit for investpulse.net zone
+- TF_VAR_GITHUB_TOKEN
+  - GitHub Personal Access Token
+  - Generate at: https://github.com/settings/tokens
+  - Required permissions: repo, admin:repo_hook
+- ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_SUBSCRIPTION_ID, ARM_TENANT_ID:
+  - Azure Service Principal credentials for Terraform to manage Azure resources
+  - Create with: `az ad sp create-for-rbac --name investpulse-net-infra --role contributor --scopes /subscriptions/ac0e7cdd-3111-4671-a602-0d93afb5df20`
+  - More info: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret

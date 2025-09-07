@@ -39,14 +39,14 @@ variable "github_repository" {
   type        = string
 }
 
-variable "github_token" {
+variable "GITHUB_TOKEN" {
   description = "GitHub Personal Access Token with repo and admin:org permissions"
   type        = string
   sensitive   = true
 }
 
 # Cloudflare Configuration
-variable "cloudflare_api_token" {
+variable "CLOUDFLARE_API_TOKEN" {
   description = "Cloudflare API token for DNS management"
   type        = string
   sensitive   = true

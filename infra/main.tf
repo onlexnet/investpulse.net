@@ -19,6 +19,15 @@
 # 4. Use GitHub Pages as alternative free hosting option
 
 terraform {
+  cloud {
+    organization = "onlexnet"
+
+    workspaces {
+      project = "investpulse"
+      name    = "investpulse-nonprod"
+    }
+  }
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -44,12 +53,12 @@ provider "azurerm" {
 # GitHub provider with enhanced permissions
 provider "github" {
   owner = var.github_owner
-  token = var.github_token
+  token = var.GITHUB_TOKEN
 }
 
 # Cloudflare provider for DNS management
 provider "cloudflare" {
-  api_token = var.cloudflare_api_token
+  api_token = var.CLOUDFLARE_API_TOKEN
 }
 
 resource "azurerm_resource_group" "webapp" {
@@ -122,9 +131,8 @@ resource "cloudflare_record" "environment_dns" {
   name    = var.envName  # Environment name as DNS prefix (e.g., dev1)
   type    = "CNAME"
   content = azurerm_static_web_app.webapp.default_host_name
-  ttl     = 300   # 5 minutes TTL (can be custom when proxied = false)
+  ttl     = 60   # 1 minute TTL (can be custom when proxied = false)
   proxied = false # DNS only - direct connection to Azure Static Web App
 
   comment = "DNS record for ${var.envName} environment pointing to Azure Static Web App"
 }
-
