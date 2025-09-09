@@ -103,19 +103,13 @@ resource "github_repository_environment" "environment" {
   # Wait timer for production-like environments
   wait_timer = contains(["prod", "production"], var.envName) ? 300 : 0  # 5 minutes for production
 
-  # Deployment branch policy (works on public repos)
-  # dynamic "deployment_branch_policy" {
-  #   for_each = each.key == "production" ? [1] : []
-  #   content {
-  #     protected_branches     = true
-  #     custom_branch_policies = false
-  #   }
-  # }
+}
 
-  # Note: reviewers require GitHub Pro/Team/Enterprise
-  # For free accounts, this will be ignored
-  # lifecycle {
-  #   ignore_changes = [
+resource "github_actions_environment_secret" "static_web_app_api_token" {
+  repository      = var.github_repository
+  environment     = var.envName
+  secret_name     = "AZURE_STATIC_WEB_APPS_API_TOKEN"
+  plaintext_value = azurerm_static_web_app.webapp.api_key
 }
 
 # ================================================================
@@ -125,8 +119,6 @@ resource "github_repository_environment" "environment" {
 # Create DNS record for the environment
 # Format: envName.investpulse.net -> Azure Static Web App
 resource "cloudflare_record" "environment_dns" {
-  count = var.cloudflare_zone_id != "" ? 1 : 0
-
   zone_id = var.cloudflare_zone_id
   name    = var.envName  # Environment name as DNS prefix (e.g., dev1)
   type    = "CNAME"

@@ -36,3 +36,5 @@ terraform.rc
 
 # Azure CLI files
 .azure/
+
+minio-data/

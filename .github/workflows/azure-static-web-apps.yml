@@ -1,32 +1,26 @@
 # Azure Static Web Apps - Preview Workflow
 # ----------------------------------------
 # This workflow builds and deploys a preview version of the frontend (webapp/)
-# to Azure Static Web Apps for every pull request targeting 'main' or 'develop'.
-# - On PR open/sync/reopen: Builds and deploys a preview environment.
-# - On PR close: Cleans up the preview environment.
+# to Azure Static Web Apps for every change iin master branch
 # Only changes in 'webapp/**' trigger this workflow.
-# The preview URL is available in the PR environment.
 # ----------------------------------------
 
-name: Azure Static Web Apps - Preview
+name: Azure Static Web Apps
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
+  push:
     branches:
       - main
-      - develop
-      - dev1
     paths:
       - 'webapp/**'
+      - '.github/workflows/azure-static-web-apps.yml'
 
 jobs:
   build_and_deploy_preview:
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
-    name: Build and Deploy Preview
+    name: Build and Deploy WebApp
     environment: 
-      name: ${{ (github.base_ref == 'main' || github.base_ref == 'dev1') && 'dev1' || format('preview-pr-{0}', github.event.number) }}
+      name: 'dev'
       url: ${{ steps.builddeploy.outputs.static_web_app_url }}
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +31,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          # node version same as used in development
+          node-version: '22' 
           cache: 'npm'
           cache-dependency-path: webapp/package-lock.json
       
@@ -51,7 +46,7 @@ jobs:
           cd webapp
           npm run build:static
         env:
-          NODE_ENV: ${{ (github.base_ref == 'main' || github.base_ref == 'dev1') && 'dev1' || 'preview' }}
+          NODE_ENV: ${{ (github.base_ref == 'main') && 'dev' || 'preview' }}
       
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
@@ -96,7 +91,7 @@ jobs:
           cat >> $GITHUB_STEP_SUMMARY << 'EOF'
           ## 🚀 Deployment Summary
           
-          **Environment:** ${{ (github.base_ref == 'main' || github.base_ref == 'dev1') && 'dev1' || 'preview' }}
+          **Environment:** ${{ (github.base_ref == 'main') && 'dev' || 'preview' }}
           **URL:** ${{ steps.builddeploy.outputs.static_web_app_url }}
           **Target Branch:** ${{ github.base_ref }}
           **Status:** ✅ Deployed Successfully
@@ -107,7 +102,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const environment = '${{ (github.base_ref == 'main' || github.base_ref == 'dev1') && 'dev1' || 'preview' }}';
+            const environment = '${{ (github.base_ref == 'main') && 'dev' || 'preview' }}';
             const deploymentUrl = '${{ steps.builddeploy.outputs.static_web_app_url }}';
             const targetBranch = '${{ github.base_ref }}';
             
@@ -123,15 +118,3 @@ jobs:
               body: commentBody
             });
 
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    environment: ${{ (github.base_ref == 'main' || github.base_ref == 'dev1') && 'dev1' || format('preview-pr-{0}', github.event.number) }}
-    steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          action: "close"

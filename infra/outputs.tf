@@ -40,7 +40,7 @@ output "dns_info" {
   value = {
     custom_domain         = local.custom_domain
     azure_default_hostname = azurerm_static_web_app.webapp.default_host_name
-    environment_url       = length(cloudflare_record.environment_dns) > 0 ? "https://${cloudflare_record.environment_dns[0].hostname}" : "https://${azurerm_static_web_app.webapp.default_host_name}"
+    environment_url       = "https://${cloudflare_record.environment_dns.hostname}"
     dns_configured        = length(cloudflare_record.environment_dns) > 0
   }
 }
@@ -77,6 +77,6 @@ output "deployment_instructions" {
        Add secret: AZURE_STATIC_WEB_APPS_API_TOKEN
     
     3. Access your deployed app:
-       URL: ${length(cloudflare_record.environment_dns) > 0 ? "https://${cloudflare_record.environment_dns[0].hostname}" : "https://${azurerm_static_web_app.webapp.default_host_name}"}
+       URL: https://${cloudflare_record.environment_dns.hostname}
   EOT
 }
