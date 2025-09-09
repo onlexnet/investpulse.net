@@ -1,0 +1,7 @@
+watchdog
+requests
+pandas
+pyarrow
+sec-edgar-downloader
+beautifulsoup4
+pyspark
