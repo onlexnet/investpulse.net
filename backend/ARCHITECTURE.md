@@ -21,20 +21,18 @@ JSON File → File Watcher → Processing State → SEC EDGAR Download → Fact 
 **Key Classes**:
 - `TickerFileHandler`: Extends `FileSystemEventHandler` to handle file creation events
 - Parses JSON files to extract ticker symbols
-- **NEW**: Moves files to `input/processing/` directory for organized workflow
-- **NEW**: Creates ProcessingState tracking for each ticker file
-- **NEW**: Generates state files (`ticker-name.state.json`) to track processing progress
+- Moves files to `input/processing/` directory for organized workflow
+- Creates ProcessingState tracking for each ticker file
+- Generates state files (`ticker-name.state.json`) to track processing progress
 - Triggers processing workflow via callback mechanism with ProcessingState object
-
-**Dependencies**: `watchdog`, `json`, `logging`, `shutil`, `ProcessingState`
 
 **Flow**:
 1. Observer monitors `input/` directory
 2. On file creation, validates JSON structure
 3. Extracts ticker symbol from JSON
-4. **NEW**: Moves file to `input/processing/` directory
-5. **NEW**: Creates ProcessingState object with initial status
-6. **NEW**: Saves state file in processing directory
+4. Moves file to `input/processing/` directory
+5. Creates ProcessingState object with initial status
+6. Saves state file in processing directory
 7. Invokes callback with ProcessingState for downstream processing
 
 **File Management**:
