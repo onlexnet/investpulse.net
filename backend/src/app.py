@@ -6,7 +6,7 @@ from src.fact_extractor import extract_top_facts, save_facts_to_parquet
 from src.logger import setup_logger
 from src.processing_state import ProcessingState, ProcessingStatus
 
-INPUT_DIR = "input"
+INPUT_DIR = "input/entry"
 OUTPUT_DIR = "output"
 LOG_FILE = "app.log"
 

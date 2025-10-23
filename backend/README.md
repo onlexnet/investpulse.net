@@ -1,6 +1,6 @@
 ## Predictive Trading Python App
 
-This app watches the `input/` folder for JSON files containing a ticker symbol, downloads SEC EDGAR filings for that ticker, extracts the top 10 most useful facts for buy/sell decisions, and saves them in Parquet format in the `output/` folder.
+This app watches the `input/entry/` folder for JSON files containing a ticker symbol, downloads SEC EDGAR filings for that ticker, extracts the top 10 most useful facts for buy/sell decisions, and saves them in Parquet format in the `output/` folder.
 
 ### Quick Start
 1. Install dependencies:
@@ -37,7 +37,7 @@ For type checking the entire project including tests:
 ```bash
 mypy .
 ```
-3. Add a JSON file to the `input/` folder, e.g.:
+3. Add a JSON file to the `input/entry/` folder, e.g.:
 	```json
 	{ "ticker": "AAPL" }
 	```

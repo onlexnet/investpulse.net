@@ -9,36 +9,33 @@ The Predictive Trading Python App is a modular, event-driven system that monitor
 ```
 JSON File → File Watcher → Processing State → SEC EDGAR Download → Fact Extraction → Parquet Storage
      ↓             ↓              ↓                    ↓                    ↓              ↓
-  input/    File Monitor   input/processing/   sec-edgar-filings/     Processing      output/
+input/entry/  File Monitor   input/entry/processing/ sec-edgar-filings/   Processing    output/
             + State Mgmt    + State Files
 ```
 
 ## Core Components
 
 ### 1. File Watcher (`src/file_watcher.py`)
-**Purpose**: Monitors the `input/` directory for new JSON files containing ticker symbols.
+**Purpose**: Monitors the `input/entry/` directory for new JSON files containing ticker symbols.
 
 **Key Classes**:
 - `TickerFileHandler`: Extends `FileSystemEventHandler` to handle file creation events
 - Parses JSON files to extract ticker symbols
-- Moves files to `input/processing/` directory for organized workflow
+- Moves files to `input/entry/processing/` directory for organized workflow
 - Creates ProcessingState tracking for each ticker file
 - Generates state files (`ticker-name.state.json`) to track processing progress
 - Triggers processing workflow via callback mechanism with ProcessingState object
 
 **Flow**:
-1. Observer monitors `input/` directory
-2. On file creation, validates JSON structure
-3. Extracts ticker symbol from JSON
-4. Moves file to `input/processing/` directory
-5. Creates ProcessingState object with initial status
-6. Saves state file in processing directory
-7. Invokes callback with ProcessingState for downstream processing
+1. Observer monitors `input/entry/` directory
+2. JSON file created with `{"ticker": "AAPL"}`
+3. Validates JSON structure and extracts ticker
+4. Moves file to `input/entry/processing/` directory
 
 **File Management**:
-- Original files: `input/{ticker}.json`
-- Moved to: `input/processing/{ticker}.json`
-- State files: `input/processing/{ticker}.state.json`
+- Original files: `input/entry/{ticker}.json`
+- Moved to: `input/entry/processing/{ticker}.json`
+- State files: `input/entry/processing/{ticker}.state.json`
 
 ### 2. Processing State Management (`src/processing_state.py`)
 **Purpose**: Manages the complete lifecycle state of ticker file processing from discovery to completion.
@@ -71,7 +68,8 @@ JSON File → File Watcher → Processing State → SEC EDGAR Download → Fact 
 **Usage Pattern**:
 ```python
 # Create initial state
-state = ProcessingState(ticker="AAPL", original_file_path="input/aapl.json")
+```python
+state = ProcessingState(ticker="AAPL", original_file_path="input/entry/aapl.json")
 
 # Update status throughout processing
 state.update_status(ProcessingStatus.DOWNLOADING_SEC_FILING)
@@ -158,10 +156,10 @@ sec-edgar-filings/
 ## Data Flow Architecture
 
 ### Input Layer
-- **Format**: JSON files in `input/` directory
+- **Format**: JSON files in `input/entry/` directory
 - **Schema**: `{"ticker": "SYMBOL"}`
 - **Trigger**: File system events (creation)
-- **NEW**: Files automatically moved to `input/processing/` for organized workflow
+- **NEW**: Files automatically moved to `input/entry/processing/` for organized workflow
 - **NEW**: State files created alongside processing files
 
 ### Processing Layer
@@ -174,7 +172,7 @@ sec-edgar-filings/
 
 ### State Management Layer (NEW)
 - **Purpose**: Track complete processing lifecycle
-- **Format**: JSON state files in `input/processing/`
+- **Format**: JSON state files in `input/entry/processing/`
 - **Schema**: ProcessingState with timestamps, file paths, status, metadata
 - **Persistence**: Automatic state saving at each processing stage
 - **Recovery**: State files enable process monitoring and recovery
@@ -221,7 +219,8 @@ backend/
 │   ├── test_sec_edgar_downloader.py # Download tests
 │   └── test_fact_extractor.py # Extraction tests
 ├── input/                  # Ticker JSON files (monitored)
-│   └── processing/         # NEW: Processing folder with moved files + state files
+│   └── entry/              # Entry point for new ticker files
+│       └── processing/     # NEW: Processing folder with moved files + state files
 ├── output/                 # Parquet results
 ├── sec-edgar-filings/      # Downloaded SEC filings
 ├── analyze_parquet_pyspark.ipynb # Analysis notebook
@@ -235,15 +234,15 @@ backend/
 
 1. **File Discovery**
    ```
-   User creates: input/aapl.json → {"ticker": "AAPL"}
+   User creates: input/entry/aapl.json → {"ticker": "AAPL"}
    ```
 
 2. **File Processing Initiation**
    ```
    TickerFileHandler detects file
    → Creates ProcessingState(ticker="AAPL", status=DISCOVERED)
-   → Moves file: input/aapl.json → input/processing/aapl.json
-   → Creates state file: input/processing/aapl.state.json
+   → Moves file: input/entry/aapl.json → input/entry/processing/aapl.json
+   → Creates state file: input/entry/processing/aapl.state.json
    → Updates status: MOVED_TO_PROCESSING
    → Calls process_ticker(processing_state)
    ```
@@ -278,9 +277,9 @@ backend/
    ```json
    {
      "ticker": "AAPL",
-     "original_file_path": "/backend/input/aapl.json",
-     "processing_file_path": "/backend/input/processing/aapl.json",
-     "state_file_path": "/backend/input/processing/aapl.state.json",
+     "original_file_path": "/backend/input/entry/aapl.json",
+     "processing_file_path": "/backend/input/entry/processing/aapl.json",
+     "state_file_path": "/backend/input/entry/processing/aapl.state.json",
      "status": "completed",
      "created_at": "2025-09-10T10:00:00",
      "updated_at": "2025-09-10T10:05:30",
