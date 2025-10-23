@@ -59,7 +59,7 @@ class ProcessingState:
     error_message: Optional[str] = None
     metadata: Dict[str, Any] = None
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize timestamps and metadata if not provided."""
         if self.created_at is None:
             self.created_at = datetime.now()

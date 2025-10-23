@@ -5,3 +5,9 @@ pyarrow
 sec-edgar-downloader
 beautifulsoup4
 pyspark
+mypy
+# Type stubs for better type checking
+pandas-stubs
+types-requests
+types-html5lib
+lxml-stubs

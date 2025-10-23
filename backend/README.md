@@ -7,7 +7,11 @@ This app watches the `input/` folder for JSON files containing a ticker symbol, 
 	```bash
 	pip install -r requirements.txt
 	```
-2. Run the app:
+2. Type checking with mypy:
+	```bash
+	mypy src/
+	```
+3. Run the app:
 	```bash
 	python -m src.app
 	```
@@ -16,6 +20,22 @@ This app watches the `input/` folder for JSON files containing a ticker symbol, 
 To run all tests:
 ```bash
 pytest tests
+```
+
+### Type Checking
+This project uses mypy for strict type checking. Run type checking on the source code:
+```bash
+mypy src/
+```
+
+Or use the convenience script:
+```bash
+./typecheck.sh
+```
+
+For type checking the entire project including tests:
+```bash
+mypy .
 ```
 3. Add a JSON file to the `input/` folder, e.g.:
 	```json
