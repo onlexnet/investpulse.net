@@ -28,11 +28,6 @@ This project uses mypy for strict type checking. Run type checking on the source
 mypy src/
 ```
 
-Or use the convenience script:
-```bash
-./typecheck.sh
-```
-
 For type checking the entire project including tests:
 ```bash
 mypy .

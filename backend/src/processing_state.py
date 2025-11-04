@@ -1,12 +1,12 @@
 """
-Processing state management for ticker file processing workflow.
+Pure data model for ticker file processing workflow state.
 
-This module provides the ProcessingState class that tracks the entire lifecycle
-of processing a ticker file from discovery to final parquet output.
+This module provides the ProcessingState dataclass and ProcessingStatus enum
+for representing the state of ticker file processing. This module contains only
+data structures and serialization methods, with no business logic.
 """
 
 import json
-import os
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Dict, Any
@@ -29,10 +29,11 @@ class ProcessingStatus(Enum):
 @dataclass
 class ProcessingState:
     """
-    Represents the state of processing for a ticker file.
+    Pure data structure representing the state of ticker file processing.
     
-    This class tracks the entire workflow from file discovery to parquet output,
-    including timestamps, file paths, and any errors that occur.
+    This is a pure data class with no business logic methods. All processing
+    operations are handled by external functions that take a ProcessingState
+    as input and return a modified ProcessingState as output.
     
     Attributes:
         ticker (str): The ticker symbol being processed
@@ -67,40 +68,6 @@ class ProcessingState:
             self.updated_at = self.created_at
         if self.metadata is None:
             self.metadata = {}
-    
-    def update_status(self, status: ProcessingStatus, 
-                     error_message: Optional[str] = None) -> None:
-        """
-        Update the processing status and timestamp.
-        
-        Args:
-            status (ProcessingStatus): New status to set
-            error_message (Optional[str]): Error message if status is ERROR
-        """
-        self.status = status
-        self.updated_at = datetime.now()
-        if error_message:
-            self.error_message = error_message
-    
-    def set_sec_filing_path(self, path: str) -> None:
-        """
-        Set the SEC filing path and update status.
-        
-        Args:
-            path (str): Path to the downloaded SEC filing
-        """
-        self.sec_filing_path = path
-        self.update_status(ProcessingStatus.SEC_FILING_DOWNLOADED)
-    
-    def set_parquet_output_path(self, path: str) -> None:
-        """
-        Set the parquet output path and mark as completed.
-        
-        Args:
-            path (str): Path to the final parquet file
-        """
-        self.parquet_output_path = path
-        self.update_status(ProcessingStatus.COMPLETED)
     
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -139,58 +106,6 @@ class ProcessingState:
             data['status'] = ProcessingStatus(data['status'])
         
         return cls(**data)
-    
-    def save_to_file(self, file_path: Optional[str] = None) -> str:
-        """
-        Save the current state to a JSON file.
-        
-        Args:
-            file_path (Optional[str]): Path to save the state file. 
-                                     If None, uses self.state_file_path
-        
-        Returns:
-            str: Path where the state was saved
-            
-        Raises:
-            ValueError: If no file path is provided and state_file_path is None
-        """
-        if file_path is None:
-            if self.state_file_path is None:
-                raise ValueError("No file path provided and state_file_path is None")
-            file_path = self.state_file_path
-        
-        # Ensure directory exists
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        
-        with open(file_path, 'w') as f:
-            json.dump(self.to_dict(), f, indent=2)
-        
-        if self.state_file_path is None:
-            self.state_file_path = file_path
-            
-        return file_path
-    
-    @classmethod
-    def load_from_file(cls, file_path: str) -> 'ProcessingState':
-        """
-        Load ProcessingState from a JSON file.
-        
-        Args:
-            file_path (str): Path to the state JSON file
-            
-        Returns:
-            ProcessingState: Loaded ProcessingState object
-            
-        Raises:
-            FileNotFoundError: If the state file doesn't exist
-            json.JSONDecodeError: If the file contains invalid JSON
-        """
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-        
-        state = cls.from_dict(data)
-        state.state_file_path = file_path
-        return state
     
     def is_completed(self) -> bool:
         """

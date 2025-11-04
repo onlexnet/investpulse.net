@@ -1,0 +1,49 @@
+@startuml state-processing-lifecycle
+title Processing State Lifecycle
+
+[*] -> DISCOVERED : File detected in\ninput/entry/
+DISCOVERED -> MOVED_TO_PROCESSING : move_to_processing()
+MOVED_TO_PROCESSING -> DOWNLOADING_SEC_FILING : download_sec_filing()
+DOWNLOADING_SEC_FILING -> SEC_DOWNLOADED : SEC filing\nsuccessfully downloaded
+SEC_DOWNLOADED -> EXTRACTING_FACTS : extract_facts()
+EXTRACTING_FACTS -> FACTS_EXTRACTED : Facts successfully\nextracted from filing
+FACTS_EXTRACTED -> SAVING_PARQUET : save_parquet()
+SAVING_PARQUET -> COMPLETED : Parquet file\nsuccessfully saved
+COMPLETED -> [*] : Processing complete
+
+' Error handling paths
+MOVED_TO_PROCESSING -> ERROR : File move\nfails
+DOWNLOADING_SEC_FILING -> ERROR : SEC download\nfails
+EXTRACTING_FACTS -> ERROR : Fact extraction\nfails
+SAVING_PARQUET -> ERROR : Parquet save\nfails
+
+ERROR -> DISCOVERED : reset_error()\nfor retry
+ERROR -> ERROR : handle_error()\nwith details
+
+note right of DISCOVERED : Initial state when\nticker file is detected
+note right of MOVED_TO_PROCESSING : File moved to\nprocessing directory\nState file created
+note right of SEC_DOWNLOADED : SEC filing cached\nlocally for processing
+note right of FACTS_EXTRACTED : Financial facts\nstored in state metadata
+note right of COMPLETED : Final state\nParquet file ready\nfor analysis
+note right of ERROR : Processing failed\nError message captured\nRetry possible
+
+state DISCOVERED {
+    state "ticker: AAPL" as ticker1
+    state "original_file_path: input/entry/aapl.json" as path1
+    state "status: DISCOVERED" as status1
+}
+
+state COMPLETED {
+    state "ticker: AAPL" as ticker2
+    state "parquet_output_path: output/AAPL_facts.parquet" as path2
+    state "status: COMPLETED" as status2
+    state "processing_duration: 45.2s" as duration
+}
+
+state ERROR {
+    state "status: ERROR" as errorStatus
+    state "error_message: Connection timeout" as errorMsg
+    state "retry_count: 1" as retryCount
+}
+
+@enduml

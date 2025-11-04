@@ -1,0 +1,59 @@
+@startuml sequence-processing-workflow
+title Processing Workflow Sequence Diagram
+
+actor User
+participant "File System" as FS
+participant "File Watcher" as FW
+participant "App Main" as APP
+participant "State Manager" as SM
+participant "Processing Functions" as PF
+participant "SEC EDGAR" as SEC
+participant "Fact Extractor" as FE
+participant "Parquet Storage" as PS
+
+User -> FS : Create ticker file\n(input/entry/aapl.json)
+note right : {"ticker": "AAPL"}
+
+FS -> FW : File creation event
+FW -> FW : Parse JSON\nExtract ticker
+FW -> APP : process_ticker_file(file_path, "AAPL")
+
+APP -> SM : StateManager(PROCESSING_DIR)
+APP -> SM : find_state_by_ticker("AAPL")
+SM -> APP : None (new ticker)
+
+APP -> APP : Create ProcessingState\n(ticker="AAPL", status=DISCOVERED)
+APP -> SM : execute_workflow(initial_state, config)
+
+SM -> PF : move_to_processing(state, processing_dir)
+PF -> FS : Move file to processing directory
+PF -> SM : Updated state (status=MOVED_TO_PROCESSING)
+SM -> FS : Save state file (aapl.state.json)
+
+SM -> PF : download_sec_filing(state, sec_filings_dir)
+PF -> SEC : Download 10-Q filing for AAPL
+SEC -> PF : SEC filing document
+PF -> FS : Save filing to sec-edgar-filings/
+PF -> SM : Updated state (status=SEC_DOWNLOADED)
+SM -> FS : Save state file
+
+SM -> PF : extract_facts(state)
+PF -> FE : extract_top_facts(filing_path)
+FE -> FS : Read SEC filing
+FE -> FE : Parse HTML/TXT\nExtract financial facts
+FE -> PF : List of 10 facts
+PF -> SM : Updated state (status=FACTS_EXTRACTED,\nfacts in metadata)
+SM -> FS : Save state file
+
+SM -> PF : save_parquet(state, output_dir)
+PF -> PS : save_facts_to_parquet(facts, output_path)
+PS -> FS : Save AAPL_facts.parquet
+PF -> SM : Updated state (status=COMPLETED)
+SM -> FS : Save final state file
+
+SM -> APP : Final completed state
+APP -> APP : Log completion\nwith duration
+
+note over User, PS : Processing complete!\nUser can analyze\nAAPL_facts.parquet
+
+@enduml

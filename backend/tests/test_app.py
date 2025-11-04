@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import pandas as pd
 
-from src.app import process_ticker
+from src.app import process_ticker_file
 from src.processing_state import ProcessingState, ProcessingStatus
 
 
