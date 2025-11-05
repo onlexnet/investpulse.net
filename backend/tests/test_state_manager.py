@@ -101,6 +101,7 @@ class TestStateManager(unittest.TestCase):
         
         # Find it by ticker
         found_state = self.state_manager.find_state_by_ticker(self.ticker)
+        assert found_state is not None
         
         self.assertIsNotNone(found_state)
         self.assertEqual(found_state.ticker, self.ticker)

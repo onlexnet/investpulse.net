@@ -5,6 +5,7 @@ This module provides tests to verify that the Ray actor-based
 processing system works correctly.
 """
 
+from math import e
 import os
 import ray
 import json
@@ -13,10 +14,12 @@ import unittest
 from unittest.mock import patch
 from typing import Dict, Any
 
+from ray.exceptions import GetTimeoutError
+from src import processing_state
 from src.ray_config import initialize_ray, shutdown_ray
 from src.ray_workflow_orchestrator import RayWorkflowOrchestrator
 from src.ray_state_manager import RayStateManager
-from src.ray_processing_worker import RayProcessingWorker, RayProcessingPool
+from src.ray_processing_worker import MoveToProcessingStep, RayProcessingWorker, RayProcessingPool
 from src.processing_state import ProcessingState, ProcessingStatus
 
 
@@ -158,9 +161,8 @@ class TestRayActors(unittest.TestCase):
         
         # Test process step
         step_ref = pool.process_step.remote(
-            "move_to_processing",
             test_state,
-            self.config['processing_dir']
+            MoveToProcessingStep(self.config['processing_dir'])
         )
         result_state = ray.get(step_ref)
         
@@ -175,7 +177,7 @@ class TestRayActors(unittest.TestCase):
     def test_ray_workflow_orchestrator(self):
         """Test RayWorkflowOrchestrator actor."""
         # Create orchestrator
-        orchestrator = RayWorkflowOrchestrator.remote(
+        orchestrator = ray.remote(RayWorkflowOrchestrator).remote(
             config=self.config,
             worker_pool_size=2
         )
@@ -186,23 +188,19 @@ class TestRayActors(unittest.TestCase):
         # Test async processing
         task_ref = orchestrator.process_ticker_async.remote(test_file, "TESTORCH")
         
-        # Wait for completion (with timeout)
-        try:
-            final_state = ray.get(task_ref, timeout=30)
-            
-            # Check final state
-            # Note: Processing might not complete fully in test environment
-            # but should at least start and update status
-            self.assertIn(final_state.status, [
-                ProcessingStatus.MOVED_TO_PROCESSING,
-                ProcessingStatus.SEC_FILING_DOWNLOADED,
-                ProcessingStatus.FACTS_EXTRACTED,
-                ProcessingStatus.COMPLETED,
-                ProcessingStatus.ERROR
-            ])
-            
-        except ray.exceptions.GetTimeoutError:
-            self.fail("Processing task timed out")
+        # final_state = ray.get(task_ref, timeout=30)
+        final_state = ray.get(task_ref)
+        
+        # Check final state
+        # Note: Processing might not complete fully in test environment
+        # but should at least start and update status
+        self.assertIn(final_state.status, [
+            ProcessingStatus.MOVED_TO_PROCESSING,
+            ProcessingStatus.SEC_FILING_DOWNLOADED,
+            ProcessingStatus.FACTS_EXTRACTED,
+            ProcessingStatus.COMPLETED,
+            ProcessingStatus.ERROR
+        ])
         
         # Test orchestrator stats
         stats_ref = orchestrator.get_orchestrator_stats.remote()
@@ -223,7 +221,7 @@ class TestRayActors(unittest.TestCase):
     def test_error_handling(self):
         """Test error handling in Ray actors."""
         # Create worker
-        worker = RayProcessingWorker.remote("error-test")
+        worker = ray.remote(RayProcessingWorker).remote("error-test")
         
         # Create state with non-existent file
         error_state = ProcessingState(

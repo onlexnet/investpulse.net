@@ -5,6 +5,7 @@ This module provides the RayProcessingWorker actor that handles individual
 processing steps like downloading SEC filings, extracting facts, etc.
 """
 
+from dataclasses import dataclass
 import ray, ray.actor as actor
 from typing import Dict, Any
 from datetime import datetime
@@ -76,6 +77,7 @@ class RayProcessingWorker:
             self.error_count += 1
             return handle_error(state, f"Worker {self.worker_id} - Move to processing failed: {str(e)}")
     
+    @ray.method
     def download_sec_filing_step(self, state: ProcessingState, output_dir: str) -> ProcessingState:
         """
         Execute the SEC filing download step.
@@ -98,6 +100,7 @@ class RayProcessingWorker:
             self.error_count += 1
             return handle_error(state, f"Worker {self.worker_id} - SEC filing download failed: {str(e)}")
     
+    @ray.method
     def extract_facts_step(self, state: ProcessingState) -> ProcessingState:
         """
         Execute the facts extraction step.
@@ -119,6 +122,7 @@ class RayProcessingWorker:
             self.error_count += 1
             return handle_error(state, f"Worker {self.worker_id} - Facts extraction failed: {str(e)}")
     
+    @ray.method
     def save_parquet_step(self, state: ProcessingState, output_dir: str) -> ProcessingState:
         """
         Execute the parquet saving step.
@@ -141,6 +145,7 @@ class RayProcessingWorker:
             self.error_count += 1
             return handle_error(state, f"Worker {self.worker_id} - Parquet saving failed: {str(e)}")
     
+    @ray.method
     def reset_error_step(self, state: ProcessingState) -> ProcessingState:
         """
         Reset error state to allow retry.
@@ -153,6 +158,27 @@ class RayProcessingWorker:
         """
         return reset_error(state)
 
+@dataclass
+class MoveToProcessingStep:
+    processing_dir: str
+
+@dataclass
+class DownloadSecFilingStep:
+    output_dir: str
+
+@dataclass
+class ExtractFactsStep:
+    pass
+
+@dataclass
+class SaveParquetStep:
+    output_dir: str
+
+@dataclass
+class ResetErrorStep:
+    pass
+
+WorkerStep = MoveToProcessingStep | DownloadSecFilingStep | ExtractFactsStep | SaveParquetStep | ResetErrorStep
 
 class RayProcessingPool:
     """
@@ -170,7 +196,7 @@ class RayProcessingPool:
             pool_size (int): Number of workers in the pool
         """
         self.pool_size = pool_size
-        self.workers: list[actor.ActorProxy] = []
+        self.workers: list[actor.ActorProxy[RayProcessingWorker]] = []
         self.current_worker_index = 0
         
         # Create worker actors
@@ -178,7 +204,7 @@ class RayProcessingPool:
             worker = ray.remote(RayProcessingWorker).remote(f"worker-{i}")
             self.workers.append(worker)
     
-    def get_next_worker(self) -> ray.ObjectRef:
+    def _get_next_worker(self) -> actor.ActorProxy[RayProcessingWorker]:
         """
         Get the next available worker using round-robin scheduling.
         
@@ -189,7 +215,8 @@ class RayProcessingPool:
         self.current_worker_index = (self.current_worker_index + 1) % self.pool_size
         return worker
     
-    def get_pool_stats(self) -> ray.ObjectRef:
+    @ray.method
+    def get_pool_stats(self) -> list[Any]:
         """
         Get statistics for all workers in the pool.
         
@@ -200,7 +227,7 @@ class RayProcessingPool:
         return ray.get(stats_futures)
     
     @ray.method
-    def process_step(self, step_name: str, state: ProcessingState, *args, **kwargs) -> ray.ObjectRef:
+    def process_step(self, state: ProcessingState, worker_step: WorkerStep) -> ProcessingState:
         """
         Process a step using the next available worker.
         
@@ -213,21 +240,22 @@ class RayProcessingPool:
         Returns:
             ray.ObjectRef: Future containing updated state
         """
-        worker = self.get_next_worker()
-        
-        if step_name == "move_to_processing":
-            return worker.move_to_processing_step.remote(state, *args, **kwargs)
-        elif step_name == "download_sec_filing":
-            return worker.download_sec_filing_step.remote(state, *args, **kwargs)
-        elif step_name == "extract_facts":
-            return worker.extract_facts_step.remote(state, *args, **kwargs)
-        elif step_name == "save_parquet":
-            return worker.save_parquet_step.remote(state, *args, **kwargs)
-        elif step_name == "reset_error":
-            return worker.reset_error_step.remote(state, *args, **kwargs)
-        else:
-            raise ValueError(f"Unknown processing step: {step_name}")
+        worker = self._get_next_worker()
+        match worker_step:
+            case MoveToProcessingStep(processing_dir):
+                result_ref = worker.move_to_processing_step.remote(state, processing_dir)
+            case DownloadSecFilingStep(output_dir):
+                result_ref = worker.download_sec_filing_step.remote(state, output_dir)
+            case ExtractFactsStep():
+                result_ref = worker.extract_facts_step.remote(state)
+            case SaveParquetStep(output_dir):
+                result_ref = worker.save_parquet_step.remote(state, output_dir)
+            case ResetErrorStep():
+                result_ref = worker.reset_error_step.remote(state)
+
+        return ray.get(result_ref)
     
+    @ray.method
     def shutdown(self):
         """Shutdown all workers in the pool."""
         for worker in self.workers:

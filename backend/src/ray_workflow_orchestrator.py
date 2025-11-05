@@ -10,9 +10,11 @@ import asyncio
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
+import ray.exceptions
+
 from .processing_state import ProcessingState, ProcessingStatus
 from .ray_state_manager import RayStateManager
-from .ray_processing_worker import RayProcessingPool
+from .ray_processing_worker import DownloadSecFilingStep, ExtractFactsStep, MoveToProcessingStep, RayProcessingPool, ResetErrorStep, SaveParquetStep
 
 
 class RayWorkflowOrchestrator:
@@ -48,6 +50,7 @@ class RayWorkflowOrchestrator:
         self.total_errors = 0
         self.start_time = datetime.now()
     
+    @ray.method
     def get_orchestrator_stats(self) -> Dict[str, Any]:
         """
         Get statistics for the orchestrator.
@@ -66,7 +69,8 @@ class RayWorkflowOrchestrator:
             'throughput_per_minute': (self.total_processed / runtime) * 60 if runtime > 0 else 0
         }
     
-    def process_ticker_async(self, file_path: str, ticker: str) -> ray.ObjectRef:
+    @ray.method
+    def process_ticker_async(self, file_path: str, ticker: str) -> ProcessingState:
         """
         Start asynchronous processing for a ticker.
         
@@ -79,16 +83,18 @@ class RayWorkflowOrchestrator:
         """
         # Check if already processing this ticker
         if ticker in self.active_tasks:
-            return self.active_tasks[ticker]
+            task_ref = self.active_tasks[ticker]
+            task = ray.get(task_ref)
+            return task
         
         # Start processing task
-        task = self._execute_workflow_async.remote(file_path, ticker)
-        self.active_tasks[ticker] = task
-        
+        task = self._execute_workflow(file_path, ticker)
+        task_ref = ray.put(task)
+        self.active_tasks[ticker] = task_ref
+
         return task
     
-    @ray.method(num_returns=1)
-    def _execute_workflow_async(self, file_path: str, ticker: str) -> ProcessingState:
+    def _execute_workflow(self, file_path: str, ticker: str) -> ProcessingState:
         """
         Execute the complete workflow for a ticker asynchronously.
         
@@ -111,7 +117,8 @@ class RayWorkflowOrchestrator:
                 elif existing_state.has_error():
                     # Reset error and retry
                     reset_state_ref = self.processing_pool.process_step.remote(
-                        "reset_error", existing_state
+                        existing_state,
+                        ResetErrorStep()
                     )
                     current_state = ray.get(reset_state_ref)
                 else:
@@ -170,10 +177,8 @@ class RayWorkflowOrchestrator:
         # Step 1: Move to processing
         if current_state.status == ProcessingStatus.DISCOVERED:
             step_ref = self.processing_pool.process_step.remote(
-                "move_to_processing", 
                 current_state, 
-                self.config.get('processing_dir', 'input/processing')
-            )
+                MoveToProcessingStep(self.config.get('processing_dir', 'input/processing')))
             current_state = ray.get(step_ref)
             
             # Save state after each step
@@ -186,10 +191,8 @@ class RayWorkflowOrchestrator:
         # Step 2: Download SEC filing
         if current_state.status == ProcessingStatus.MOVED_TO_PROCESSING:
             step_ref = self.processing_pool.process_step.remote(
-                "download_sec_filing", 
                 current_state, 
-                self.config.get('sec_filings_dir', 'sec-edgar-filings')
-            )
+                DownloadSecFilingStep(self.config.get('sec_filings_dir', 'sec-edgar-filings')))
             current_state = ray.get(step_ref)
             
             # Save state
@@ -202,9 +205,8 @@ class RayWorkflowOrchestrator:
         # Step 3: Extract facts
         if current_state.status == ProcessingStatus.SEC_FILING_DOWNLOADED:
             step_ref = self.processing_pool.process_step.remote(
-                "extract_facts", 
-                current_state
-            )
+                current_state,
+                ExtractFactsStep())
             current_state = ray.get(step_ref)
             
             # Save state
@@ -217,9 +219,8 @@ class RayWorkflowOrchestrator:
         # Step 4: Save parquet
         if current_state.status == ProcessingStatus.FACTS_EXTRACTED:
             step_ref = self.processing_pool.process_step.remote(
-                "save_parquet", 
                 current_state, 
-                self.config.get('output_dir', 'output')
+                SaveParquetStep(self.config.get('output_dir', 'output'))
             )
             current_state = ray.get(step_ref)
             
@@ -299,16 +300,17 @@ class RayWorkflowOrchestrator:
         
         if existing_state and existing_state.has_error():
             # Reset error and restart processing
-            reset_ref = self.processing_pool.process_step.remote("reset_error", existing_state)
+            reset_ref = self.processing_pool.process_step.remote(existing_state, ResetErrorStep())
             reset_state = ray.get(reset_ref)
             
             # Start new processing task
-            task = self._execute_workflow_async.remote(reset_state.original_file_path, ticker)
+            task = self._execute_workflow.remote(reset_state.original_file_path, ticker)
             self.active_tasks[ticker] = task
             return task
         
         return None
     
+    @ray.method
     def get_processing_status(self) -> Dict[str, Any]:
         """
         Get comprehensive status of all processing activities.
@@ -351,6 +353,7 @@ class RayWorkflowOrchestrator:
             'state_files_cleaned': files_cleaned
         }
     
+    @ray.method
     def shutdown(self):
         """Shutdown the orchestrator and all managed actors."""
         # Shutdown processing pool

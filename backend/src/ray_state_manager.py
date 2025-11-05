@@ -168,6 +168,7 @@ class RayStateManager:
         
         return stats
     
+    @ray.method
     def cleanup_cache(self) -> int:
         """
         Clean up the in-memory cache of completed or errored states.
@@ -188,6 +189,7 @@ class RayStateManager:
         
         return initial_count - len(self._state_cache)
     
+    @ray.method
     def cleanup_completed_states(self, keep_days: int = 30) -> int:
         """
         Clean up old completed state files.
@@ -203,10 +205,10 @@ class RayStateManager:
         cutoff_date = datetime.now() - timedelta(days=keep_days)
         removed_count = 0
         
-        completed_states = self.list_states(ProcessingStatus.COMPLETED)
+        completed_states = self._list_states(ProcessingStatus.COMPLETED)
         
         for state in completed_states:
-            if state.updated_at < cutoff_date:
+            if state.updated_at < cutoff_date and state.state_file_path is not None:
                 try:
                     os.remove(state.state_file_path)
                     # Remove from cache if present
