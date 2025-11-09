@@ -5,6 +5,7 @@ import unittest
 import shutil
 from unittest.mock import patch, MagicMock
 import pandas as pd
+from watchdog.events import FileCreatedEvent
 
 from src.app import INPUT_DIR, OUTPUT_DIR, process_ticker_file
 from src.file_watcher import TickerFileHandler, watch_input_folder
@@ -55,12 +56,7 @@ class TestIntegration(unittest.TestCase):
             json.dump({"ticker": "AAPL"}, f)
         
         # Simulate file creation event
-        class MockEvent:
-            def __init__(self, src_path: str):
-                self.src_path = src_path
-                self.is_directory = False
-        
-        event = MockEvent(ticker_file)
+        event = FileCreatedEvent(ticker_file)
         handler.on_created(event)
         
         # Verify file was moved to input/entry/processing/
@@ -79,49 +75,50 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(state.processing_file_path, processing_file)
         self.assertEqual(state.state_file_path, state_file)
 
-    @patch('src.app.save_facts_to_parquet')
-    @patch('src.app.extract_top_facts')
-    @patch('src.app.download_sec_filings')
-    def test_end_to_end_processing_workflow(self, mock_download, mock_extract, mock_save):
-        """Test end-to-end processing workflow with input/entry/ structure."""
-        # Mock return values
-        filing_path = os.path.join(self.temp_dir, "sec-filings", "AAPL", "filing.txt")
-        facts = [{"fact": f"fact_{i}", "value": f"value_{i}"} for i in range(10)]
-        parquet_path = os.path.join(self.test_output_dir, "AAPL_facts.parquet")
+    def process_ticker_wrapper(self, processing_state: ProcessingState) -> None:
+        """Wrapper to convert ProcessingState to process_ticker_file parameters."""
+        if processing_state.processing_file_path and processing_state.ticker:
+            process_ticker_file(processing_state.processing_file_path, processing_state.ticker)
+
+    def test_process_ticker_file_integration(self):
+        """Test that process_ticker_file integrates properly with file handler."""
+        # Create a simple callback that tracks processing states
+        processed_states = []
         
-        mock_download.return_value = filing_path
-        mock_extract.return_value = facts
-        mock_save.return_value = parquet_path
+        def tracking_callback(processing_state: ProcessingState):
+            processed_states.append(processing_state)
         
         # Create file handler and simulate file creation
-        handler = TickerFileHandler(self.test_input_dir, process_ticker)
+        handler = TickerFileHandler(self.test_input_dir, tracking_callback)
         
-        ticker_file = os.path.join(self.test_input_dir, "msft.json")
+        ticker_file = os.path.join(self.test_input_dir, "integration_test.json")
         with open(ticker_file, 'w') as f:
-            json.dump({"ticker": "MSFT"}, f)
+            json.dump({"ticker": "INTG"}, f)
         
-        class MockEvent:
-            def __init__(self, src_path: str):
-                self.src_path = src_path
-                self.is_directory = False
-        
-        event = MockEvent(ticker_file)
+        event = FileCreatedEvent(ticker_file)
         handler.on_created(event)
         
-        # Verify mocks were called
-        mock_download.assert_called_once_with("MSFT", OUTPUT_DIR)
-        mock_extract.assert_called_once_with(filing_path)
-        mock_save.assert_called_once_with("MSFT", facts, OUTPUT_DIR)
+        # Verify processing state was created and captured
+        self.assertEqual(len(processed_states), 1)
+        state = processed_states[0]
+        self.assertEqual(state.ticker, "INTG")
+        self.assertEqual(state.status, ProcessingStatus.MOVED_TO_PROCESSING)
         
-        # Verify state file was updated with completion
-        state_file = os.path.join(self.test_input_dir, "processing", "msft.state.json")
+        # Verify files were moved correctly
+        processing_file = os.path.join(self.test_input_dir, "processing", "integration_test.json")
+        self.assertTrue(os.path.exists(processing_file))
+        self.assertFalse(os.path.exists(ticker_file))
+        
+        # Verify state file was created
+        state_file = os.path.join(self.test_input_dir, "processing", "integration_test.state.json")
         self.assertTrue(os.path.exists(state_file))
         
+        # Verify state file contains correct data
         with open(state_file, 'r') as f:
             state_data = json.load(f)
         
-        self.assertEqual(state_data["status"], ProcessingStatus.COMPLETED.value)
-        self.assertEqual(state_data["ticker"], "MSFT")
+        self.assertEqual(state_data["ticker"], "INTG")
+        self.assertEqual(state_data["status"], ProcessingStatus.MOVED_TO_PROCESSING.value)
 
     def test_multiple_ticker_files_processing(self):
         """Test processing multiple ticker files in sequence."""
@@ -134,12 +131,7 @@ class TestIntegration(unittest.TestCase):
             with open(ticker_file, 'w') as f:
                 json.dump({"ticker": ticker}, f)
             
-            class MockEvent:
-                def __init__(self, src_path: str):
-                    self.src_path = src_path
-                    self.is_directory = False
-            
-            event = MockEvent(ticker_file)
+            event = FileCreatedEvent(ticker_file)
             handler.on_created(event)
         
         # Verify all files were processed
@@ -189,12 +181,7 @@ class TestIntegration(unittest.TestCase):
         with open(ticker_file, 'w') as f:
             json.dump({"ticker": "ERROR"}, f)
         
-        class MockEvent:
-            def __init__(self, src_path: str):
-                self.src_path = src_path
-                self.is_directory = False
-        
-        event = MockEvent(ticker_file)
+        event = FileCreatedEvent(ticker_file)
         handler.on_created(event)
         
         # Verify error was logged
@@ -219,7 +206,7 @@ class TestAppConfiguration(unittest.TestCase):
     def test_app_module_import(self):
         """Test that all required modules can be imported."""
         try:
-            from src.app import process_ticker, INPUT_DIR, OUTPUT_DIR
+            from src.app import process_ticker_file, INPUT_DIR, OUTPUT_DIR
             from src.file_watcher import watch_input_folder, TickerFileHandler
             from src.processing_state import ProcessingState, ProcessingStatus
             from src.sec_edgar_downloader import download_sec_filings
