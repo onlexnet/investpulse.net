@@ -102,19 +102,22 @@ class TestEdgeCases(unittest.TestCase):
     def test_file_handler_with_readonly_directory(self):
         """Test file handler behavior with read-only directory permissions."""
         from src.file_watcher import TickerFileHandler
+        from src.processing_state import ProcessingState
         
         # Create a directory and make it read-only
         readonly_dir = os.path.join(self.temp_dir, "readonly")
         os.makedirs(readonly_dir)
+        
+        def dummy_callback(processing_state: ProcessingState):
+            pass
+        
+        # Test that TickerFileHandler fails to initialize with read-only directory
+        # since it tries to create a processing subdirectory
         os.chmod(readonly_dir, 0o444)  # Read-only
         
         try:
-            def dummy_callback(file_path: str, ticker: str):
-                pass
-            
-            # Create the handler - this should work since it doesn't create directories
-            handler = TickerFileHandler(readonly_dir, dummy_callback)
-            self.assertIsNotNone(handler)  # Just verify it was created
+            with self.assertRaises(PermissionError):
+                handler = TickerFileHandler(readonly_dir, dummy_callback)
             
         finally:
             # Restore permissions for cleanup
@@ -123,15 +126,16 @@ class TestEdgeCases(unittest.TestCase):
     def test_large_json_file_processing(self):
         """Test processing of large JSON files."""
         from src.file_watcher import TickerFileHandler
+        from src.processing_state import ProcessingState
         
         input_dir = os.path.join(self.temp_dir, "large_test")
         os.makedirs(input_dir)
         
         captured_calls = []
         
-        def capture_callback(file_path: str, ticker: str):
+        def capture_callback(processing_state: ProcessingState):
             nonlocal captured_calls
-            captured_calls.append((file_path, ticker))
+            captured_calls.append((processing_state.processing_file_path or processing_state.original_file_path, processing_state.ticker))
         
         handler = TickerFileHandler(input_dir, capture_callback)
         
@@ -154,19 +158,22 @@ class TestEdgeCases(unittest.TestCase):
         self.assertEqual(len(captured_calls), 1)
         file_path, ticker = captured_calls[0]
         self.assertEqual(ticker, "LARGE")
-        self.assertEqual(file_path, large_file)
+        # The file should have been moved to processing directory
+        expected_processing_path = os.path.join(input_dir, "processing", "large.json")
+        self.assertEqual(file_path, expected_processing_path)
 
     def test_concurrent_file_creation(self):
         """Test handling of multiple files created simultaneously."""
         from src.file_watcher import TickerFileHandler
+        from src.processing_state import ProcessingState
         
         input_dir = os.path.join(self.temp_dir, "concurrent_test")
         os.makedirs(input_dir)
         
         captured_calls = []
         
-        def capture_callback(file_path: str, ticker: str):
-            captured_calls.append((file_path, ticker))
+        def capture_callback(processing_state: ProcessingState):
+            captured_calls.append((processing_state.processing_file_path or processing_state.original_file_path, processing_state.ticker))
         
         handler = TickerFileHandler(input_dir, capture_callback)
         
@@ -187,17 +194,24 @@ class TestEdgeCases(unittest.TestCase):
         self.assertEqual(len(captured_calls), len(tickers))
         processed_tickers = [ticker for _, ticker in captured_calls]
         self.assertEqual(set(processed_tickers), set(tickers))
+        
+        # Verify files were moved to processing directory
+        for file_path, ticker in captured_calls:
+            expected_filename = f"{ticker.lower()}.json"
+            expected_path = os.path.join(input_dir, "processing", expected_filename)
+            self.assertEqual(file_path, expected_path)
 
     def test_malformed_json_file_handling(self):
         """Test handling of malformed JSON files."""
         from src.file_watcher import TickerFileHandler
+        from src.processing_state import ProcessingState
         
         input_dir = os.path.join(self.temp_dir, "malformed_test")
         os.makedirs(input_dir)
         
         callback_called = False
         
-        def dummy_callback(file_path: str, ticker: str):
+        def dummy_callback(processing_state: ProcessingState):
             nonlocal callback_called
             callback_called = True
         
@@ -222,13 +236,14 @@ class TestEdgeCases(unittest.TestCase):
     def test_empty_json_file_handling(self):
         """Test handling of empty JSON files."""
         from src.file_watcher import TickerFileHandler
+        from src.processing_state import ProcessingState
         
         input_dir = os.path.join(self.temp_dir, "empty_test")
         os.makedirs(input_dir)
         
         callback_called = False
         
-        def dummy_callback(file_path: str, ticker: str):
+        def dummy_callback(processing_state: ProcessingState):
             nonlocal callback_called
             callback_called = True
         
