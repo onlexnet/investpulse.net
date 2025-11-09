@@ -24,8 +24,8 @@ class TestAppMainEntryPoint(unittest.TestCase):
         import shutil
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
-    @patch('src.app.process_ticker')
-    def test_watch_input_folder_integration(self, mock_process_ticker):
+    @patch('src.app.process_ticker_file')
+    def test_watch_input_folder_integration(self, mock_process_ticker_file):
         """Test that watch_input_folder correctly integrates with file detection."""
         # This test verifies the integration without running indefinitely
         
@@ -35,7 +35,7 @@ class TestAppMainEntryPoint(unittest.TestCase):
             raise KeyboardInterrupt()
         
         # Start watching in a separate thread
-        watch_thread = threading.Thread(target=lambda: watch_input_folder(self.test_input_dir, mock_process_ticker))
+        watch_thread = threading.Thread(target=lambda: watch_input_folder(self.test_input_dir, mock_process_ticker_file))
         watch_thread.daemon = True
         
         try:
@@ -74,7 +74,7 @@ class TestAppMainEntryPoint(unittest.TestCase):
         
         # Verify the main block exists and contains the expected call
         self.assertIn('if __name__ == "__main__":', content)
-        self.assertIn('watch_input_folder(INPUT_DIR, process_ticker)', content)
+        self.assertIn('watch_input_folder(INPUT_DIR, process_ticker_file)', content)
 
 
 class TestEdgeCases(unittest.TestCase):
@@ -89,12 +89,15 @@ class TestEdgeCases(unittest.TestCase):
         import shutil
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
-    def test_process_ticker_with_none_processing_state(self):
-        """Test process_ticker behavior with None processing state."""
-        from src.app import process_ticker
+    def test_process_ticker_file_without_orchestrator(self):
+        """Test process_ticker_file behavior when orchestrator is not initialized."""
+        from src.app import process_ticker_file
         
-        with self.assertRaises(AttributeError):
-            process_ticker(None)
+        # Test with orchestrator not initialized (which is the default state in tests)
+        with patch('src.app.logger.error') as mock_error:
+            # This should not raise an exception but should log an error
+            process_ticker_file("/some/path/file.json", "TEST")
+            mock_error.assert_called_with("Orchestrator not initialized")
 
     def test_file_handler_with_readonly_directory(self):
         """Test file handler behavior with read-only directory permissions."""
@@ -106,12 +109,12 @@ class TestEdgeCases(unittest.TestCase):
         os.chmod(readonly_dir, 0o444)  # Read-only
         
         try:
-            def dummy_callback(state):
+            def dummy_callback(file_path: str, ticker: str):
                 pass
             
-            # This should raise a PermissionError when trying to create processing directory
-            with self.assertRaises(PermissionError):
-                handler = TickerFileHandler(readonly_dir, dummy_callback)
+            # Create the handler - this should work since it doesn't create directories
+            handler = TickerFileHandler(readonly_dir, dummy_callback)
+            self.assertIsNotNone(handler)  # Just verify it was created
             
         finally:
             # Restore permissions for cleanup
@@ -120,16 +123,15 @@ class TestEdgeCases(unittest.TestCase):
     def test_large_json_file_processing(self):
         """Test processing of large JSON files."""
         from src.file_watcher import TickerFileHandler
-        from src.processing_state import ProcessingStatus
         
         input_dir = os.path.join(self.temp_dir, "large_test")
         os.makedirs(input_dir)
         
-        captured_state = None
+        captured_calls = []
         
-        def capture_callback(state):
-            nonlocal captured_state
-            captured_state = state
+        def capture_callback(file_path: str, ticker: str):
+            nonlocal captured_calls
+            captured_calls.append((file_path, ticker))
         
         handler = TickerFileHandler(input_dir, capture_callback)
         
@@ -143,18 +145,16 @@ class TestEdgeCases(unittest.TestCase):
         with open(large_file, 'w') as f:
             json.dump(large_data, f)
         
-        class MockEvent:
-            def __init__(self, src_path: str):
-                self.src_path = src_path
-                self.is_directory = False
+        from watchdog.events import FileCreatedEvent
         
-        event = MockEvent(large_file)
+        event = FileCreatedEvent(large_file)
         handler.on_created(event)
         
         # Verify the large file was processed correctly
-        self.assertIsNotNone(captured_state)
-        self.assertEqual(captured_state.ticker, "LARGE")
-        self.assertEqual(captured_state.status, ProcessingStatus.MOVED_TO_PROCESSING)
+        self.assertEqual(len(captured_calls), 1)
+        file_path, ticker = captured_calls[0]
+        self.assertEqual(ticker, "LARGE")
+        self.assertEqual(file_path, large_file)
 
     def test_concurrent_file_creation(self):
         """Test handling of multiple files created simultaneously."""
@@ -163,10 +163,10 @@ class TestEdgeCases(unittest.TestCase):
         input_dir = os.path.join(self.temp_dir, "concurrent_test")
         os.makedirs(input_dir)
         
-        captured_states = []
+        captured_calls = []
         
-        def capture_callback(state):
-            captured_states.append(state)
+        def capture_callback(file_path: str, ticker: str):
+            captured_calls.append((file_path, ticker))
         
         handler = TickerFileHandler(input_dir, capture_callback)
         
@@ -178,17 +178,14 @@ class TestEdgeCases(unittest.TestCase):
             with open(file_path, 'w') as f:
                 json.dump({"ticker": ticker}, f)
             
-            class MockEvent:
-                def __init__(self, src_path: str):
-                    self.src_path = src_path
-                    self.is_directory = False
+            from watchdog.events import FileCreatedEvent
             
-            event = MockEvent(file_path)
+            event = FileCreatedEvent(file_path)
             handler.on_created(event)
         
         # Verify all files were processed
-        self.assertEqual(len(captured_states), len(tickers))
-        processed_tickers = [state.ticker for state in captured_states]
+        self.assertEqual(len(captured_calls), len(tickers))
+        processed_tickers = [ticker for _, ticker in captured_calls]
         self.assertEqual(set(processed_tickers), set(tickers))
 
     def test_malformed_json_file_handling(self):
@@ -200,7 +197,7 @@ class TestEdgeCases(unittest.TestCase):
         
         callback_called = False
         
-        def dummy_callback(state):
+        def dummy_callback(file_path: str, ticker: str):
             nonlocal callback_called
             callback_called = True
         
@@ -211,12 +208,9 @@ class TestEdgeCases(unittest.TestCase):
         with open(malformed_file, 'w') as f:
             f.write('{"ticker": "MALFORMED", invalid json}')
         
-        class MockEvent:
-            def __init__(self, src_path: str):
-                self.src_path = src_path
-                self.is_directory = False
+        from watchdog.events import FileCreatedEvent
         
-        event = MockEvent(malformed_file)
+        event = FileCreatedEvent(malformed_file)
         
         with patch('logging.error') as mock_error:
             handler.on_created(event)
@@ -234,7 +228,7 @@ class TestEdgeCases(unittest.TestCase):
         
         callback_called = False
         
-        def dummy_callback(state):
+        def dummy_callback(file_path: str, ticker: str):
             nonlocal callback_called
             callback_called = True
         
@@ -245,12 +239,9 @@ class TestEdgeCases(unittest.TestCase):
         with open(empty_file, 'w') as f:
             f.write('{}')
         
-        class MockEvent:
-            def __init__(self, src_path: str):
-                self.src_path = src_path
-                self.is_directory = False
+        from watchdog.events import FileCreatedEvent
         
-        event = MockEvent(empty_file)
+        event = FileCreatedEvent(empty_file)
         
         with patch('logging.warning') as mock_warning:
             handler.on_created(event)
