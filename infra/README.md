@@ -40,13 +40,25 @@ terraform apply
 
 ## Environment Examples
 
+### Dev Environment (Automatic Deployment)
+```hcl
+envName = "dev"
+```
+Creates:
+- Resource Group: `dev-investpulse-rg`
+- Static Web App: `dev-investpulse-webapp`
+- Domain: `dev.investpulse.net`
+- GitHub Environment: `dev`
+
+**Automatic Deployment**: This environment is automatically updated when code is pushed to the `dev` branch via GitHub Actions workflow `.github/workflows/deploy-dev.yml`.
+
 ### Development Environment
 ```hcl
 envName = "development"
 ```
 Creates:
-- Resource Group: `investpulse-development-rg`
-- Static Web App: `investpulse-development-webapp`
+- Resource Group: `development-investpulse-rg`
+- Static Web App: `development-investpulse-webapp`
 - Domain: `development.investpulse.net`
 - GitHub Environment: `development`
 
@@ -184,6 +196,42 @@ infra/
 3. **Restrict GitHub token permissions** to minimum required
 4. **Use separate Cloudflare tokens** per environment if possible
 5. **Enable Terraform state locking** with Azure Storage
+
+## Deployment Scripts
+
+The repository includes helper scripts in the `scripts/` directory for automated deployment:
+
+### `scripts/build_and_push.sh`
+Builds static assets for the webapp:
+```bash
+./scripts/build_and_push.sh dev
+```
+- Installs npm dependencies
+- Runs linting checks
+- Builds Next.js static export
+- Outputs build statistics
+
+### `scripts/deploy.sh`
+Deploys infrastructure using Terraform:
+```bash
+./scripts/deploy.sh dev
+```
+- Validates environment name
+- Initializes and validates Terraform
+- Creates/updates `terraform.tfvars` if needed
+- Runs `terraform plan` and `apply`
+- Shows deployment outputs and next steps
+
+### Automated Dev Deployment
+
+The `dev` environment has automated deployment via GitHub Actions:
+- **Trigger**: Push to `dev` branch
+- **Workflow**: `.github/workflows/deploy-dev.yml`
+- **Process**:
+  1. Build static assets using `scripts/build_and_push.sh`
+  2. Deploy infrastructure using `scripts/deploy.sh`
+  3. Deploy webapp to Azure Static Web Apps
+- **Result**: Automatically updates `dev.investpulse.net`
 
 ## Troubleshooting
 
