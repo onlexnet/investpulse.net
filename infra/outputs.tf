@@ -5,11 +5,11 @@
 output "environment_info" {
   description = "Environment configuration details"
   value = {
-    environment_name    = var.envName
-    resource_group      = local.resource_group_name
-    static_web_app      = local.static_web_app_name
-    custom_domain       = local.custom_domain
-    github_environment  = var.envName
+    environment_name   = var.envName
+    resource_group     = local.resource_group_name
+    static_web_app     = local.static_web_app_name
+    custom_domain      = local.custom_domain
+    github_environment = var.envName
   }
 }
 
@@ -17,20 +17,19 @@ output "environment_info" {
 output "azure_static_web_app_info" {
   description = "Azure Static Web App details"
   value = {
-    name                = azurerm_static_web_app.webapp.name
-    resource_group_name = azurerm_static_web_app.webapp.resource_group_name
-    location           = azurerm_static_web_app.webapp.location
-    default_hostname   = azurerm_static_web_app.webapp.default_host_name
-    sku_tier           = azurerm_static_web_app.webapp.sku_tier
+    name                = local.static_web_app_name
+    resource_group_name = module.static_webapp.resource_group_name
+    location            = module.static_webapp.resource_group_location
+    default_hostname    = module.static_webapp.static_web_app_default_host_name
+    custom_domain       = module.static_webapp.custom_domain_name
   }
 }
 
 output "resource_group_info" {
   description = "Resource group details"
   value = {
-    name     = azurerm_resource_group.webapp.name
-    location = azurerm_resource_group.webapp.location
-    id       = azurerm_resource_group.webapp.id
+    name     = module.static_webapp.resource_group_name
+    location = module.static_webapp.resource_group_location
   }
 }
 
@@ -38,10 +37,10 @@ output "resource_group_info" {
 output "dns_info" {
   description = "DNS configuration details"
   value = {
-    custom_domain         = local.custom_domain
-    azure_default_hostname = azurerm_static_web_app.webapp.default_host_name
-    environment_url       = "https://${cloudflare_record.environment_dns.hostname}"
-    dns_configured        = length(cloudflare_record.environment_dns) > 0
+    custom_domain          = local.custom_domain
+    azure_default_hostname = module.static_webapp.static_web_app_default_host_name
+    environment_url        = "https://${module.cloudflare_dns.record_hostname}"
+    dns_configured         = true
   }
 }
 
@@ -49,17 +48,25 @@ output "dns_info" {
 output "github_environment_info" {
   description = "GitHub environment details"
   value = {
-    environment_name = github_repository_environment.environment.environment
-    repository      = github_repository_environment.environment.repository
-    wait_timer      = github_repository_environment.environment.wait_timer
-    setup_url       = "https://github.com/${var.github_owner}/${var.github_repository}/settings/environments/${var.envName}"
+    environment_name = module.github_environment.environment_name
+    repository       = var.github_repository
+    setup_url        = "https://github.com/${var.github_owner}/${var.github_repository}/settings/environments/${var.envName}"
+  }
+}
+
+# Key Vault Information
+output "key_vault_info" {
+  description = "Key Vault details"
+  value = {
+    name = module.key_vault.key_vault_name
+    uri  = module.key_vault.key_vault_uri
   }
 }
 
 # Deployment Instructions
 output "deployment_instructions" {
   description = "Instructions for deploying to this environment"
-  value = <<-EOT
+  value       = <<-EOT
     Environment: ${var.envName}
     
     Resource Names Created:
@@ -67,6 +74,7 @@ output "deployment_instructions" {
     - Static Web App: ${local.static_web_app_name}
     - GitHub Environment: ${var.envName}
     - DNS: ${local.custom_domain}
+    - Key Vault: ${module.key_vault.key_vault_name}
     
     Next Steps:
     1. Get Azure Static Web App deployment token:
@@ -77,6 +85,6 @@ output "deployment_instructions" {
        Add secret: AZURE_STATIC_WEB_APPS_API_TOKEN
     
     3. Access your deployed app:
-       URL: https://${cloudflare_record.environment_dns.hostname}
+       URL: https://${module.cloudflare_dns.record_hostname}
   EOT
 }
