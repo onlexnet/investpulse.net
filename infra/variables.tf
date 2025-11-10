@@ -57,3 +57,34 @@ variable "cloudflare_zone_id" {
   type        = string
   default     = "2fa34bc4e1284682e9047b76b5826ffd"
 }
+
+variable "developer_group_object_id" {
+  description = "Azure AD Object ID for the developer group to assign permissions"
+  type        = string
+  default     = "b4f82f7d-49cb-4ada-8001-6da6f159409b"
+}
+
+variable "support_group_object_id" {
+  description = "Azure AD Object ID for the support group to assign permissions"
+  type        = string
+  default     = "50a70998-40ec-4d62-aa19-e24513b2ec6d"
+}
+
+variable "twitter_api_secret" {
+  description = "Twitter API secret for application integration"
+  type        = string
+  sensitive   = true
+  default     = "twitter_api_secret placeholder"
+}
+variable "twitter_api_key" {
+  description = "Twitter API key for application integration"
+  type        = string
+  sensitive   = true
+  default     = "twitter_api_key placeholder"
+}
+variable "twitter_bearer_token" {
+  description = "Twitter Bearer Token for API authentication"
+  type        = string
+  sensitive   = true
+  default     = "twitter_bearer_token placeholder"
+}
