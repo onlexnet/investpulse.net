@@ -26,12 +26,14 @@ echo "🔐 Loading secrets from Key Vault: $KEY_VAULT_NAME"
 # Load Twitter API secrets
 export TWITTER_API_KEY=$(az keyvault secret show --vault-name "$KEY_VAULT_NAME" --name "twitter-api-key" --query value -o tsv)
 export TWITTER_API_SECRET=$(az keyvault secret show --vault-name "$KEY_VAULT_NAME" --name "twitter-api-secret" --query value -o tsv)
+export TWITTER_BEARER_TOKEN=$(az keyvault secret show --vault-name "$KEY_VAULT_NAME" --name "twitter-bearer-token" --query value -o tsv)
 
 # Verify secrets are loaded
 if [[ -n "$TWITTER_API_KEY" && -n "$TWITTER_API_SECRET" ]]; then
     echo "✅ Successfully loaded secrets:"
     echo "   - TWITTER_API_KEY: ${TWITTER_API_KEY:0:8}..."
     echo "   - TWITTER_API_SECRET: ${TWITTER_API_SECRET:0:8}..."
+    echo "   - TWITTER_BEARER_TOKEN: ${TWITTER_BEARER_TOKEN:0:8}..."
 else
     echo "❌ Failed to load one or more secrets"
     return 1
