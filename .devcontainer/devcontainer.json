@@ -45,8 +45,11 @@
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
+		4222,  // NATS
+		8222,  // NATS monitoring
+		9092   // Kafka
 	],
-
+	
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
@@ -59,7 +62,8 @@
 				"ms-python.python", // Python language support and tools
 				"oracle-labs-graalvm.visualvm-vscode", // GraalVM VisualVM integration for profiling
 				"github.vscode-github-actions", // GitHub Actions workflow editing and validation
-				"gitHub.vscode-pull-request-github" // GitHub Pull Requests and Issues integration
+				"gitHub.vscode-pull-request-github", // GitHub Pull Requests and Issues integration
+				"ms-python.vscode-python-envs", // Python environment management
 			],
 			"settings": {
 				"terminal.integrated.defaultProfile.linux": "bash",

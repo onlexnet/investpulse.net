@@ -7,6 +7,7 @@ set -e
 
 ENVIRONMENT=${1:-dev1}
 KEY_VAULT_NAME="dev-kw2-devs"
+ENV_FILE="/investpulse.net/.env"
 
 # Check if Azure CLI is logged in
 if ! az account show &> /dev/null; then
@@ -34,6 +35,19 @@ if [[ -n "$TWITTER_API_KEY" && -n "$TWITTER_API_SECRET" ]]; then
     echo "   - TWITTER_API_KEY: ${TWITTER_API_KEY:0:8}..."
     echo "   - TWITTER_API_SECRET: ${TWITTER_API_SECRET:0:8}..."
     echo "   - TWITTER_BEARER_TOKEN: ${TWITTER_BEARER_TOKEN:0:8}..."
+    
+    # Write secrets to .env file
+    echo "📝 Writing secrets to $ENV_FILE"
+    mkdir -p "$(dirname "$ENV_FILE")"
+    cat > "$ENV_FILE" << EOF
+# Auto-generated from Azure Key Vault on $(date)
+# To refresh: source /investpulse.net/dev-terminal-init.sh
+
+TWITTER_API_KEY=$TWITTER_API_KEY
+TWITTER_API_SECRET=$TWITTER_API_SECRET
+TWITTER_BEARER_TOKEN=$TWITTER_BEARER_TOKEN
+EOF
+    echo "✅ Secrets saved to .env file"
 else
     echo "❌ Failed to load one or more secrets"
     return 1

@@ -1,8 +1,9 @@
 """
-Sentiment analysis for financial tweets using transformer models.
+Sentiment analysis for financial tweets using transformer models as Ray actor.
 """
 
 import logging
+import asyncio
 from typing import Any, Dict, Optional
 import torch  # type: ignore
 from transformers import (  # type: ignore
@@ -10,6 +11,7 @@ from transformers import (  # type: ignore
     AutoModelForSequenceClassification,
     pipeline
 )
+import ray
 
 from .config import SentimentConfig
 from .models import TweetData, SentimentResult, SentimentLabel
@@ -17,22 +19,25 @@ from .models import TweetData, SentimentResult, SentimentLabel
 logger = logging.getLogger(__name__)
 
 
+@ray.remote
 class SentimentAnalyzer:
     """
-    Analyze sentiment of financial tweets using pre-trained transformer models.
+    Ray actor for analyzing sentiment of financial tweets using pre-trained transformer models.
     
     Uses cardiffnlp/twitter-roberta-base-sentiment model for sentiment
-    classification with confidence scores.
+    classification with confidence scores. Runs as distributed Ray actor.
     """
     
-    def __init__(self, config: SentimentConfig):
+    def __init__(self, config: SentimentConfig, aggregator_actor: Optional[object] = None):
         """
-        Initialize sentiment analyzer with pre-trained model.
+        Initialize sentiment analyzer with pre-trained model as Ray actor.
         
         Parameters:
             config: Sentiment analysis configuration
+            aggregator_actor: Ray actor handle for sentiment aggregator
         """
         self.config = config
+        self.aggregator_actor = aggregator_actor
         self.model_name = config.sentiment_model
         self.device = "cuda" if config.use_gpu and torch.cuda.is_available() else "cpu"
         
@@ -46,7 +51,7 @@ class SentimentAnalyzer:
         
         # Create sentiment analysis pipeline
         self.pipeline = pipeline(
-            "sentiment-analysis",
+            "sentiment-analysis",  # type: ignore
             model=self.model,
             tokenizer=self.tokenizer,
             device=0 if self.device == "cuda" else -1,
@@ -131,9 +136,9 @@ class SentimentAnalyzer:
         
         return sentiment, confidence, score_dict
     
-    def analyze(self, tweet_data: TweetData) -> Optional[SentimentResult]:
+    async def analyze_tweet(self, tweet_data: TweetData) -> Optional[SentimentResult]:
         """
-        Analyze sentiment of a tweet.
+        Analyze sentiment of a tweet asynchronously.
         
         Parameters:
             tweet_data: Tweet data to analyze
@@ -153,9 +158,13 @@ class SentimentAnalyzer:
                 )
                 return None
             
-            # Run sentiment analysis
+            # Run sentiment analysis in executor to avoid blocking
             logger.debug(f"Analyzing tweet {tweet_data.tweet_id}: {text[:50]}...")
-            result = self.pipeline(text[:512])  # Truncate to model max length
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                None,
+                lambda: self.pipeline(text[:512])  # Truncate to model max length
+            )
             
             # Extract sentiment and confidence
             sentiment, confidence, scores = self._extract_sentiment_from_scores(
@@ -175,6 +184,10 @@ class SentimentAnalyzer:
                 f"(confidence: {confidence:.3f})"
             )
             
+            # Send to aggregator if available
+            if self.aggregator_actor and self.is_high_confidence(sentiment_result):
+                self.aggregator_actor.add_sentiment.remote(sentiment_result)  # type: ignore
+            
             return sentiment_result
             
         except Exception as e:
@@ -182,6 +195,24 @@ class SentimentAnalyzer:
                 f"Error analyzing sentiment for tweet {tweet_data.tweet_id}: {e}"
             )
             return None
+    
+    def analyze(self, tweet_data: TweetData) -> Optional[SentimentResult]:
+        """
+        Synchronous wrapper for analyze_tweet (for backwards compatibility).
+        
+        Parameters:
+            tweet_data: Tweet data to analyze
+            
+        Returns:
+            SentimentResult with sentiment classification and confidence,
+            or None if analysis fails
+        """
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self.analyze_tweet(tweet_data))
+        finally:
+            loop.close()
     
     def analyze_batch(
         self,

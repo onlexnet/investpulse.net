@@ -1,12 +1,14 @@
 """
-Utility functions for sentiment analysis module.
+Utility functions for sentiment analysis module with async support.
 """
 
 import os
 import json
 import logging
+import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+import ray
 
 from .models import WeightedSentiment
 
@@ -227,3 +229,62 @@ def filter_significant_sentiments(
         for ticker, sentiment in sentiments.items()
         if is_significant_sentiment(sentiment, min_tweets, min_confidence)
     }
+
+
+async def get_actor_sentiments(
+    aggregator_actor: object,  # Ray actor handle
+    ticker: Optional[str] = None
+) -> Optional[WeightedSentiment] | Dict[str, WeightedSentiment]:
+    """
+    Get sentiment(s) from Ray aggregator actor asynchronously.
+    
+    Parameters:
+        aggregator_actor: Ray actor handle for sentiment aggregator
+        ticker: Optional ticker symbol (if None, returns all sentiments)
+        
+    Returns:
+        WeightedSentiment for single ticker or dict of all sentiments
+    """
+    if ticker:
+        result = aggregator_actor.get_weighted_sentiment_async.remote(ticker)  # type: ignore
+        return await result
+    else:
+        result = aggregator_actor.get_all_weighted_sentiments_async.remote()  # type: ignore
+        return await result
+
+
+async def export_actor_sentiments_to_json(
+    aggregator_actor: object,  # Ray actor handle
+    output_path: str
+) -> None:
+    """
+    Export sentiments from Ray actor to JSON file asynchronously.
+    
+    Parameters:
+        aggregator_actor: Ray actor handle for sentiment aggregator
+        output_path: Path to output JSON file
+    """
+    sentiments = await get_actor_sentiments(aggregator_actor)
+    if isinstance(sentiments, dict):
+        export_sentiments_to_json(sentiments, output_path)
+    else:
+        logger.warning("No sentiments to export")
+
+
+def wait_for_actor_ready(actor: object, timeout: int = 30) -> bool:  # Ray actor handle
+    """
+    Wait for a Ray actor to be ready.
+    
+    Parameters:
+        actor: Ray actor handle
+        timeout: Maximum time to wait in seconds
+        
+    Returns:
+        True if actor is ready, False if timeout
+    """
+    try:
+        ray.get(actor.is_running.remote(), timeout=timeout)  # type: ignore
+        return True
+    except Exception as e:
+        logger.error(f"Actor not ready within {timeout}s: {e}")
+        return False

@@ -1,11 +1,13 @@
 """
-Sentiment aggregation and weighted scoring for tickers.
+Sentiment aggregation and weighted scoring for tickers as Ray actor.
 """
 
 import logging
+import asyncio
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+import ray
 
 from .config import SentimentConfig
 from .models import (
@@ -18,20 +20,23 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
+@ray.remote
 class SentimentAggregator:
     """
-    Aggregate and calculate weighted sentiment scores for tickers.
+    Ray actor for aggregating and calculating weighted sentiment scores for tickers.
     
     Calculates weighted sentiment based on:
     - Sentiment direction (positive, negative, neutral)
     - Confidence scores
     - Engagement metrics (retweets, likes)
     - Time decay over the analysis window
+    
+    Runs as stateful Ray actor to maintain sentiment history across requests.
     """
     
     def __init__(self, config: SentimentConfig):
         """
-        Initialize sentiment aggregator.
+        Initialize sentiment aggregator as Ray actor.
         
         Parameters:
             config: Sentiment analysis configuration
@@ -41,10 +46,11 @@ class SentimentAggregator:
         self.sentiment_history: Dict[str, List[TickerSentiment]] = defaultdict(
             list
         )
+        logger.info("Sentiment aggregator actor initialized")
     
-    def add_sentiment_result(self, result: SentimentResult) -> None:
+    async def add_sentiment(self, result: SentimentResult) -> None:
         """
-        Add a sentiment result to the aggregation history.
+        Add a sentiment result to the aggregation history asynchronously.
         
         Parameters:
             result: Sentiment result to add
@@ -65,6 +71,20 @@ class SentimentAggregator:
                 f"Added sentiment for {ticker}: {result.sentiment.value} "
                 f"(engagement: {ticker_sentiment.engagement_score:.1f})"
             )
+    
+    def add_sentiment_result(self, result: SentimentResult) -> None:
+        """
+        Synchronous wrapper for add_sentiment (for backwards compatibility).
+        
+        Parameters:
+            result: Sentiment result to add
+        """
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(self.add_sentiment(result))
+        finally:
+            loop.close()
     
     def _get_sentiment_numeric_value(self, sentiment: SentimentLabel) -> float:
         """
@@ -186,13 +206,13 @@ class SentimentAggregator:
             avg_confidence
         )
     
-    def get_weighted_sentiment(
+    async def get_weighted_sentiment_async(
         self,
         ticker: str,
         window_end: Optional[datetime] = None
     ) -> Optional[WeightedSentiment]:
         """
-        Calculate weighted sentiment for a ticker over the configured window.
+        Calculate weighted sentiment for a ticker over the configured window asynchronously.
         
         Parameters:
             ticker: Stock ticker symbol
@@ -260,12 +280,36 @@ class SentimentAggregator:
         
         return result
     
-    def get_all_weighted_sentiments(
+    def get_weighted_sentiment(
+        self,
+        ticker: str,
+        window_end: Optional[datetime] = None
+    ) -> Optional[WeightedSentiment]:
+        """
+        Synchronous wrapper for get_weighted_sentiment_async.
+        
+        Parameters:
+            ticker: Stock ticker symbol
+            window_end: End of analysis window (default: now)
+            
+        Returns:
+            WeightedSentiment object or None if insufficient data
+        """
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(
+                self.get_weighted_sentiment_async(ticker, window_end)
+            )
+        finally:
+            loop.close()
+    
+    async def get_all_weighted_sentiments_async(
         self,
         window_end: Optional[datetime] = None
     ) -> Dict[str, WeightedSentiment]:
         """
-        Calculate weighted sentiments for all tracked tickers.
+        Calculate weighted sentiments for all tracked tickers asynchronously.
         
         Parameters:
             window_end: End of analysis window (default: now)
@@ -276,7 +320,9 @@ class SentimentAggregator:
         results = {}
         
         for ticker in self.sentiment_history.keys():
-            weighted_sentiment = self.get_weighted_sentiment(ticker, window_end)
+            weighted_sentiment = await self.get_weighted_sentiment_async(
+                ticker, window_end
+            )
             if weighted_sentiment:
                 results[ticker] = weighted_sentiment
         
@@ -285,6 +331,28 @@ class SentimentAggregator:
         )
         
         return results
+    
+    def get_all_weighted_sentiments(
+        self,
+        window_end: Optional[datetime] = None
+    ) -> Dict[str, WeightedSentiment]:
+        """
+        Synchronous wrapper for get_all_weighted_sentiments_async.
+        
+        Parameters:
+            window_end: End of analysis window (default: now)
+            
+        Returns:
+            Dictionary mapping tickers to their weighted sentiments
+        """
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(
+                self.get_all_weighted_sentiments_async(window_end)
+            )
+        finally:
+            loop.close()
     
     def clear_old_sentiments(self, cutoff_date: Optional[datetime] = None) -> int:
         """
