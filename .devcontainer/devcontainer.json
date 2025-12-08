@@ -47,7 +47,8 @@
 	"forwardPorts": [
 		4222,  // NATS
 		8222,  // NATS monitoring
-		9092   // Kafka
+		9092,  // Kafka
+		8081   // Schema Registry
 	],
 	
 	// Configure tool-specific properties.
