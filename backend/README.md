@@ -25,9 +25,10 @@ The app now includes a comprehensive sentiment analysis module that monitors Twi
 pip install tweepy transformers torch sentencepiece
 ```
 
-### Quick Start
+ray### Quick Start
 1. Install dependencies:
 	```bash
+	python -m venv .venv
 	pip install -r requirements.txt
 	```
 2. Type checking with mypy:

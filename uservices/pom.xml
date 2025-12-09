@@ -1,0 +1,16 @@
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.investpulse</groupId>
+	<artifactId>build</artifactId>
+	<version>0.0.0</version>
+	<packaging>pom</packaging>
+	<properties>
+		<java.version>25</java.version>
+	</properties>
+
+	<modules>
+		<module>twitter</module>
+		<module>config-server</module>
+	</modules>
+
+</project>
