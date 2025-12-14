@@ -3,7 +3,9 @@ package net.investpulse.configserver;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+	"spring.profiles.active=native"
+})
 class ConfigServerApplicationTests {
 
 	@Test

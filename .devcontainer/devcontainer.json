@@ -45,8 +45,6 @@
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		4222,  // NATS
-		8222,  // NATS monitoring
 		9092,  // Kafka
 		8081   // Schema Registry
 	],
