@@ -32,20 +32,20 @@ class TwitterBearerTokenConfigurationTest {
     }
 
     @Test
-    void applicationPropertiesShouldConfigureAzureKeyVault() throws IOException {
+    void applicationYmlShouldConfigureAzureKeyVault() throws IOException {
         // Given
-        Path appPropertiesPath = Path.of("src/main/resources/application.properties");
+        Path appYmlPath = Path.of("src/main/resources/application.yml");
 
         // When
-        String content = Files.readString(appPropertiesPath);
+        String content = Files.readString(appYmlPath);
 
         // Then
         assertThat(content)
-            .as("application.properties should contain Azure Key Vault configuration")
-            .contains("spring.cloud.azure.keyvault.secret.property-sources[0].endpoint=https://dev-kw2-devs.vault.azure.net/")
-            .contains("spring.cloud.azure.keyvault.secret.property-sources[0].credential.client-id=bde9a28c-d7c8-4ef5-909b-687263af8675")
-            .contains("spring.cloud.azure.keyvault.secret.property-sources[0].credential.tenant-id=29084a59-db89-4eb9-908a-53f42318c77d")
-            .contains("spring.cloud.azure.keyvault.secret.property-sources[0].credential.client-certificate-path");
+            .as("application.yml should contain Azure Key Vault configuration")
+            .contains("endpoint: https://dev-kw2-devs.vault.azure.net/")
+            .contains("client-id: bde9a28c-d7c8-4ef5-909b-687263af8675")
+            .contains("tenant-id: 29084a59-db89-4eb9-908a-53f42318c77d")
+            .contains("client-certificate-path: ${HOME}/.azure/certs/investpulse-net-infra-full.pem");
     }
 
     @Test

@@ -1,0 +1,30 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  
+  profiles:
+    active: native
+  
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+        overrides:
+          twitter:
+            bearer:
+              token: ${twitter.bearer.token}
+    
+    azure:
+      keyvault:
+        secret:
+          property-sources:
+            - endpoint: https://dev-kw2-devs.vault.azure.net/
+              name: azure-key-vault
+              credential:
+                client-id: bde9a28c-d7c8-4ef5-909b-687263af8675
+                tenant-id: 29084a59-db89-4eb9-908a-53f42318c77d
+                client-certificate-path: ${HOME}/.azure/certs/investpulse-net-infra-full.pem
