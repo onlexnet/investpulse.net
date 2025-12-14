@@ -8,6 +8,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,16 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * - Compatible version of Spring Boot (currently requires 3.0.0, not compatible with 4.0.0)
  * - Or wait for Azure Spring Cloud version compatible with Spring Boot 4.x
  */
+@ActiveProfiles("native")
 @SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "spring.profiles.active=native",
-        "spring.cloud.azure.keyvault.secret.property-sources[0].endpoint=https://dev-kw2-devs.vault.azure.net/",
-        "spring.cloud.azure.keyvault.secret.property-sources[0].name=azure-key-vault",
-        "spring.cloud.azure.keyvault.secret.property-sources[0].credential.client-id=bde9a28c-d7c8-4ef5-909b-687263af8675",
-        "spring.cloud.azure.keyvault.secret.property-sources[0].credential.tenant-id=29084a59-db89-4eb9-908a-53f42318c77d",
-        "spring.cloud.azure.keyvault.secret.property-sources[0].credential.client-certificate-path=${HOME}/.azure/certs/investpulse-net-infra-full.pem"
-    }
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 class AzureKeyVaultIntegrationTest {
 
