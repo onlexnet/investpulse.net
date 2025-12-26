@@ -1,19 +1,16 @@
 package net.investpulse.x.service;
 
 import net.investpulse.common.dto.RawTweet;
-import org.apache.kafka.clients.admin.NewTopic;
+import net.investpulse.x.domain.port.MessagePublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.kafka.core.KafkaAdmin;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import java.time.Instant;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -21,10 +18,7 @@ import static org.mockito.Mockito.*;
 class DynamicTopicRouterTest {
 
     @Mock
-    private KafkaTemplate<String, RawTweet> kafkaTemplate;
-
-    @Mock
-    private KafkaAdmin kafkaAdmin;
+    private MessagePublisher messagePublisher;
 
     @InjectMocks
     private DynamicTopicRouter router;
@@ -38,10 +32,11 @@ class DynamicTopicRouterTest {
 
         router.route(tweet);
 
-        verify(kafkaAdmin, times(2)).createOrModifyTopics(any());
+        verify(messagePublisher).ensureTopicExists("ticker-AAPL");
+        verify(messagePublisher).ensureTopicExists("ticker-TSLA");
         
-        verify(kafkaTemplate).send(eq("ticker-AAPL"), eq("AAPL"), eq(tweet));
-        verify(kafkaTemplate).send(eq("ticker-TSLA"), eq("TSLA"), eq(tweet));
+        verify(messagePublisher).publish(eq("ticker-AAPL"), eq("AAPL"), eq(tweet));
+        verify(messagePublisher).publish(eq("ticker-TSLA"), eq("TSLA"), eq(tweet));
     }
 
     @Test
@@ -53,8 +48,7 @@ class DynamicTopicRouterTest {
 
         router.route(tweet);
 
-        verifyNoInteractions(kafkaAdmin);
-        verifyNoInteractions(kafkaTemplate);
+        verifyNoInteractions(messagePublisher);
     }
 
     @Test
@@ -67,8 +61,8 @@ class DynamicTopicRouterTest {
         router.route(tweet);
         router.route(tweet);
 
-        // Should only call createOrModifyTopics once for AAPL
-        verify(kafkaAdmin, times(1)).createOrModifyTopics(any());
-        verify(kafkaTemplate, times(2)).send(eq("ticker-AAPL"), eq("AAPL"), eq(tweet));
+        // Should only call ensureTopicExists once for AAPL
+        verify(messagePublisher, times(1)).ensureTopicExists("ticker-AAPL");
+        verify(messagePublisher, times(2)).publish(eq("ticker-AAPL"), eq("AAPL"), eq(tweet));
     }
 }

@@ -3,9 +3,7 @@ package net.investpulse.x.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.investpulse.common.dto.RawTweet;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.kafka.core.KafkaAdmin;
-import org.springframework.kafka.core.KafkaTemplate;
+import net.investpulse.x.domain.port.MessagePublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -16,8 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class DynamicTopicRouter {
 
-    private final KafkaTemplate<String, RawTweet> kafkaTemplate;
-    private final KafkaAdmin kafkaAdmin;
+    private final MessagePublisher messagePublisher;
     private final Set<String> existingTopics = ConcurrentHashMap.newKeySet();
 
     public void route(RawTweet tweet) {
@@ -29,7 +26,7 @@ public class DynamicTopicRouter {
         for (String ticker : tweet.tickers()) {
             String topicName = "ticker-" + ticker.toUpperCase();
             ensureTopicExists(topicName);
-            kafkaTemplate.send(topicName, ticker, tweet);
+            messagePublisher.publish(topicName, ticker, tweet);
             log.info("Routed tweet {} to topic {}", tweet.id(), topicName);
         }
     }
@@ -37,8 +34,7 @@ public class DynamicTopicRouter {
     private void ensureTopicExists(String topicName) {
         if (!existingTopics.contains(topicName)) {
             log.info("Creating dynamic topic: {}", topicName);
-            NewTopic newTopic = new NewTopic(topicName, 1, (short) 1);
-            kafkaAdmin.createOrModifyTopics(newTopic);
+            messagePublisher.ensureTopicExists(topicName);
             existingTopics.add(topicName);
         }
     }
