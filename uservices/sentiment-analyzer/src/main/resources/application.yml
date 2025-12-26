@@ -6,10 +6,34 @@ spring:
     consumer:
       group-id: sentiment-analyzer-group
       auto-offset-reset: earliest
+      # Manual commit mode: offsets committed only after Parquet write succeeds
+      # This ensures at-least-once delivery guarantee for file persistence
+      enable-auto-commit: false
+      # Reduced from default 500 to match Parquet rotation threshold (1000)
+      # Allows for approximately 2 batches per file, balancing poll efficiency
+      # with file granularity. Adjust if rotation settings change.
+      max-poll-records: 500
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "net.investpulse.common.dto"
+        # Increase poll interval to prevent rebalancing during slow Parquet writes
+        # Default is 300000ms (5min), increased to account for file rotation delays
+        max.poll.interval.ms: 600000
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# Parquet persistence configuration for Spark-optimized analytics
+sentiment:
+  parquet:
+    # Base directory for partitioned Parquet files (auto-created if missing)
+    # Partition structure: {base-path}/ticker={SYMBOL}/year={YYYY}/month={MM}/day={DD}/
+    base-path: /data/sentiment
+    # Maximum records per Parquet file before rotation (balances file size vs count)
+    # Smaller values = more files, faster queries on specific time ranges
+    # Larger values = fewer files, better compression ratios
+    max-records-per-file: 1000
+    # Bounded queue capacity for async writes (drop-and-log policy when full)
+    # Size based on expected throughput: 10000 records ≈ 10-20 seconds buffer at 500-1000 msg/sec
+    queue-capacity: 10000
