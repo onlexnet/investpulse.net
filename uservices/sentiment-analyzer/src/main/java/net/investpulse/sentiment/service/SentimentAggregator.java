@@ -18,6 +18,10 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class SentimentAggregator {
 
+    private static final String TOPIC_PREFIX = "ticker-";
+    private static final String OUTPUT_TOPIC = "sentiment-aggregated";
+    private static final String EMPTY_STRING = "";
+
     private final FinancialSentimentService sentimentService;
     private final KafkaTemplate<String, SentimentResult> kafkaTemplate;
 
@@ -25,13 +29,13 @@ public class SentimentAggregator {
     public void processTweet(@Payload RawTweet tweet, 
                              @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         
-        String ticker = topic.replace("ticker-", "");
+        var ticker = topic.replace(TOPIC_PREFIX, EMPTY_STRING);
         log.info("Processing tweet {} for ticker {}", tweet.id(), ticker);
 
-        double score = sentimentService.analyze(tweet.text());
-        String label = sentimentService.getSentimentLabel(score);
+        var score = sentimentService.analyze(tweet.text());
+        var label = sentimentService.getSentimentLabel(score);
 
-        SentimentResult result = new SentimentResult(
+        var result = new SentimentResult(
             tweet.id(),
             ticker,
             score,
@@ -41,7 +45,7 @@ public class SentimentAggregator {
             tweet.source()
         );
 
-        kafkaTemplate.send("sentiment-aggregated", ticker, result);
+        kafkaTemplate.send(OUTPUT_TOPIC, ticker, result);
         log.info("Published sentiment result for ticker {}: {}", ticker, label);
     }
 }

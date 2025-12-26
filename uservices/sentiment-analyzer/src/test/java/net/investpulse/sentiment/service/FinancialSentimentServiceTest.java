@@ -9,24 +9,24 @@ class FinancialSentimentServiceTest {
 
     @Test
     void shouldReturnPositiveScoreForBullishText() {
-        String text = "Strong growth and profit beat expectations. Bullish on this stock!";
-        double score = service.analyze(text);
+        var text = "Strong growth and profit beat expectations. Bullish on this stock!";
+        var score = service.analyze(text);
         assertTrue(score > 0);
         assertEquals("POSITIVE", service.getSentimentLabel(score));
     }
 
     @Test
     void shouldReturnNegativeScoreForBearishText() {
-        String text = "Major loss and decline in revenue. Missed targets. Sell now.";
-        double score = service.analyze(text);
+        var text = "Major loss and decline in revenue. Missed targets. Sell now.";
+        var score = service.analyze(text);
         assertTrue(score < 0);
         assertEquals("NEGATIVE", service.getSentimentLabel(score));
     }
 
     @Test
     void shouldReturnNeutralScoreForMixedText() {
-        String text = "The company had some growth but also some loss.";
-        double score = service.analyze(text);
+        var text = "The company had some growth but also some loss.";
+        var score = service.analyze(text);
         assertEquals(0.0, score);
         assertEquals("NEUTRAL", service.getSentimentLabel(score));
     }
@@ -40,7 +40,7 @@ class FinancialSentimentServiceTest {
 
     @Test
     void shouldIgnoreNonFinancialWords() {
-        String text = "The weather is nice today in New York.";
+        var text = "The weather is nice today in New York.";
         assertEquals(0.0, service.analyze(text));
     }
 }

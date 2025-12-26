@@ -76,6 +76,5 @@ If you run a static analyzer like Sonar or SonarLint — direct Sonar connection
 ## Build and Verification
 
 - After adding or modifying code, verify the project continues to build successfully.
-- If the project uses Maven, run `mvn clean install`.
-- If the project uses Gradle, run `./gradlew build` (or `gradlew.bat build` on Windows).
+- use mvnd to build the project. *mvnd clean install* is preferred for a full clean build. if mvnd is not available, install it using sdkman
 - Ensure all tests pass as part of the build.
