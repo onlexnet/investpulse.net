@@ -6,13 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.investpulse.common.dto.RawTweet;
 import net.investpulse.x.config.TwitterConfig;
+import net.investpulse.x.domain.port.TweetFetcher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -21,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class TwitterIngestor {
 
     private final TwitterConfig config;
-    private final TickerExtractor tickerExtractor;
+    private final TweetFetcher tweetFetcher;
     private final DynamicTopicRouter topicRouter;
 
     // Cache to store the last processed tweet ID per account
@@ -36,22 +34,17 @@ public class TwitterIngestor {
         for (String account : config.getAccountsToFollow()) {
             try {
                 String sinceId = sinceIdCache.getIfPresent(account);
-                List<RawTweet> tweets = fetchTweetsForAccount(account, sinceId);
+                List<RawTweet> tweets = tweetFetcher.fetchTweets(account, sinceId);
 
                 for (RawTweet tweet : tweets) {
                     topicRouter.route(tweet);
                     sinceIdCache.put(account, tweet.id());
                 }
+
+                log.info("Processed {} tweets for account {}", tweets.size(), account);
             } catch (Exception e) {
                 log.error("Error polling tweets for account {}: {}", account, e.getMessage());
             }
         }
-    }
-
-    List<RawTweet> fetchTweetsForAccount(String account, String sinceId) {
-        // In a real implementation, this would call the X API v2
-        // For now, we'll return an empty list or mock data if needed for testing
-        log.debug("Fetching tweets for {} since {}", account, sinceId);
-        return Collections.emptyList();
     }
 }

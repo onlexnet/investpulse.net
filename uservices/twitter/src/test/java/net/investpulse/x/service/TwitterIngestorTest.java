@@ -2,11 +2,11 @@ package net.investpulse.x.service;
 
 import net.investpulse.common.dto.RawTweet;
 import net.investpulse.x.config.TwitterConfig;
+import net.investpulse.x.domain.port.TweetFetcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
@@ -24,13 +24,15 @@ class TwitterIngestorTest {
     private TwitterConfig config;
 
     @Mock
+    private TweetFetcher tweetFetcher;
+
+    @Mock
     private TickerExtractor tickerExtractor;
 
     @Mock
     private DynamicTopicRouter topicRouter;
 
     @InjectMocks
-    @Spy
     private TwitterIngestor ingestor;
 
     @Test
@@ -42,7 +44,7 @@ class TwitterIngestorTest {
             Instant.now(), "X API", "@ZeroHedge", Set.of("AAPL")
         );
         
-        doReturn(List.of(tweet)).when(ingestor).fetchTweetsForAccount(eq("ZeroHedge"), any());
+        when(tweetFetcher.fetchTweets(eq("ZeroHedge"), any())).thenReturn(List.of(tweet));
 
         ingestor.pollTweets();
 
@@ -52,7 +54,7 @@ class TwitterIngestorTest {
     @Test
     void shouldHandleExceptionDuringPoll() {
         when(config.getAccountsToFollow()).thenReturn(List.of("ZeroHedge"));
-        doThrow(new RuntimeException("API Error")).when(ingestor).fetchTweetsForAccount(anyString(), any());
+        when(tweetFetcher.fetchTweets(anyString(), any())).thenThrow(new RuntimeException("API Error"));
 
         // Should not throw exception
         ingestor.pollTweets();
@@ -60,3 +62,4 @@ class TwitterIngestorTest {
         verifyNoInteractions(topicRouter);
     }
 }
+
