@@ -1,5 +1,6 @@
 package net.investpulse.configserver;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @see <a href="https://learn.microsoft.com/en-us/azure/developer/java/spring-framework/">Azure Spring Documentation</a>
  */
+@Disabled("Requires Azure Key Vault connectivity - enable for integration testing only")
 @ActiveProfiles("native")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AzureKeyVaultIntegrationTest {

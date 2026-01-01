@@ -2,6 +2,7 @@ package net.investpulse.x.service;
 
 import net.investpulse.common.dto.RawTweet;
 import net.investpulse.x.config.TwitterConfig;
+import net.investpulse.x.config.TwitterProps;
 import net.investpulse.x.domain.port.TweetFetcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.*;
 class TwitterIngestorTest {
 
     @Mock
-    private TwitterConfig config;
+    private TwitterProps.Configuration config;
 
     @Mock
     private TweetFetcher tweetFetcher;
@@ -37,7 +38,7 @@ class TwitterIngestorTest {
 
     @Test
     void shouldPollAndRouteTweets() {
-        when(config.getAccountsToFollow()).thenReturn(List.of("ZeroHedge"));
+        when(config.accountsToFollow()).thenReturn(List.of("ZeroHedge"));
         
         RawTweet tweet = new RawTweet(
             "100", "Test", "user1", "user1", 
@@ -53,7 +54,7 @@ class TwitterIngestorTest {
 
     @Test
     void shouldHandleExceptionDuringPoll() {
-        when(config.getAccountsToFollow()).thenReturn(List.of("ZeroHedge"));
+        when(config.accountsToFollow()).thenReturn(List.of("ZeroHedge"));
         when(tweetFetcher.fetchTweets(anyString(), any())).thenThrow(new RuntimeException("API Error"));
 
         // Should not throw exception

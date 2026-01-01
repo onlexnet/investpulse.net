@@ -5,7 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.investpulse.common.dto.RawTweet;
-import net.investpulse.x.config.TwitterConfig;
+import net.investpulse.x.config.TwitterProps;
 import net.investpulse.x.domain.port.TweetFetcher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class TwitterIngestor {
 
-    private final TwitterConfig config;
+    private final TwitterProps.Configuration config;
     private final TweetFetcher tweetFetcher;
     private final DynamicTopicRouter topicRouter;
 
@@ -29,9 +29,11 @@ public class TwitterIngestor {
 
     @Scheduled(fixedDelayString = "${twitter.poll-interval-ms:60000}")
     public void pollTweets() {
-        log.info("Starting tweet poll for {} accounts", config.getAccountsToFollow().size());
+        var accounts = config.accountsToFollow();
+        log.info("Starting tweet poll for {} accounts", 
+            accounts instanceof java.util.Collection<?> c ? c.size() : "unknown");
 
-        for (String account : config.getAccountsToFollow()) {
+        for (String account : accounts) {
             try {
                 String sinceId = sinceIdCache.getIfPresent(account);
                 List<RawTweet> tweets = tweetFetcher.fetchTweets(account, sinceId);

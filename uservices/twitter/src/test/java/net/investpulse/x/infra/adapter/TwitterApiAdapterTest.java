@@ -139,4 +139,180 @@ class TwitterApiAdapterTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to fetch tweets");
     }
+
+    @Test
+    void shouldHandleNullTimestamp() {
+        // Given
+        String username = "testuser";
+
+        // Mock user lookup
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString(), (Object[]) any())).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
+        when(responseSpec.body(TwitterApiAdapter.UserLookupResponse.class))
+                .thenReturn(new TwitterApiAdapter.UserLookupResponse(
+                        new TwitterApiAdapter.UserData("987654321", "testuser")
+                ));
+
+        // Mock tweets fetch with null timestamp
+        when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersUriSpec);
+        var tweetData = new TwitterApiAdapter.TweetData("111", "Test tweet", "987654321", null);
+        when(responseSpec.body(TwitterApiAdapter.TweetResponse.class))
+                .thenReturn(new TwitterApiAdapter.TweetResponse(List.of(tweetData)));
+
+        // When
+        List<RawTweet> tweets = adapter.fetchTweets(username, null);
+
+        // Then - Should use Instant.now() as fallback
+        assertThat(tweets).hasSize(1);
+        assertThat(tweets.get(0).createdAt()).isNotNull();
+    }
+
+    @Test
+    void shouldHandleInvalidTimestampFormat() {
+        // Given
+        String username = "testuser";
+
+        // Mock user lookup
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString(), (Object[]) any())).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
+        when(responseSpec.body(TwitterApiAdapter.UserLookupResponse.class))
+                .thenReturn(new TwitterApiAdapter.UserLookupResponse(
+                        new TwitterApiAdapter.UserData("987654321", "testuser")
+                ));
+
+        // Mock tweets fetch with invalid timestamp
+        when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersUriSpec);
+        var tweetData = new TwitterApiAdapter.TweetData("111", "Test tweet", "987654321", "invalid-timestamp");
+        when(responseSpec.body(TwitterApiAdapter.TweetResponse.class))
+                .thenReturn(new TwitterApiAdapter.TweetResponse(List.of(tweetData)));
+
+        // When
+        List<RawTweet> tweets = adapter.fetchTweets(username, null);
+
+        // Then - Should use Instant.now() as fallback
+        assertThat(tweets).hasSize(1);
+        assertThat(tweets.get(0).createdAt()).isNotNull();
+    }
+
+    @Test
+    void shouldHandleNullUserDataInResponse() {
+        // Given
+        String username = "testuser";
+
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString(), (Object[]) any())).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
+        when(responseSpec.body(TwitterApiAdapter.UserLookupResponse.class))
+                .thenReturn(new TwitterApiAdapter.UserLookupResponse(null));
+
+        // When
+        List<RawTweet> tweets = adapter.fetchTweets(username, null);
+
+        // Then
+        assertThat(tweets).isEmpty();
+    }
+
+    @Test
+    void shouldHandleEmptyTweetList() {
+        // Given
+        String username = "testuser";
+
+        // Mock user lookup
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString(), (Object[]) any())).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
+        when(responseSpec.body(TwitterApiAdapter.UserLookupResponse.class))
+                .thenReturn(new TwitterApiAdapter.UserLookupResponse(
+                        new TwitterApiAdapter.UserData("987654321", "testuser")
+                ));
+
+        // Mock tweets fetch with empty list
+        when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersUriSpec);
+        when(responseSpec.body(TwitterApiAdapter.TweetResponse.class))
+                .thenReturn(new TwitterApiAdapter.TweetResponse(List.of()));
+
+        // When
+        List<RawTweet> tweets = adapter.fetchTweets(username, null);
+
+        // Then
+        assertThat(tweets).isEmpty();
+    }
+
+    @Test
+    void shouldIncludeSinceIdInRequest() {
+        // Given
+        String username = "testuser";
+        String sinceId = "999999999";
+
+        // Mock user lookup
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString(), (Object[]) any())).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
+        when(responseSpec.body(TwitterApiAdapter.UserLookupResponse.class))
+                .thenReturn(new TwitterApiAdapter.UserLookupResponse(
+                        new TwitterApiAdapter.UserData("987654321", "testuser")
+                ));
+
+        // Mock tweets fetch
+        when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersUriSpec);
+        var tweetData = new TwitterApiAdapter.TweetData("1000000000", "New tweet", 
+                "987654321", "2025-12-28T10:00:00.000Z");
+        when(responseSpec.body(TwitterApiAdapter.TweetResponse.class))
+                .thenReturn(new TwitterApiAdapter.TweetResponse(List.of(tweetData)));
+
+        // When
+        List<RawTweet> tweets = adapter.fetchTweets(username, sinceId);
+
+        // Then - Should return tweets after sinceId
+        assertThat(tweets).hasSize(1);
+        assertThat(tweets.get(0).id()).isEqualTo("1000000000");
+    }
+
+    @Test
+    void shouldMapAllTweetFieldsCorrectly() {
+        // Given
+        String username = "testuser";
+
+        // Mock user lookup
+        when(restClient.get()).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.uri(anyString(), (Object[]) any())).thenReturn(requestHeadersUriSpec);
+        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.onStatus(any(), any())).thenReturn(responseSpec);
+        when(responseSpec.body(TwitterApiAdapter.UserLookupResponse.class))
+                .thenReturn(new TwitterApiAdapter.UserLookupResponse(
+                        new TwitterApiAdapter.UserData("123456", "testuser")
+                ));
+
+        // Mock tweets fetch
+        when(requestHeadersUriSpec.uri(any(Function.class))).thenReturn(requestHeadersUriSpec);
+        var tweetData = new TwitterApiAdapter.TweetData(
+                "tweet-id-123",
+                "Tweet about $AAPL and $TSLA",
+                "123456",
+                "2025-12-27T15:30:00.000Z"
+        );
+        when(responseSpec.body(TwitterApiAdapter.TweetResponse.class))
+                .thenReturn(new TwitterApiAdapter.TweetResponse(List.of(tweetData)));
+
+        // When
+        List<RawTweet> tweets = adapter.fetchTweets(username, null);
+
+        // Then - Verify all fields mapped correctly
+        assertThat(tweets).hasSize(1);
+        var tweet = tweets.get(0);
+        assertThat(tweet.id()).isEqualTo("tweet-id-123");
+        assertThat(tweet.text()).isEqualTo("Tweet about $AAPL and $TSLA");
+        assertThat(tweet.authorId()).isEqualTo("123456");
+        assertThat(tweet.authorUsername()).isEqualTo("testuser");
+        assertThat(tweet.source()).isEqualTo("Twitter API v2");
+        assertThat(tweet.publisher()).isEqualTo("@testuser");
+        assertThat(tweet.tickers()).isEmpty(); // Extracted later by TickerExtractor
+    }
 }

@@ -7,7 +7,6 @@ import net.investpulse.common.dto.SentimentResult;
 import net.investpulse.sentiment.persistence.ParquetSentimentWriter;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.listener.AcknowledgingMessageListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;

@@ -2,10 +2,14 @@ package net.investpulse.x.infra.adapter;
 
 import net.investpulse.common.dto.RawTweet;
 import net.investpulse.x.config.TwitterConfig;
+import net.investpulse.x.config.TwitterProps;
 import net.investpulse.x.domain.port.TweetFetcher;
 import net.investpulse.x.infra.interceptor.RateLimitInterceptor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +28,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  * This test requires valid Twitter API credentials. Set the following environment variable:
  * - TWITTER_BEARER_TOKEN: Your Twitter API v2 bearer token
  * <p>
- * The test will be skipped if credentials are not available.
+ * Tests will be skipped if TWITTER_BEARER_TOKEN is not set.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
@@ -33,13 +37,15 @@ import static org.assertj.core.api.Assumptions.assumeThat;
         "twitter.accounts-to-follow=elonmusk",
         "twitter.poll-interval-ms=60000"
 })
+@EnabledIfEnvironmentVariable(named = "TWITTER_BEARER_TOKEN", matches = ".+")
 class TwitterApiAdapterIntegrationTest {
 
     @Autowired
     private TweetFetcher tweetFetcher;
 
     @Autowired
-    private TwitterConfig config;
+    @Qualifier("twitterPropsConfiguration")
+    private TwitterProps.Configuration config;
 
     @TestConfiguration
     static class TestConfig {
@@ -53,10 +59,10 @@ class TwitterApiAdapterIntegrationTest {
 
         @Bean
         @Primary
-        public RestClient testTwitterRestClient(TwitterConfig config, RateLimitInterceptor interceptor) {
+        public RestClient testTwitterRestClient(TwitterProps.Configuration config, RateLimitInterceptor interceptor) {
             return RestClient.builder()
-                    .baseUrl(config.getApiBaseUrl())
-                    .defaultHeader("Authorization", "Bearer " + config.getBearerToken())
+                    .baseUrl(config.apiBaseUrl())
+                    .defaultHeader("Authorization", "Bearer " + config.bearerToken())
                     .defaultHeader("Content-Type", "application/json")
                     .requestInterceptor(interceptor)
                     .build();
@@ -71,10 +77,6 @@ class TwitterApiAdapterIntegrationTest {
 
     @Test
     void shouldFetchRealTweetsFromTwitterApi() {
-        // Skip test if bearer token is not configured
-        assumeThat(config.getBearerToken())
-                .as("Twitter bearer token must be set via TWITTER_BEARER_TOKEN environment variable")
-                .isNotBlank();
 
         // When: Fetch recent tweets from a well-known account (Elon Musk)
         String username = "elonmusk";
@@ -100,11 +102,6 @@ class TwitterApiAdapterIntegrationTest {
 
     @Test
     void shouldHandleIncrementalFetchWithSinceId() {
-        // Skip test if bearer token is not configured
-        assumeThat(config.getBearerToken())
-                .as("Twitter bearer token must be set via TWITTER_BEARER_TOKEN environment variable")
-                .isNotBlank();
-
         String username = "elonmusk";
 
         // First fetch
@@ -131,10 +128,6 @@ class TwitterApiAdapterIntegrationTest {
 
     @Test
     void shouldRespectRateLimits() {
-        // Skip test if bearer token is not configured
-        assumeThat(config.getBearerToken())
-                .as("Twitter bearer token must be set via TWITTER_BEARER_TOKEN environment variable")
-                .isNotBlank();
 
         String username = "elonmusk";
 
@@ -150,10 +143,6 @@ class TwitterApiAdapterIntegrationTest {
 
     @Test
     void shouldHandleNonExistentUser() {
-        // Skip test if bearer token is not configured
-        assumeThat(config.getBearerToken())
-                .as("Twitter bearer token must be set via TWITTER_BEARER_TOKEN environment variable")
-                .isNotBlank();
 
         String nonExistentUser = "thisusershouldnotexist12345xyz";
         

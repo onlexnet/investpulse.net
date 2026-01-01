@@ -18,6 +18,10 @@ spring:
             bearer:
               token: ${twitter.bearer.token}
     
+    bus:
+      enabled: true
+      destination: springCloudBus
+    
     azure:
       keyvault:
         secret:
@@ -28,3 +32,12 @@ spring:
                 client-id: bde9a28c-d7c8-4ef5-909b-687263af8675
                 tenant-id: 29084a59-db89-4eb9-908a-53f42318c77d
                 client-certificate-path: ${HOME}/.azure/certs/investpulse-net-infra-full.pem
+  
+  kafka:
+    bootstrap-servers: localhost:9092
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: busrefresh,health,info

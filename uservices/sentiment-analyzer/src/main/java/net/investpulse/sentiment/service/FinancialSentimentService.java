@@ -2,7 +2,6 @@ package net.investpulse.sentiment.service;
 
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.Set;
 
 @Service
