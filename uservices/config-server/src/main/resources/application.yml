@@ -21,6 +21,17 @@ spring:
     bus:
       enabled: true
       destination: springCloudBus
+      trace:
+        enabled: true
+    
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+      bindings:
+        springCloudBus-out-0:
+          destination: springCloudBus
+          content-type: application/json
     
     azure:
       keyvault:
@@ -35,6 +46,13 @@ spring:
   
   kafka:
     bootstrap-servers: localhost:9092
+
+logging:
+  level:
+    org.springframework.cloud.bus: DEBUG
+    org.springframework.cloud.stream: DEBUG
+    org.springframework.kafka: DEBUG
+    net.investpulse.configserver: DEBUG
 
 management:
   endpoints:

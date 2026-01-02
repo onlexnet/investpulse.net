@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.bus.event.RefreshRemoteApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.event.EventListener;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,29 +16,43 @@ import org.springframework.stereotype.Component;
  * 
  * Services listening to this event will automatically synchronize their config
  * without the need for polling or scheduled retry.
+ * 
+ * Uses StreamBridge for direct Kafka publishing via Spring Cloud Stream.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ConfigServerStartupPublisher {
 
-    private final ApplicationEventPublisher eventPublisher;
+    private final StreamBridge streamBridge;
 
     /**
      * When Config Server is fully started and ready, publish a refresh event
-     * to all microservices via Kafka (Spring Cloud Bus).
+     * to all microservices via Spring Cloud Bus.
+     * 
+     * Uses StreamBridge to directly publish to Kafka topic.
      */
     @EventListener(ApplicationReadyEvent.class)
     public void publishStartupEvent() {
-        log.info("Config Server is ready - publishing refresh event to all services");
+        log.info("=== ConfigServerStartupPublisher.publishStartupEvent() INVOKED ===");
+        log.info("Config Server is ready - publishing refresh event to all services via Spring Cloud Bus");
         
         var refreshEvent = new RefreshRemoteApplicationEvent(
             this,
             "config-server",  // origin service
-            "**"              // destination: all services (use ** for wildcard)
+            "**"              // destination: all services (wildcard pattern)
         );
         
-        eventPublisher.publishEvent(refreshEvent);
-        log.info("Config Server availability event published to Spring Cloud Bus");
+        log.info("Publishing RefreshRemoteApplicationEvent: origin={}, destination={}", 
+            refreshEvent.getOriginService(), refreshEvent.getDestinationService());
+        
+        boolean sent = streamBridge.send("springCloudBus-out-0", 
+            MessageBuilder.withPayload(refreshEvent).build());
+        
+        if (sent) {
+            log.info("=== RefreshRemoteApplicationEvent SENT to Kafka topic 'springCloudBus' ===");
+        } else {
+            log.error("=== FAILED to send RefreshRemoteApplicationEvent to Kafka ===");
+        }
     }
 }

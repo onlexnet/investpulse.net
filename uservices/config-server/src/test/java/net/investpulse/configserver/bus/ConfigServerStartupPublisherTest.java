@@ -4,124 +4,99 @@ import net.investpulse.configserver.ConfigServerStartupPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.cloud.bus.event.RefreshRemoteApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.cloud.stream.function.StreamBridge;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ConfigServerStartupPublisherTest {
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private StreamBridge streamBridge;
 
     @Mock
     private ApplicationReadyEvent applicationReadyEvent;
-
-    @Captor
-    private ArgumentCaptor<RefreshRemoteApplicationEvent> eventCaptor;
 
     private ConfigServerStartupPublisher publisher;
 
     @BeforeEach
     void setUp() {
-        publisher = new ConfigServerStartupPublisher(eventPublisher);
+        publisher = new ConfigServerStartupPublisher(streamBridge);
     }
 
     @Test
     void shouldPublishRefreshEventOnApplicationReady() {
+        // Given
+        when(streamBridge.send(anyString(), any())).thenReturn(true);
+
         // When
         publisher.publishStartupEvent();
 
         // Then
-        verify(eventPublisher).publishEvent(eventCaptor.capture());
-        
-        var publishedEvent = eventCaptor.getValue();
-        assertThat(publishedEvent).isNotNull();
+        verify(streamBridge).send(eq("springCloudBus-out-0"), any());
     }
 
     @Test
-    void shouldPublishEventWithCorrectOriginService() {
+    void shouldPublishEventToCorrectBinding() {
+        // Given
+        when(streamBridge.send(anyString(), any())).thenReturn(true);
+
         // When
         publisher.publishStartupEvent();
 
         // Then
-        verify(eventPublisher).publishEvent(eventCaptor.capture());
-        
-        var publishedEvent = eventCaptor.getValue();
-        assertThat(publishedEvent.getOriginService()).isEqualTo("config-server");
-    }
-
-    @Test
-    void shouldPublishEventWithWildcardDestination() {
-        // When
-        publisher.publishStartupEvent();
-
-        // Then
-        verify(eventPublisher).publishEvent(eventCaptor.capture());
-        
-        var publishedEvent = eventCaptor.getValue();
-        assertThat(publishedEvent.getDestinationService()).isEqualTo("**");
+        verify(streamBridge).send(eq("springCloudBus-out-0"), any());
     }
 
     @Test
     void shouldPublishOnlyOncePerStartup() {
+        // Given
+        when(streamBridge.send(anyString(), any())).thenReturn(true);
+
         // When
         publisher.publishStartupEvent();
 
         // Then
-        verify(eventPublisher, times(1)).publishEvent(any(RefreshRemoteApplicationEvent.class));
+        verify(streamBridge, times(1)).send(eq("springCloudBus-out-0"), any());
     }
 
     @Test
     void shouldHandleMultipleInvocations() {
-        // When - Call multiple times (unusual but should be safe)
+        // Given
+        when(streamBridge.send(anyString(), any())).thenReturn(true);
+
+        // When - Call multiple times
         publisher.publishStartupEvent();
         publisher.publishStartupEvent();
 
         // Then - Should publish twice (once per call)
-        verify(eventPublisher, times(2)).publishEvent(any(RefreshRemoteApplicationEvent.class));
-    }
-
-    @Test
-    void shouldPublishEventWithPublisherAsSource() {
-        // When
-        publisher.publishStartupEvent();
-
-        // Then
-        verify(eventPublisher).publishEvent(eventCaptor.capture());
-        
-        var publishedEvent = eventCaptor.getValue();
-        assertThat(publishedEvent.getSource()).isEqualTo(publisher);
+        verify(streamBridge, times(2)).send(eq("springCloudBus-out-0"), any());
     }
 
     @Test
     void shouldNotThrowExceptionWhenPublishingEvent() {
+        // Given
+        when(streamBridge.send(anyString(), any())).thenReturn(true);
+
         // When/Then - Should not throw
         publisher.publishStartupEvent();
         
-        verify(eventPublisher).publishEvent(any(RefreshRemoteApplicationEvent.class));
+        verify(streamBridge).send(eq("springCloudBus-out-0"), any());
     }
 
     @Test
-    void shouldHandleEventPublisherException() {
+    void shouldHandleFailedSend() {
         // Given
-        doThrow(new RuntimeException("Event publishing failed"))
-                .when(eventPublisher).publishEvent(any(RefreshRemoteApplicationEvent.class));
+        when(streamBridge.send(anyString(), any())).thenReturn(false);
 
-        // When/Then - Exception should propagate
-        try {
-            publisher.publishStartupEvent();
-        } catch (RuntimeException e) {
-            assertThat(e.getMessage()).contains("Event publishing failed");
-        }
-
-        verify(eventPublisher).publishEvent(any(RefreshRemoteApplicationEvent.class));
+        // When/Then - Should not throw but log error
+        publisher.publishStartupEvent();
+        
+        verify(streamBridge).send(eq("springCloudBus-out-0"), any());
     }
 }
