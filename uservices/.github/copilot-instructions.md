@@ -14,9 +14,9 @@ This project is a decoupled, event-driven system for financial sentiment analysi
 4. **Aggregation**: Results published to `sentiment-aggregated` for downstream use.
 
 ## Project Conventions
-- **Java 25**: Use modern features like Records, Pattern Matching, and `var`.
+- use [java instructions](instructions/java.instructions.md) for Java coding standards.
+- **Modules**: Each microservice is a separate Maven module.
 - **DTOs**: Always use **Java Records** in the `common` module for Kafka messages.
-- **Logging**: Use Lombok `@Slf4j`.
 - **Kafka**: 
     - Use `ticker-{SYMBOL}` (uppercase) for raw tweet streams.
     - Use `JsonSerializer`/`JsonDeserializer` for message bodies.
