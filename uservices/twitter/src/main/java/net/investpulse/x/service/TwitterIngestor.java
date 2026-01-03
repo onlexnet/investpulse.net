@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.investpulse.common.dto.RawTweet;
 import net.investpulse.x.config.TwitterProps;
 import net.investpulse.x.domain.port.TweetFetcher;
+
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@RefreshScope
 public class TwitterIngestor {
 
     private final TwitterProps.Configuration config;
@@ -27,7 +30,8 @@ public class TwitterIngestor {
             .expireAfterWrite(24, TimeUnit.HOURS)
             .build();
 
-    @Scheduled(fixedDelayString = "${twitter.poll-interval-ms:60000}")
+    // @Scheduled(fixedDelayString = "${twitter.poll-interval-ms:60000}")
+    @Scheduled(fixedDelay = 3_000)
     public void pollTweets() {
         var accounts = config.accountsToFollow();
         log.info("Starting tweet poll for {} accounts", 

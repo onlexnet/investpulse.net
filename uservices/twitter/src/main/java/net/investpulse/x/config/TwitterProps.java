@@ -3,6 +3,7 @@ package net.investpulse.x.config;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 import lombok.Data;
 
@@ -29,6 +30,7 @@ public sealed interface TwitterProps {
 
 @ConfigurationProperties(prefix = "twitter")
 @Data
+@RefreshScope
 class TwitterRawProps {
     private String bearerToken;
     private List<String> accountsToFollow = List.of();

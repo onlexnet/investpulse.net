@@ -4,16 +4,6 @@ spring:
   
   config:
     import: optional:configserver:http://localhost:8888
-    fail-fast: false  # Allow app to start even if Config Server is unavailable
-    
-    # Retry configuration for INITIAL STARTUP connection to Config Server
-    # These attempts happen ONLY during application bootstrap (before Spring context starts)
-    # After startup, Spring Cloud Bus handles config updates via Kafka events
-    retry:
-      max-attempts: 10          # Try up to 10 times during startup
-      initial-interval: 1000    # Start with 1 second delay
-      max-interval: 3000        # Max 3 seconds between attempts
-      multiplier: 1.2           # Exponential backoff (1s → 1.2s → 1.44s → ...)
   
   kafka:
     bootstrap-servers: localhost:9092
@@ -30,6 +20,16 @@ spring:
       destination: springCloudBus  # Kafka topic name for config events
       refresh:
         enabled: true  # Auto-refresh @RefreshScope beans on bus events
+    
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+      bindings:
+        springCloudBus-in-0:
+          destination: springCloudBus
+          content-type: application/json
+          group: x  # Service name for consumer group
 
 management:
   endpoints:
