@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: twiter-consumer
+    name: twitter-upstream
 
   
   config:
@@ -16,19 +16,19 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      group-id: twiter-consumer  # Consumer group for Spring Cloud Bus
+      group-id: twitter-upstream  # Consumer group for Spring Cloud Bus
       auto-offset-reset: earliest
           
   cloud:
     bus:
-      id: twiter-consumer-${random.int:1000}  # ← KLUCZOWE: stały ID grupy!
+      id: twitter-upstream-${random.int:1000}  # ← KLUCZOWE: stały ID grupy!
       enabled: true
       destination: springCloudBus  # Kafka topic name for config events
       refresh:
         enabled: true  # Auto-refresh @RefreshScope beans on bus events
     stream:
       default:
-        group: twitter-consumer-group
+        group: twitter-upstream-group
 
       bindings:
         springCloudBusInput:

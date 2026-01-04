@@ -62,10 +62,13 @@ logging:
     net.investpulse.configserver: DEBUG
 
 management:
+  info:
+    env:
+      enabled: true
   endpoints:
     web:
       exposure:
-        include: busrefresh,health,info
+        include: busrefresh,health,info,env
 
 # Disable JMX to avoid port conflicts during development
 # Feel free to remove this line in production environments

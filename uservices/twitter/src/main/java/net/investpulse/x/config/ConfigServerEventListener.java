@@ -1,14 +1,11 @@
 package net.investpulse.x.config;
 
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.bus.event.RefreshRemoteApplicationEvent;
 import org.springframework.cloud.context.refresh.ContextRefresher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Listens for Spring Cloud Bus events from Config Server.
@@ -21,17 +18,12 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class ConfigServerEventListener {
 
-    @Autowired
-    ContextRefresher refresher;
+    private final ContextRefresher refresher;
 
-    @Autowired
-    TwitterRawProps twitterRawProps;
-
-    @PostConstruct
-    void init() {
-        var accounts = twitterRawProps.getAccountsToFollow();
-        log.info("ConfigServerEventListener initialized with accounts: {}", accounts);
+    public ConfigServerEventListener(ContextRefresher refresher) {
+        this.refresher = refresher;
     }
+
     /**
      * Handles refresh events from Config Server via Spring Cloud Bus (Kafka).
      * Automatically triggered when:
@@ -42,10 +34,7 @@ public class ConfigServerEventListener {
     @EventListener
     public void handleRefreshEvent(RefreshRemoteApplicationEvent event) {
         log.info("Received refresh event from {}", event.getOriginService());
-        var aaa1 = twitterRawProps.getAccountsToFollow();
         refresher.refresh();  // <- to triggeruje @RefreshScope
-        var aaa2 = twitterRawProps.getAccountsToFollow();
-        log.info("Refreshed TwitterRawProps accounts from {} to {}", aaa1, aaa2);
         // TODO - should we send back AckRemoteApplicationEvent?
     }
 }
