@@ -33,6 +33,8 @@ spring:
           autoAddPartitions: true
           autoCreateTopics: true  # już domyślnie true
       bindings:
+        default:
+          group: config-server-group
         springCloudBus-out-0:
           destination: springCloudBus
           content-type: application/json

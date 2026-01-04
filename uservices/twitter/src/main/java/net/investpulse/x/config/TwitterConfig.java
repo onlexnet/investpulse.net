@@ -14,7 +14,7 @@ import org.springframework.web.client.RestClient;
 public class TwitterConfig {
 
     @Bean
-    @RefreshScope(proxyMode = ScopedProxyMode.NO)
+    @RefreshScope(proxyMode = ScopedProxyMode.NO) // to avoid create proxy by Spring for final TwitterProps.Configuration
     public TwitterProps.Configuration twitterPropsConfiguration(TwitterRawProps rawProps) {
         return new TwitterProps.Configuration(
                 rawProps.getBearerToken(),
