@@ -2,6 +2,8 @@ package net.investpulse.x.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.investpulse.common.dto.RawTweet;
@@ -29,6 +31,11 @@ public class TwitterIngestor {
     private final Cache<String, String> sinceIdCache = Caffeine.newBuilder()
             .expireAfterWrite(24, TimeUnit.HOURS)
             .build();
+
+    @PostConstruct
+    void init() {
+        log.info("TwitterIngestor initialized with accounts: {}", config.accountsToFollow());
+    }
 
     // @Scheduled(fixedDelayString = "${twitter.poll-interval-ms:60000}")
     @Scheduled(fixedDelay = 3_000)

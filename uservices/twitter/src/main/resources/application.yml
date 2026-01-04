@@ -1,41 +1,44 @@
+server:
+  port: 9001
+
 spring:
   application:
-    name: x
+    name: twiter-consumer
+
   
   config:
     import: optional:configserver:http://localhost:8888
+
   
   kafka:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-  
+    consumer:
+      group-id: twiter-consumer  # Consumer group for Spring Cloud Bus
+      auto-offset-reset: earliest
+          
   cloud:
-    # Spring Cloud Bus enables EVENT-DRIVEN config refresh via Kafka
-    # When Config Server starts or config changes, it publishes event to Kafka
-    # Services automatically refresh their config in real-time (no polling needed)
     bus:
+      id: twiter-consumer-${random.int:1000}  # ← KLUCZOWE: stały ID grupy!
       enabled: true
       destination: springCloudBus  # Kafka topic name for config events
       refresh:
         enabled: true  # Auto-refresh @RefreshScope beans on bus events
-    
     stream:
-      kafka:
-        binder:
-          brokers: localhost:9092
       bindings:
-        springCloudBus-in-0:
+        springCloudBusInput:
           destination: springCloudBus
-          content-type: application/json
-          group: x  # Service name for consumer group
+          group: moja-grupa
+
 
 management:
   endpoints:
     web:
       exposure:
         include: busrefresh,refresh,health,info
+      base-path: /actuator
   endpoint:
     refresh:
       enabled: true

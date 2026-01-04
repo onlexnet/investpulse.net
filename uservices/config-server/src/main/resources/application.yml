@@ -28,6 +28,10 @@ spring:
       kafka:
         binder:
           brokers: localhost:9092
+          minPartitionCount: 3 # domyślnie tworzyło 1 partycję, a klient szukał3 i rzucał wyjątkami o braku partycji ...-2, ...-3
+          replicationFactor: 1 
+          autoAddPartitions: true
+          autoCreateTopics: true  # już domyślnie true
       bindings:
         springCloudBus-out-0:
           destination: springCloudBus

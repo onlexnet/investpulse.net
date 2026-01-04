@@ -30,7 +30,6 @@ public sealed interface TwitterProps {
 
 @ConfigurationProperties(prefix = "twitter")
 @Data
-@RefreshScope
 class TwitterRawProps {
     private String bearerToken;
     private List<String> accountsToFollow = List.of();
