@@ -27,10 +27,12 @@ spring:
       refresh:
         enabled: true  # Auto-refresh @RefreshScope beans on bus events
     stream:
+      default:
+        group: twitter-consumer-group
+
       bindings:
         springCloudBusInput:
           destination: springCloudBus
-          group: moja-grupa
 
 
 management:
