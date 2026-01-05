@@ -112,6 +112,14 @@ resource "github_actions_environment_secret" "static_web_app_api_token" {
   plaintext_value = azurerm_static_web_app.webapp.api_key
 }
 
+# Finnhub.io API Key secret for GitHub environment
+resource "github_actions_environment_secret" "finnhub_api_key" {
+  repository      = var.github_repository
+  environment     = var.envName
+  secret_name     = "FINNHUB_API_KEY"
+  plaintext_value = var.FINNHUB_API_KEY
+}
+
 # ================================================================
 # Cloudflare DNS Configuration
 # ================================================================

@@ -18,7 +18,8 @@ locals {
     "app_location"                  = "/webapp"
     "output_location"               = "out"
     "app_build_command"             = "npm run build:static"
-    "api_location"                  = ""
+    "api_location"                  = "/webapp/api"
     "skip_github_api_orchestration" = "false"
+    "FINNHUB_API_KEY"              = var.FINNHUB_API_KEY
   }
 }

@@ -1,0 +1,4 @@
+node_modules/
+dist/
+.funcignore
+local.settings.json

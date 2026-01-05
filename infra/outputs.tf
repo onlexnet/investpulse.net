@@ -76,7 +76,28 @@ output "deployment_instructions" {
        Go to: https://github.com/${var.github_owner}/${var.github_repository}/settings/environments/${var.envName}
        Add secret: AZURE_STATIC_WEB_APPS_API_TOKEN
     
-    3. Access your deployed app:
+    3. Configure Finnhub API Key:
+       Set FINNHUB_API_KEY in Terraform variables or as a secret
+    
+    4. Access your deployed app:
        URL: https://${cloudflare_record.environment_dns.hostname}
+       
+    5. Test Finnhub API endpoints:
+       - Quote: https://${cloudflare_record.environment_dns.hostname}/api/finnhub/quote?symbol=AAPL
+       - Profile: https://${cloudflare_record.environment_dns.hostname}/api/finnhub/profile?symbol=AAPL
   EOT
+}
+
+# API Configuration
+output "api_info" {
+  description = "API upstream configuration"
+  value = {
+    api_location          = local.app_settings["api_location"]
+    finnhub_configured    = var.FINNHUB_API_KEY != ""
+    available_endpoints   = [
+      "/api/finnhub/quote?symbol=<SYMBOL>",
+      "/api/finnhub/profile?symbol=<SYMBOL>"
+    ]
+  }
+  sensitive = false
 }
