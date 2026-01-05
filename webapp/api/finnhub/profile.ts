@@ -8,39 +8,34 @@
  * @see https://finnhub.io/docs/api/company-profile2
  */
 
-import { AzureFunction, Context, HttpRequest } from "@azure/functions";
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 
-const httpTrigger: AzureFunction = async function (
-  context: Context,
-  req: HttpRequest
-): Promise<void> {
+export async function profile(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log("Finnhub company profile API proxy called");
 
-  const symbol = req.query.symbol;
+  const symbol = request.query.get("symbol");
 
   if (!symbol) {
-    context.res = {
+    return {
       status: 400,
-      body: { error: "Missing required parameter: symbol" },
+      jsonBody: { error: "Missing required parameter: symbol" },
       headers: {
         "Content-Type": "application/json",
       },
     };
-    return;
   }
 
   const apiKey = process.env.FINNHUB_API_KEY;
 
   if (!apiKey) {
-    context.log.error("FINNHUB_API_KEY environment variable not set");
-    context.res = {
+    context.error("FINNHUB_API_KEY environment variable not set");
+    return {
       status: 500,
-      body: { error: "Server configuration error" },
+      jsonBody: { error: "Server configuration error" },
       headers: {
         "Content-Type": "application/json",
       },
     };
-    return;
   }
 
   try {
@@ -56,19 +51,19 @@ const httpTrigger: AzureFunction = async function (
 
     const data = await response.json();
 
-    context.res = {
+    return {
       status: 200,
-      body: data,
+      jsonBody: data,
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "public, max-age=3600", // Cache for 1 hour
       },
     };
   } catch (error) {
-    context.log.error("Error fetching from Finnhub API:", error);
-    context.res = {
+    context.error("Error fetching from Finnhub API:", error);
+    return {
       status: 502,
-      body: {
+      jsonBody: {
         error: "Failed to fetch data from Finnhub API",
         message: error instanceof Error ? error.message : "Unknown error",
       },
@@ -77,6 +72,12 @@ const httpTrigger: AzureFunction = async function (
       },
     };
   }
-};
+}
 
-export default httpTrigger;
+app.http("profile", {
+  methods: ["GET"],
+  authLevel: "anonymous",
+  route: "finnhub/profile",
+  handler: profile,
+});
+

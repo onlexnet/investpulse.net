@@ -2,6 +2,7 @@
   "name": "investpulse-api",
   "version": "1.0.0",
   "description": "Azure Functions API for InvestPulse - Finnhub.io upstream proxy",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
@@ -13,8 +14,7 @@
     "@azure/functions": "^4.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "azure-functions-core-tools": "^4.0.0"
+    "@types/node": "^20.19.27",
+    "typescript": "^5.0.0"
   }
 }
