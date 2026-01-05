@@ -142,38 +142,32 @@ To add a new Finnhub endpoint:
 1. Create a new TypeScript file in `webapp/api/finnhub/`:
    ```typescript
    // webapp/api/finnhub/news.ts
-   import { AzureFunction, Context, HttpRequest } from "@azure/functions";
+   import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
    
-   const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest) {
-     // Implementation
-   };
-   
-   export default httpTrigger;
-   ```
-
-2. Create corresponding `function.json`:
-   ```json
-   {
-     "bindings": [
-       {
-         "authLevel": "anonymous",
-         "type": "httpTrigger",
-         "direction": "in",
-         "name": "req",
-         "methods": ["get"],
-         "route": "finnhub/news"
-       },
-       {
-         "type": "http",
-         "direction": "out",
-         "name": "res"
-       }
-     ],
-     "scriptFile": "../dist/finnhub/news.js"
+   export async function news(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+     const symbol = request.query.get("symbol");
+     // Implementation...
+     return {
+       status: 200,
+       jsonBody: data,
+     };
    }
+   
+   app.http("news", {
+     methods: ["GET"],
+     authLevel: "anonymous",
+     route: "finnhub/news",
+     handler: news,
+   });
    ```
 
-3. Rebuild and test.
+2. No function.json needed - Azure Functions v4 uses code-based registration
+
+3. Rebuild and test:
+   ```bash
+   npm run build
+   npm start
+   ```
 
 ## References
 

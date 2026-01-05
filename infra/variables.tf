@@ -63,5 +63,9 @@ variable "FINNHUB_API_KEY" {
   description = "Finnhub.io API key for stock market data"
   type        = string
   sensitive   = true
-  default     = ""
+  
+  validation {
+    condition     = var.FINNHUB_API_KEY != ""
+    error_message = "FINNHUB_API_KEY must be set. Obtain a free API key from https://finnhub.io/register"
+  }
 }
