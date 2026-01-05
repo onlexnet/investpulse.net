@@ -57,3 +57,11 @@ variable "cloudflare_zone_id" {
   type        = string
   default     = "2fa34bc4e1284682e9047b76b5826ffd"
 }
+
+# Finnhub.io API Configuration
+variable "FINNHUB_API_KEY" {
+  description = "Finnhub.io API key for stock market data"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
