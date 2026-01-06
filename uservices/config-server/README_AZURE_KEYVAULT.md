@@ -156,7 +156,7 @@ Once the Azure Key Vault integration is enabled, client applications (like the X
 
 ```bash
 # Get configuration for 'x' application
-curl http://localhost:8888/x/default
+curl http://localhost:9002/twitter-upstream/default
 ```
 
 The response will include the `twitter.bearer.token` property with the value retrieved from Azure Key Vault.

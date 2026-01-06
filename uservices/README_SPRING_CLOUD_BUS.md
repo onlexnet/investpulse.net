@@ -7,7 +7,7 @@ This project uses **Spring Cloud Bus** with **Kafka** for event-driven configura
 ```
 ┌──────────────────┐         ┌──────────────┐         ┌──────────────────┐
 │  Config Server   │         │    Kafka     │         │ Twitter Service  │
-│    (port 8888)   │────────>│ springCloud  │────────>│   (port 8080)    │
+│    (port 9002)   │────────>│ springCloud  │────────>│   (port 8080)    │
 │                  │ publish │     Bus      │subscribe│                  │
 │  Startup Event   │         │   (topic)    │         │  Auto Refresh!   │
 └──────────────────┘         └──────────────┘         └──────────────────┘
@@ -83,10 +83,10 @@ You can also manually trigger a refresh from Config Server to all services:
 
 ```bash
 # Refresh all services
-curl -X POST http://localhost:8888/actuator/busrefresh
+curl -X POST http://localhost:9002/actuator/busrefresh
 
 # Refresh specific service
-curl -X POST http://localhost:8888/actuator/busrefresh/x
+curl -X POST http://localhost:9002/actuator/busrefresh/x
 ```
 
 ## Testing the Flow

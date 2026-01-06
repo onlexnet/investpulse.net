@@ -36,6 +36,7 @@ public class TwitterConfig {
     @Bean
     @RefreshScope
     public RestClient twitterRestClient(RateLimitInterceptor rateLimitInterceptor, TwitterProps.Configuration twitterProps) {
+        log.error("BEARER TOKEN: {}", twitterProps.bearerToken());
         return RestClient.builder()
                 .baseUrl(twitterProps.apiBaseUrl())
                 .defaultHeader("Authorization", "Bearer " + twitterProps.bearerToken())

@@ -1,5 +1,5 @@
 server:
-  port: 8888
+  port: 9002
 
 spring:
   application:
@@ -15,8 +15,7 @@ spring:
           search-locations: classpath:/config
         overrides:
           twitter:
-            bearer:
-              token: ${twitter.bearer.token}
+            bearer-token: ${twitter.bearer.token}
     
     bus:
       enabled: true

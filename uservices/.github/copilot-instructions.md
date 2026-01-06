@@ -5,7 +5,7 @@ This project is a decoupled, event-driven system for financial sentiment analysi
 - **`common`**: Shared immutable DTOs (Java Records).
 - **`twitter` (artifact `x`)**: Ingestor service. Polls X API, extracts tickers, and routes messages to dynamic Kafka topics.
 - **`sentiment-analyzer`**: NLP service. Consumes from `ticker-*` topics, performs financial sentiment analysis, and publishes to `sentiment-aggregated`.
-- **`config-server`**: Centralized Spring Cloud Config server (port 8888).
+- **`config-server`**: Centralized Spring Cloud Config server (port 9002).
 
 ## Data Flow Pattern
 1. **Ingestion**: `TwitterIngestor` polls accounts -> `TickerExtractor` finds `$AAPL`/`#TSLA`.
