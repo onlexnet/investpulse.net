@@ -80,5 +80,6 @@
 	// https://stackoverflow.com/a/75644266
 	"mounts": [
 		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/worker/.ssh",
+		"type=bind,source=${localWorkspaceFolder}/data,target=/data"
 	]
 }

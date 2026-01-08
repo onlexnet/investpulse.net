@@ -106,6 +106,35 @@ Ensure the certificate file is available at:
 ~/.azure/certs/investpulse-net-infra-full.pem
 ```
 
+#### How to Create the Certificate
+
+```bash
+# Upgrade az tool
+az upgrade 
+
+# Create the directory
+mkdir -p ~/.azure/certs
+
+# Generate locally
+az ad sp create-for-rbac --name investpulse-net-infra --create-cert
+
+# rezultat w postaci: {
+#  "appId": "bde9a28c-d7c8-4ef5-909b-687263af8675",
+#  "displayName": "investpulse-net-infra",
+#  "fileWithCertAndPrivateKey": "/home/worker/tmp9h1mv83k.pem",
+#  "password": null,
+#  "tenant": "29084a59-db89-4eb9-908a-53f42318c77d"
+# }
+# skopiuj stworzony plik jako ~/.azure/certs/investpulse-net-infra-full.pem
+
+mv /home/worker/tmp9h1mv83k.pem ~/.azure/certs/investpulse-net-infra-full.pem
+
+# Set permissions
+chmod 600 ~/.azure/certs/investpulse-net-infra-full.pem
+```
+
+**Note:** The `.pem` file should contain both the private key and certificate in PEM format.
+
 ### Service Principal Details
 
 - **Application ID**: `bde9a28c-d7c8-4ef5-909b-687263af8675`
@@ -138,7 +167,7 @@ mvn test
 
 **Prerequisites:**
 1. Uncomment the Azure Key Vault dependency in `pom.xml`
-2. Ensure the certificate exists at `~/.azure/certs/investpulse-net-infra-full.pem`
+2. Ensure the certificate exists at `how `
 3. Service Principal must have access to the Key Vault
 4. Secret `twitter-bearer-token` must exist in Azure Key Vault
 
