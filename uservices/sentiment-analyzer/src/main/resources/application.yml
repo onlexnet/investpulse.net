@@ -14,10 +14,14 @@ spring:
       # with file granularity. Adjust if rotation settings change.
       max-poll-records: 500
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
+        # Delegate actual deserialization to JsonDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        # Trust DTO package for payload types
         spring.json.trusted.packages: "net.investpulse.common.dto"
-        spring.json.use.type.headers: false
+        # Use type headers added by producers (default true for JsonSerializer)
+        spring.json.use.type.headers: true
         # Increase poll interval to prevent rebalancing during slow Parquet writes
         # Default is 300000ms (5min), increased to account for file rotation delays
         max.poll.interval.ms: 600000
