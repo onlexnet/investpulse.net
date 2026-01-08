@@ -10,6 +10,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.apache.parquet.hadoop.util.HadoopOutputFile;
+import org.apache.parquet.io.OutputFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -19,8 +21,6 @@ import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -190,23 +190,24 @@ public class ParquetSentimentWriter {
         var key = getWriterKey(result);
         return activeWriters.computeIfAbsent(key, k -> {
             try {
-                var path = buildPartitionedPath(result);
-                
-                // Create parent directories automatically
-                var file = new java.io.File(path.getParent().toString());
-                if (!file.exists()) {
-                    var created = file.mkdirs();
+                // Build partition directory path and ensure it exists
+                var partitionDir = buildPartitionDirectory(result);
+                var dirFile = new java.io.File(partitionDir);
+                if (!dirFile.exists()) {
+                    var created = dirFile.mkdirs();
                     if (!created) {
-                        throw new IOException("Failed to create directory: " + file);
+                        throw new IOException("Failed to create directory: " + partitionDir);
                     }
                 }
                 
-                var writer = AvroParquetWriter.<GenericRecord>builder(path)
+                // Build full file path within the partition directory
+                var path = buildPartitionedPath(result);
+                
+                // Use HadoopOutputFile instead of deprecated Path-based builder
+                OutputFile outputFile = HadoopOutputFile.fromPath(path, hadoopConfig);
+                var writer = AvroParquetWriter.<GenericRecord>builder(outputFile)
                     .withSchema(schema.getSchema())
-                    .withConf(hadoopConfig)
                     .withCompressionCodec(CompressionCodecName.SNAPPY)
-                    .withRowGroupSize(ROW_GROUP_SIZE)
-                    .withPageSize(PAGE_SIZE)
                     .build();
                 
                 log.info("Created Parquet writer for partition: {}", path);
@@ -215,6 +216,29 @@ public class ParquetSentimentWriter {
                 throw new RuntimeException("Failed to create Parquet writer", e);
             }
         });
+    }
+
+    /**
+     * Builds the partition directory path for the given sentiment result.
+     * 
+     * <p><strong>Directory Format:</strong>
+     * {@code /data/sentiment/ticker=AAPL/year=2025/month=12/day=26/}
+     * 
+     * <p>This ensures parent directories are created before building the full file path.
+     * 
+     * @param result the sentiment result to partition
+     * @return partition directory path string
+     */
+    private String buildPartitionDirectory(SentimentResult result) {
+        var localDate = redditConverter.getLocalPartitionDate(result.originalTimestamp());
+        return String.format(
+            "%s/ticker=%s/year=%d/month=%02d/day=%02d",
+            basePath,
+            result.ticker(),
+            localDate.getYear(),
+            localDate.getMonthValue(),
+            localDate.getDayOfMonth()
+        );
     }
 
     /**

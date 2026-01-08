@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Service for analyzing sentiment of Reddit posts using financial lexicon.
