@@ -22,6 +22,16 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync // Required for ParquetSentimentWriter.writeAsync()
 @EnableScheduling // For future scheduled file rotation/cleanup tasks
 public class SentimentApp {
+    static {
+        // Initialize Hadoop user name BEFORE any Hadoop/Parquet classes are loaded.
+        // This prevents UnsupportedOperationException: getSubject is not supported
+        // in Java 18+ when Hadoop tries to call javax.security.auth.Subject.getSubject().
+        if (System.getProperty("HADOOP_USER_NAME") == null) {
+            String userName = System.getProperty("user.name", "investpulse");
+            System.setProperty("HADOOP_USER_NAME", userName);
+        }
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(SentimentApp.class, args);
     }

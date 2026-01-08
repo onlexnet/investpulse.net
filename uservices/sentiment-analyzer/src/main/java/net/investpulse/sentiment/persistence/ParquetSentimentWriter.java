@@ -3,24 +3,24 @@ package net.investpulse.sentiment.persistence;
 import lombok.extern.slf4j.Slf4j;
 import net.investpulse.common.dto.SentimentResult;
 import net.investpulse.sentiment.converter.RedditPostConverter;
-import net.investpulse.sentiment.schema.SentimentResultSchema;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.parquet.avro.AvroParquetWriter;
+import org.apache.parquet.column.ParquetProperties;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
-import org.apache.parquet.hadoop.util.HadoopOutputFile;
-import org.apache.parquet.io.OutputFile;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.schema.Types;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +31,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  * 
  * <p><strong>Architecture:</strong>
  * <ul>
+ *   <li>Uses Parquet with direct file I/O - minimal Hadoop dependencies (no security framework)</li>
+ *   <li>Custom {@link LocalOutputFile} bypasses Hadoop security APIs completely</li>
  *   <li>Bounded queue (capacity from config) buffers records for async writing</li>
  *   <li>When queue is full, records are <strong>dropped and logged</strong> to prevent blocking</li>
  *   <li>Files are rotated based on record count (default 1000) or time (default 5 min)</li>
@@ -71,16 +73,30 @@ public class ParquetSentimentWriter {
     @Value("${sentiment.parquet.queue-capacity:10000}")
     private int queueCapacity;
     
-    private final SentimentResultSchema schema;
     private final RedditPostConverter redditConverter;
     private LinkedBlockingQueue<WriteRequest> writeQueue;
     private final Map<String, WriterState> activeWriters = new ConcurrentHashMap<>();
-    private final Configuration hadoopConfig;
+    private final MessageType schema;
 
-    public ParquetSentimentWriter(SentimentResultSchema schema, RedditPostConverter redditConverter) {
-        this.schema = schema;
+    public ParquetSentimentWriter(RedditPostConverter redditConverter) {
         this.redditConverter = redditConverter;
-        this.hadoopConfig = createHadoopConfig();
+        this.schema = createSchema();
+    }
+
+    /**
+     * Creates Parquet schema for {@link SentimentResult} records.
+     */
+    private MessageType createSchema() {
+        return Types.buildMessage()
+            .required(PrimitiveType.PrimitiveTypeName.BINARY).as(org.apache.parquet.schema.LogicalTypeAnnotation.stringType()).named("tweetId")
+            .required(PrimitiveType.PrimitiveTypeName.BINARY).as(org.apache.parquet.schema.LogicalTypeAnnotation.stringType()).named("ticker")
+            .required(PrimitiveType.PrimitiveTypeName.DOUBLE).named("score")
+            .required(PrimitiveType.PrimitiveTypeName.BINARY).as(org.apache.parquet.schema.LogicalTypeAnnotation.stringType()).named("sentiment")
+            .required(PrimitiveType.PrimitiveTypeName.INT64).as(org.apache.parquet.schema.LogicalTypeAnnotation.timestampType(true, org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit.MILLIS)).named("processedAt")
+            .required(PrimitiveType.PrimitiveTypeName.BINARY).as(org.apache.parquet.schema.LogicalTypeAnnotation.stringType()).named("publisher")
+            .required(PrimitiveType.PrimitiveTypeName.BINARY).as(org.apache.parquet.schema.LogicalTypeAnnotation.stringType()).named("source")
+            .required(PrimitiveType.PrimitiveTypeName.INT64).as(org.apache.parquet.schema.LogicalTypeAnnotation.timestampType(true, org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit.MILLIS)).named("originalTimestamp")
+            .named("SentimentResult");
     }
 
     /**
@@ -89,7 +105,7 @@ public class ParquetSentimentWriter {
     @PostConstruct
     public void init() {
         this.writeQueue = new LinkedBlockingQueue<>(queueCapacity);
-        log.info("Initialized ParquetSentimentWriter with queue capacity: {}, base path: {}",
+        log.info("Initialized ParquetSentimentWriter (minimal Hadoop dependencies) with queue capacity: {}, base path: {}",
             queueCapacity, basePath);
     }
 
@@ -100,8 +116,6 @@ public class ParquetSentimentWriter {
      * If the write queue is full (capacity: {@code queue-capacity}), the record is
      * <strong>dropped</strong> and a warning is logged. This prevents blocking the
      * Kafka consumer thread, which could trigger rebalancing.
-     * 
-     * <p><strong>TODO:</strong> Consider adding metrics (dropped record counter) for monitoring.
      * 
      * @param result the sentiment analysis result to persist
      * @return CompletableFuture that completes when the write succeeds or fails
@@ -141,13 +155,13 @@ public class ParquetSentimentWriter {
                 var writerKey = getWriterKey(result);
                 var writer = getOrCreateWriter(result);
                 
-                var avroRecord = schema.toAvroRecord(result);
-                writer.writer.write(avroRecord);
+                // Buffer the record
+                writer.buffer.add(result);
                 writer.recordCount++;
                 
                 // Rotate file if thresholds exceeded
                 if (shouldRotate(writer)) {
-                    closeWriter(writerKey);
+                    flushAndCloseWriter(writerKey);
                 }
                 
                 request.future().complete(null);
@@ -161,15 +175,6 @@ public class ParquetSentimentWriter {
 
     /**
      * Determines if the current file should be rotated based on size or time thresholds.
-     * 
-     * <p><strong>Rotation Triggers:</strong>
-     * <ul>
-     *   <li>Record count exceeds {@code max-records-per-file} (default 1000)</li>
-     *   <li>File has been open for more than {@code MAX_FILE_DURATION} (5 minutes)</li>
-     * </ul>
-     * 
-     * @param writer the current writer state
-     * @return true if rotation should occur
      */
     private boolean shouldRotate(WriterState writer) {
         return writer.recordCount >= maxRecordsPerFile
@@ -178,96 +183,30 @@ public class ParquetSentimentWriter {
 
     /**
      * Retrieves or creates a Parquet writer for the given result's partition.
-     * 
-     * <p>Partition structure: {@code ticker=SYMBOL/year=YYYY/month=MM/day=DD/}
-     * Directories are created automatically if they don't exist.
-     * 
-     * @param result the sentiment result to determine partition
-     * @return active writer for this partition
-     * @throws IOException if writer creation or directory creation fails
      */
     private WriterState getOrCreateWriter(SentimentResult result) throws IOException {
         var key = getWriterKey(result);
         return activeWriters.computeIfAbsent(key, k -> {
             try {
-                // Build partition directory path and ensure it exists
-                var partitionDir = buildPartitionDirectory(result);
-                var dirFile = new java.io.File(partitionDir);
-                if (!dirFile.exists()) {
-                    var created = dirFile.mkdirs();
-                    if (!created) {
-                        throw new IOException("Failed to create directory: " + partitionDir);
-                    }
-                }
+                var pathStr = buildPartitionedPath(result);
+                var file = new File(pathStr);
                 
-                // Build full file path within the partition directory
-                var path = buildPartitionedPath(result);
-                
-                // Use HadoopOutputFile instead of deprecated Path-based builder
-                OutputFile outputFile = HadoopOutputFile.fromPath(path, hadoopConfig);
-                var writer = AvroParquetWriter.<GenericRecord>builder(outputFile)
-                    .withSchema(schema.getSchema())
-                    .withCompressionCodec(CompressionCodecName.SNAPPY)
-                    .build();
-                
-                log.info("Created Parquet writer for partition: {}", path);
-                return new WriterState(writer, Instant.now());
-            } catch (IOException e) {
+                log.info("Created Parquet writer for partition: {}", pathStr);
+                return new WriterState(file, Instant.now());
+            } catch (Exception e) {
                 throw new RuntimeException("Failed to create Parquet writer", e);
             }
         });
     }
 
     /**
-     * Builds the partition directory path for the given sentiment result.
-     * 
-     * <p><strong>Directory Format:</strong>
-     * {@code /data/sentiment/ticker=AAPL/year=2025/month=12/day=26/}
-     * 
-     * <p>This ensures parent directories are created before building the full file path.
-     * 
-     * @param result the sentiment result to partition
-     * @return partition directory path string
-     */
-    private String buildPartitionDirectory(SentimentResult result) {
-        var localDate = redditConverter.getLocalPartitionDate(result.originalTimestamp());
-        return String.format(
-            "%s/ticker=%s/year=%d/month=%02d/day=%02d",
-            basePath,
-            result.ticker(),
-            localDate.getYear(),
-            localDate.getMonthValue(),
-            localDate.getDayOfMonth()
-        );
-    }
-
-    /**
      * Builds a Spark-optimized partitioned path for the given sentiment result.
-     * 
-     * <p><strong>Path Format:</strong>
-     * {@code /data/sentiment/ticker=AAPL/year=2025/month=12/day=26/sentiment-1735234567890.parquet}
-     * 
-     * <p><strong>Date Calculation:</strong>
-     * Partition dates are derived from {@code originalTimestamp} (source creation time in UTC)
-     * converted to the configured local timezone. This ensures posts are partitioned by
-     * the local business date they occurred, not UTC date.
-     * 
-     * <p>Example: A Reddit post created 2026-01-07 23:00 UTC in timezone UTC+5:00
-     * is converted to 2026-01-08 04:00 local time, and partitioned as day=08.
-     * 
-     * <p>This structure enables efficient Spark partition pruning:
-     * <pre>spark.read.parquet("/data/sentiment")
-     *   .filter("ticker = 'AAPL' AND year = 2025 AND month = 12")</pre>
-     * 
-     * @param result the sentiment result to partition
-     * @return Hadoop Path with partitioning structure
      */
-    private Path buildPartitionedPath(SentimentResult result) {
-        // Use local date calculated from original source timestamp
+    private String buildPartitionedPath(SentimentResult result) {
         var localDate = redditConverter.getLocalPartitionDate(result.originalTimestamp());
         var timestamp = System.currentTimeMillis();
         
-        var filename = String.format(
+        return String.format(
             "%s/ticker=%s/year=%d/month=%02d/day=%02d/sentiment-%d.parquet",
             basePath,
             result.ticker(),
@@ -276,18 +215,10 @@ public class ParquetSentimentWriter {
             localDate.getDayOfMonth(),
             timestamp
         );
-        
-        return new Path(filename);
     }
 
     /**
      * Generates a unique key for writer state tracking based on ticker and local date.
-     * 
-     * <p>Writers are pooled per (ticker, local-date) to avoid reopening the same partition.
-     * Local date is calculated from {@code originalTimestamp} using configured timezone.
-     * 
-     * @param result the sentiment result
-     * @return unique key string (e.g., "AAPL-2025-12-26")
      */
     private String getWriterKey(SentimentResult result) {
         var localDate = redditConverter.getLocalPartitionDate(result.originalTimestamp());
@@ -295,54 +226,28 @@ public class ParquetSentimentWriter {
     }
 
     /**
-     * Closes a specific Parquet writer and removes it from the active pool.
-     * 
-     * @param writerKey the unique writer key
+     * Flushes buffered records to disk and closes a specific Parquet writer.
      */
-    private void closeWriter(String writerKey) {
+    private void flushAndCloseWriter(String writerKey) throws IOException {
         var state = activeWriters.remove(writerKey);
-        if (state != null) {
-            try {
-                state.writer.close();
-                log.info("Closed Parquet writer for key: {} ({} records written)",
-                    writerKey, state.recordCount);
-            } catch (IOException e) {
-                log.error("Error closing Parquet writer for key {}: {}", writerKey, e.getMessage(), e);
+        if (state != null && !state.buffer.isEmpty()) {
+            // Write buffered records using direct file I/O (no Hadoop security)
+            var outputFile = new LocalOutputFile(state.file);
+            
+            try (var writer = SentimentResultParquetWriter.builder(outputFile, schema, 
+                    CompressionCodecName.SNAPPY, ROW_GROUP_SIZE, PAGE_SIZE)) {
+                for (var record : state.buffer) {
+                    writer.write(record);
+                }
             }
+            
+            log.info("Flushed and closed Parquet writer for key: {} ({} records written)",
+                writerKey, state.recordCount);
         }
     }
 
     /**
-     * Creates Hadoop configuration optimized for streaming Parquet writes.
-     * 
-     * <p>Key settings:
-     * <ul>
-     *   <li>Reduced block size (8MB) for faster flushes vs default 128MB</li>
-     *   <li>Smaller page size (1MB) for better streaming performance</li>
-     *   <li>Dictionary encoding enabled for compression efficiency</li>
-     * </ul>
-     * 
-     * @return configured Hadoop Configuration instance
-     */
-    private Configuration createHadoopConfig() {
-        var conf = new Configuration();
-        conf.setInt("parquet.block.size", ROW_GROUP_SIZE);
-        conf.setInt("parquet.page.size", PAGE_SIZE);
-        conf.setBoolean("parquet.enable.dictionary", true);
-        return conf;
-    }
-
-    /**
      * Gracefully shuts down the writer, draining pending writes and closing all files.
-     * 
-     * <p><strong>Shutdown Sequence:</strong>
-     * <ol>
-     *   <li>Process all pending records in the write queue</li>
-     *   <li>Close all active Parquet writers</li>
-     *   <li>Log final statistics</li>
-     * </ol>
-     * 
-     * <p>Invoked automatically by Spring on application shutdown via {@code @PreDestroy}.
      */
     @PreDestroy
     public void shutdown() {
@@ -351,8 +256,14 @@ public class ParquetSentimentWriter {
         // Drain remaining writes
         processWriteQueue();
         
-        // Close all active writers
-        activeWriters.keySet().forEach(this::closeWriter);
+        // Flush and close all active writers
+        activeWriters.keySet().forEach(key -> {
+            try {
+                flushAndCloseWriter(key);
+            } catch (IOException e) {
+                log.error("Error closing Parquet writer for key {}: {}", key, e.getMessage(), e);
+            }
+        });
         
         log.info("ParquetSentimentWriter shutdown complete");
     }
@@ -363,16 +274,18 @@ public class ParquetSentimentWriter {
     private record WriteRequest(SentimentResult result, CompletableFuture<Void> future) {}
 
     /**
-     * Tracks the state of an active Parquet writer instance.
+     * Tracks the state of an active Parquet writer instance with buffered records.
      */
     private static class WriterState {
-        final ParquetWriter<GenericRecord> writer;
+        final File file;
         final Instant openedAt;
+        final List<SentimentResult> buffer;
         int recordCount;
 
-        WriterState(ParquetWriter<GenericRecord> writer, Instant openedAt) {
-            this.writer = writer;
+        WriterState(File file, Instant openedAt) {
+            this.file = file;
             this.openedAt = openedAt;
+            this.buffer = new ArrayList<>();
             this.recordCount = 0;
         }
     }

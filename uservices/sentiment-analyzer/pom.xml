@@ -15,9 +15,8 @@
     <description>NLP Sentiment Analysis Service</description>
 
     <properties>
+        <arrow.version>18.1.0</arrow.version>
         <parquet.version>1.14.4</parquet.version>
-        <hadoop.version>3.4.1</hadoop.version>
-        <avro.version>1.12.0</avro.version>
     </properties>
 
     <dependencies>
@@ -40,33 +39,48 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
         
-        <!-- Parquet persistence for Spark-optimized analytics -->
-        <dependency>
-            <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-avro</artifactId>
-            <version>${parquet.version}</version>
-        </dependency>
+        <!-- Parquet writing with minimal dependencies (no Hadoop security) -->
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-hadoop</artifactId>
             <version>${parquet.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-column</artifactId>
+            <version>${parquet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-encoding</artifactId>
+            <version>${parquet.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>${hadoop.version}</version>
+            <artifactId>hadoop-common</artifactId>
+            <version>3.4.2</version>
             <exclusions>
-                <!-- Exclude conflicting SLF4J binding -->
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-reload4j</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.curator</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.kerby</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-            <version>${avro.version}</version>
         </dependency>
         
         <dependency>
@@ -98,21 +112,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- Enable native access for Hadoop compatibility with Java 25 -->
-                    <argLine>@{argLine} --enable-native-access=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED</argLine>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <!-- Exclude Parquet persistence: integration tests disabled due to Hadoop + Java 25 compatibility -->
-                        <exclude>**/persistence/**</exclude>
-                        <exclude>**/schema/**</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

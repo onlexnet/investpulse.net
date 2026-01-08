@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `sentiment-analyzer` service now persists `SentimentResult` records to Parquet files optimized for Apache Spark analytics. This dual-write architecture publishes sentiment results to both:
+The `sentiment-analyzer` service persists `SentimentResult` records to Parquet files optimized for Apache Spark analytics. This dual-write architecture publishes sentiment results to both:
 1. **Kafka topic** `sentiment-aggregated` (real-time streaming)
 2. **Parquet files** (batch analytics, historical queries)
 
@@ -10,9 +10,14 @@ The `sentiment-analyzer` service now persists `SentimentResult` records to Parqu
 
 ### Key Components
 
-- **`SentimentResultSchema`**: Avro schema definition for `SentimentResult` Java Records
-- **`ParquetSentimentWriter`**: Async Parquet writer with bounded queue and file rotation
+- **`ParquetSentimentWriter`**: Async Parquet writer using Parquet Floor (zero Hadoop dependencies)
 - **`SentimentAggregator`**: Kafka consumer with manual offset management tied to Parquet write confirmation
+
+### Technical Highlights
+
+- **Parquet Floor Library**: Native Java Records support, no Avro schema conversion required
+- **Zero Hadoop Dependencies**: Eliminates 80MB+ dependencies and Java security API issues
+- **Direct File I/O**: Uses standard Java NIO for better performance and compatibility
 
 ### Data Flow
 
