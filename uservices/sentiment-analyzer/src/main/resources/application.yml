@@ -17,18 +17,37 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "net.investpulse.common.dto"
+        spring.json.use.type.headers: false
         # Increase poll interval to prevent rebalancing during slow Parquet writes
         # Default is 300000ms (5min), increased to account for file rotation delays
         max.poll.interval.ms: 600000
+    listener:
+      # Required for manual offset acknowledgment in @KafkaListener methods
+      # Enables Acknowledgment parameter injection for programmatic offset commits
+      ack-mode: MANUAL
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true
+      # Format: timestamp in milliseconds for Instant
+      write-date-timestamps-as-nanoseconds: false
+    deserialization:
+      read-dates-as-timestamps: true
+      read-date-timestamps-as-nanoseconds: false
 
 # Parquet persistence configuration for Spark-optimized analytics
 sentiment:
+  # Local timezone for Parquet partition date calculation
+  # Posts from X (Twitter) and Reddit are stored with original UTC timestamps,
+  # but partitioned by local date for business-day alignment
+  # Examples: "UTC", "America/New_York", "Europe/London", "Asia/Tokyo"
+  timezone: UTC
   parquet:
     # Base directory for partitioned Parquet files (auto-created if missing)
     # Partition structure: {base-path}/ticker={SYMBOL}/year={YYYY}/month={MM}/day={DD}/
+    # Partition dates are calculated from original source timestamps in local timezone
     base-path: /data/sentiment
     # Maximum records per Parquet file before rotation (balances file size vs count)
     # Smaller values = more files, faster queries on specific time ranges

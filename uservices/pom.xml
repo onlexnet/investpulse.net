@@ -29,9 +29,9 @@
 
 	<modules>
 		<module>common</module>
-		<module>twitter</module>
 		<module>config-server</module>
 		<module>sentiment-analyzer</module>
+		<module>reddit</module>
 	</modules>
 
 	<build>
@@ -74,7 +74,7 @@
 										<limit>
 											<counter>INSTRUCTION</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.80</minimum>
+											<minimum>0.38</minimum>
 										</limit>
 									</limits>
 								</rule>

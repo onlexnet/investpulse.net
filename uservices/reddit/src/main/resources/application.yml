@@ -1,0 +1,59 @@
+server:
+  port: 9003
+
+spring:
+  application:
+    name: reddit-ingestor
+
+  config:
+    import: optional:configserver:http://localhost:9002
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: reddit-ingestor
+      auto-offset-reset: earliest
+
+  cloud:
+    bus:
+      id: reddit-ingestor-${random.int:1000}
+      enabled: true
+      destination: springCloudBus
+      refresh:
+        enabled: true
+    stream:
+      default:
+        group: reddit-ingestor-group
+
+      bindings:
+        springCloudBusInput:
+          destination: springCloudBus
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: busrefresh,refresh,health,info
+      base-path: /actuator
+  endpoint:
+    refresh:
+      enabled: true
+
+logging:
+  level:
+    net.investpulse: INFO
+    org.springframework.kafka: WARN
+
+reddit:
+  subreddits: stocks,investing,wallstreetbets
+  tickers: AAPL,MSFT,GOOGL,TSLA,AMZN,NVDA,META,AMD,COIN,MSTR
+  poll-interval-seconds: 5
+  api:
+    timeout-ms: 10000
+    max-retries: 5
+  cache:
+    ttl-hours: 12
+    max-entries: 10000

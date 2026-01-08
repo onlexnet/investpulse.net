@@ -2,6 +2,7 @@ package net.investpulse.sentiment.persistence;
 
 import net.investpulse.common.dto.SentimentResult;
 import net.investpulse.sentiment.schema.SentimentResultSchema;
+import net.investpulse.sentiment.converter.RedditPostConverter; // Added RedditPostConverter
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
@@ -55,7 +56,8 @@ class ParquetSentimentWriterIntegrationTest {
     @BeforeEach
     void setUp() {
         schema = new SentimentResultSchema();
-        writer = new ParquetSentimentWriter(schema);
+        var redditConverter = new RedditPostConverter(); // Added RedditPostConverter initialization
+        writer = new ParquetSentimentWriter(schema, redditConverter);
         
         // Override base path to use temp directory
         ReflectionTestUtils.setField(writer, "basePath", tempDir.getAbsolutePath());
@@ -76,13 +78,14 @@ class ParquetSentimentWriterIntegrationTest {
         // Given
         var now = Instant.now();
         var result = new SentimentResult(
-            "tweet123",
-            "AAPL",
-            0.75,
-            "POSITIVE",
-            now,
-            "@ZeroHedge",
-            "X API"
+              "tweet123",
+              "AAPL",
+              0.75,
+              "POSITIVE",
+              now,
+              "@ZeroHedge",
+              "X API",
+              now // Added originalTimestamp parameter
         );
 
         // When
@@ -113,13 +116,14 @@ class ParquetSentimentWriterIntegrationTest {
         // Given
         var now = Instant.parse("2025-12-26T10:15:30.00Z");
         var result = new SentimentResult(
-            "tweet456",
-            "TSLA",
-            -0.45,
-            "NEGATIVE",
-            now,
-            "@TechAnalyst",
-            "X API"
+              "tweet456",
+              "TSLA",
+              -0.45,
+              "NEGATIVE",
+              now,
+              "@TechAnalyst",
+              "X API",
+              now // Added originalTimestamp parameter
         );
 
         // When
@@ -140,6 +144,7 @@ class ParquetSentimentWriterIntegrationTest {
         assertEquals("NEGATIVE", record.get("sentiment").toString());
         assertEquals(now.toEpochMilli(), record.get("processedAt"));
         assertEquals("@TechAnalyst", record.get("publisher").toString());
+            assertEquals(now.toEpochMilli(), record.get("originalTimestamp"));
         assertEquals("X API", record.get("source").toString());
     }
 
@@ -204,13 +209,14 @@ class ParquetSentimentWriterIntegrationTest {
 
     private SentimentResult createTestResult(String tweetId, String ticker, Instant timestamp) {
         return new SentimentResult(
-            tweetId,
-            ticker,
-            0.5,
-            "NEUTRAL",
-            timestamp,
-            "@TestPublisher",
-            "X API"
+              tweetId,
+              ticker,
+              0.5,
+              "NEUTRAL",
+              timestamp,
+              "@TestPublisher",
+              "X API",
+              timestamp // Added originalTimestamp parameter
         );
     }
 

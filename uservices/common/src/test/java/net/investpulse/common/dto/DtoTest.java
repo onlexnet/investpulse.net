@@ -21,11 +21,12 @@ class DtoTest {
     @Test
     void testSentimentResult() {
         Instant now = Instant.now();
-        SentimentResult result = new SentimentResult("1", "AAPL", 0.5, "POSITIVE", now, "pub", "src");
+        SentimentResult result = new SentimentResult("1", "AAPL", 0.5, "POSITIVE", now, "pub", "src", now);
         
         assertEquals("1", result.tweetId());
         assertEquals("AAPL", result.ticker());
         assertEquals(0.5, result.score());
         assertEquals("POSITIVE", result.sentiment());
+        assertEquals(now, result.originalTimestamp());
     }
 }

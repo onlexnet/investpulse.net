@@ -100,17 +100,33 @@ curl -X POST http://localhost:9002/actuator/busrefresh/x
    ```bash
    mvn spring-boot:run -pl twitter
    ```
-   - Service starts with local configuration
+   - Service starts with local configuration (port 8080)
    - Waits for Config Server event
 
-3. **Start Config Server**:
+3. **Start Reddit service** (in another terminal):
+   ```bash
+   mvn spring-boot:run -pl reddit
+   ```
+   - Service starts with local configuration (port 9003)
+   - Waits for Config Server event
+   - Monitors configured subreddits for ticker mentions
+
+4. **Start Config Server** (in another terminal):
    ```bash
    mvn spring-boot:run -pl config-server
    ```
-   - Publishes startup event to Kafka
-   - Twitter service automatically refreshes within seconds!
+   - Publishes startup event to Kafka (port 9002)
+   - All services automatically refresh within seconds!
 
-4. **Check logs** in Twitter service:
+5. **Start Sentiment Analyzer** (optional, in another terminal):
+   ```bash
+   mvn spring-boot:run -pl sentiment-analyzer
+   ```
+   - Consumes from `ticker-*` topics
+   - Performs NLP sentiment analysis
+   - Publishes results to `sentiment-aggregated` topic
+
+6. **Check logs** in any service:
    ```
    INFO  ConfigServerEventListener - Received configuration refresh event from Config Server
    INFO  ConfigServerEventListener - Event details - Origin: config-server, Destination: *
@@ -122,9 +138,24 @@ curl -X POST http://localhost:9002/actuator/busrefresh/x
 ### Config Server
 - **ConfigServerStartupPublisher**: Publishes event when Config Server is ready
 
-### Twitter Service
+### Twitter Service (x)
 - **ConfigServerEventListener**: Listens for refresh events from Kafka
 - **TwitterRawProps** (@RefreshScope): Automatically reloaded on bus events
+- **TwitterIngestor**: Polls Twitter API for configured accounts
+- **DynamicTopicRouter**: Routes tweets to `ticker-{SYMBOL}` topics
+
+### Reddit Service
+- **ConfigServerEventListener**: Listens for refresh events from Kafka
+- **RedditIngestorScheduler** (@Scheduled): Periodically ingests Reddit posts
+- **RedditIngestor**: Fetches posts from configured subreddits
+- **RedditSentimentService**: Analyzes financial sentiment using Loughran-McDonald lexicon
+- **PostDeduplicationCache**: Prevents duplicate post processing
+
+### Sentiment Analyzer
+- **ConfigServerEventListener**: Listens for refresh events from Kafka
+- **SentimentAggregator**: Consumes from `ticker-*` topics and performs NLP analysis
+- **FinancialSentimentService**: Scores text sentiment
+- **ParquetSentimentWriter**: Persists results to Parquet files for analytics
 
 ## Fallback Strategy
 

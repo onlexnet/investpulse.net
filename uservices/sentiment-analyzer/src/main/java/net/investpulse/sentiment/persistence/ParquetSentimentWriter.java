@@ -2,6 +2,7 @@ package net.investpulse.sentiment.persistence;
 
 import lombok.extern.slf4j.Slf4j;
 import net.investpulse.common.dto.SentimentResult;
+import net.investpulse.sentiment.converter.RedditPostConverter;
 import net.investpulse.sentiment.schema.SentimentResultSchema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
@@ -34,7 +35,16 @@ import java.util.concurrent.LinkedBlockingQueue;
  *   <li>When queue is full, records are <strong>dropped and logged</strong> to prevent blocking</li>
  *   <li>Files are rotated based on record count (default 1000) or time (default 5 min)</li>
  *   <li>Partition structure: {@code ticker=SYMBOL/year=YYYY/month=MM/day=DD/}</li>
+ *   <li>Date partitioning uses local timezone (configurable via {@code sentiment.timezone})</li>
+ *   <li>Original source timestamps (Twitter/Reddit) are preserved for analytics</li>
  *   <li>Snappy compression and optimized row group size (8MB) for streaming workloads</li>
+ * </ul>
+ * 
+ * <p><strong>Timezone Handling:</strong>
+ * <ul>
+ *   <li>Partition dates are calculated from {@code originalTimestamp} in local timezone</li>
+ *   <li>Example: Post created 2026-01-07 23:00 UTC in UTC+5:00 timezone → partition day=08</li>
+ *   <li>Enables day-based partitioning aligned with business day, not UTC date</li>
  * </ul>
  * 
  * <p><strong>Kafka Integration:</strong>
@@ -62,12 +72,14 @@ public class ParquetSentimentWriter {
     private int queueCapacity;
     
     private final SentimentResultSchema schema;
+    private final RedditPostConverter redditConverter;
     private LinkedBlockingQueue<WriteRequest> writeQueue;
     private final Map<String, WriterState> activeWriters = new ConcurrentHashMap<>();
     private final Configuration hadoopConfig;
 
-    public ParquetSentimentWriter(SentimentResultSchema schema) {
+    public ParquetSentimentWriter(SentimentResultSchema schema, RedditPostConverter redditConverter) {
         this.schema = schema;
+        this.redditConverter = redditConverter;
         this.hadoopConfig = createHadoopConfig();
     }
 
@@ -211,6 +223,14 @@ public class ParquetSentimentWriter {
      * <p><strong>Path Format:</strong>
      * {@code /data/sentiment/ticker=AAPL/year=2025/month=12/day=26/sentiment-1735234567890.parquet}
      * 
+     * <p><strong>Date Calculation:</strong>
+     * Partition dates are derived from {@code originalTimestamp} (source creation time in UTC)
+     * converted to the configured local timezone. This ensures posts are partitioned by
+     * the local business date they occurred, not UTC date.
+     * 
+     * <p>Example: A Reddit post created 2026-01-07 23:00 UTC in timezone UTC+5:00
+     * is converted to 2026-01-08 04:00 local time, and partitioned as day=08.
+     * 
      * <p>This structure enables efficient Spark partition pruning:
      * <pre>spark.read.parquet("/data/sentiment")
      *   .filter("ticker = 'AAPL' AND year = 2025 AND month = 12")</pre>
@@ -219,16 +239,17 @@ public class ParquetSentimentWriter {
      * @return Hadoop Path with partitioning structure
      */
     private Path buildPartitionedPath(SentimentResult result) {
-        var date = LocalDate.ofInstant(result.processedAt(), ZoneOffset.UTC);
+        // Use local date calculated from original source timestamp
+        var localDate = redditConverter.getLocalPartitionDate(result.originalTimestamp());
         var timestamp = System.currentTimeMillis();
         
         var filename = String.format(
             "%s/ticker=%s/year=%d/month=%02d/day=%02d/sentiment-%d.parquet",
             basePath,
             result.ticker(),
-            date.getYear(),
-            date.getMonthValue(),
-            date.getDayOfMonth(),
+            localDate.getYear(),
+            localDate.getMonthValue(),
+            localDate.getDayOfMonth(),
             timestamp
         );
         
@@ -236,16 +257,17 @@ public class ParquetSentimentWriter {
     }
 
     /**
-     * Generates a unique key for writer state tracking based on ticker and date.
+     * Generates a unique key for writer state tracking based on ticker and local date.
      * 
-     * <p>Writers are pooled per (ticker, date) to avoid reopening the same partition.
+     * <p>Writers are pooled per (ticker, local-date) to avoid reopening the same partition.
+     * Local date is calculated from {@code originalTimestamp} using configured timezone.
      * 
      * @param result the sentiment result
      * @return unique key string (e.g., "AAPL-2025-12-26")
      */
     private String getWriterKey(SentimentResult result) {
-        var date = LocalDate.ofInstant(result.processedAt(), ZoneOffset.UTC);
-        return String.format("%s-%s", result.ticker(), date);
+        var localDate = redditConverter.getLocalPartitionDate(result.originalTimestamp());
+        return String.format("%s-%s", result.ticker(), localDate);
     }
 
     /**

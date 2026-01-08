@@ -36,6 +36,7 @@ public class SentimentResultSchema {
             .name("processedAt").type().longType().noDefault() // Instant → epoch millis
             .requiredString("publisher")
             .requiredString("source")
+            .name("originalTimestamp").type().longType().noDefault() // Original source timestamp → epoch millis (UTC)
             .endRecord();
     }
 
@@ -55,6 +56,12 @@ public class SentimentResultSchema {
      * <p>Instant timestamps are converted to epoch milliseconds, losing
      * nanosecond precision. This is acceptable for analytics use cases.
      * 
+     * <p><strong>Timestamp Fields:</strong>
+     * <ul>
+     *   <li>{@code originalTimestamp}: Original creation time from source (Twitter/Reddit) in UTC</li>
+     *   <li>{@code processedAt}: Time this sentiment analysis was performed</li>
+     * </ul>
+     * 
      * @param result the sentiment analysis result to convert
      * @return Avro GenericRecord ready for Parquet writing
      */
@@ -67,6 +74,7 @@ public class SentimentResultSchema {
         record.put("processedAt", result.processedAt().toEpochMilli());
         record.put("publisher", result.publisher());
         record.put("source", result.source());
+        record.put("originalTimestamp", result.originalTimestamp().toEpochMilli());
         return record;
     }
 }
