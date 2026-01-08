@@ -262,6 +262,27 @@ This is configured automatically in Spring Boot's startup.
 2. Check logs for `IOException` or `FileNotFoundException`
 3. Verify Docker volume mounts or Kubernetes PVC bindings
 
+### Issue: "UnsupportedOperationException: getSubject is not supported" (Java 18+)
+
+**Cause**: Hadoop's `UserGroupInformation` tries to use deprecated `Subject.getSubject()` API
+
+**Error**:
+```
+java.lang.UnsupportedOperationException: getSubject is not supported
+    at javax.security.auth.Subject.getSubject(Subject.java:277)
+    at org.apache.hadoop.security.UserGroupInformation.getCurrentUser(...)
+```
+
+**Solutions**:
+✅ **Implemented Fix**: Hadoop configuration now sets `hadoop.security.authentication=simple` in `ParquetSentimentWriter.createHadoopConfig()`, which bypasses the problematic Subject API call.
+
+**Alternative fixes** (if the above doesn't work):
+1. **JVM argument**: Add `-Djava.security.manager=allow` to enable legacy Subject behavior
+2. **Module opens**: Add `--add-opens java.base/javax.security.auth=ALL-UNNAMED`
+3. **Downgrade Java**: Use Java 17 LTS (not recommended)
+
+**References**: [HADOOP-19246](https://issues.apache.org/jira/browse/HADOOP-19246)
+
 ## Future Enhancements
 
 ### TODO Items
