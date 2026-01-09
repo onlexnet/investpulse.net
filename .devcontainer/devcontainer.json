@@ -30,7 +30,7 @@
 		},
 		"ghcr.io/devcontainers/features/java:1": {
 			"installMaven": true,
-			"version": "21",
+			"version": "25",
 			"jdkDistro": "oracle",
 			"gradleVersion": "latest",
 			"mavenVersion": "3.8.6",
@@ -45,13 +45,14 @@
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
+		9092,  // Kafka
+		8081   // Schema Registry
 	],
-
+	
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ms-azuretools.vscode-dapr", // Dapr extension for microservices development
 				"zxh404.vscode-proto3", // Protocol Buffers (proto3) syntax support
 				"vscjava.vscode-java-pack", // Java development pack (language, debugging, etc.)
 				"vmware.vscode-boot-dev-pack", // Spring Boot development tools
@@ -59,7 +60,8 @@
 				"ms-python.python", // Python language support and tools
 				"oracle-labs-graalvm.visualvm-vscode", // GraalVM VisualVM integration for profiling
 				"github.vscode-github-actions", // GitHub Actions workflow editing and validation
-				"gitHub.vscode-pull-request-github" // GitHub Pull Requests and Issues integration
+				"gitHub.vscode-pull-request-github", // GitHub Pull Requests and Issues integration
+				"ms-python.vscode-python-envs", // Python environment management
 			],
 			"settings": {
 				"terminal.integrated.defaultProfile.linux": "bash",
@@ -78,5 +80,6 @@
 	// https://stackoverflow.com/a/75644266
 	"mounts": [
 		"type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/worker/.ssh",
+		"type=bind,source=${localWorkspaceFolder}/data,target=/data"
 	]
 }

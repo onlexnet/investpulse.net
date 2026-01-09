@@ -2,9 +2,33 @@
 
 This app watches the `input/entry/` folder for JSON files containing a ticker symbol, downloads SEC EDGAR filings for that ticker, extracts the top 10 most useful facts for buy/sell decisions, and saves them in Parquet format in the `output/` folder.
 
-### Quick Start
+### New: Sentiment Analysis Module 📊
+
+The app now includes a comprehensive sentiment analysis module that monitors Twitter for financial news and calculates weighted sentiment scores for stock tickers.
+
+**Quick Links:**
+- 🚀 [Quick Start Guide](SENTIMENT_QUICKSTART.md) - Get started in 5 minutes
+- 📚 [Full Documentation](docs/SENTIMENT_DOCUMENTATION.md) - Complete API reference
+- 🔧 [Installation Guide](SENTIMENT_INSTALLATION.md) - Detailed setup instructions
+- 📖 [Module README](src/sentiment/README.md) - Module overview
+- 💡 [Example Code](src/sentiment_example.py) - Usage examples
+
+**Features:**
+- Monitor Twitter Filtered Stream API for financial news accounts
+- Analyze sentiment using transformer models (positive/negative/neutral)
+- Calculate weighted sentiment scores based on engagement and time decay
+- Track multiple tickers (NVDA, MSFT, AAPL, etc.)
+- GPU support for faster analysis
+
+**Note:** Sentiment module requires additional dependencies. To install:
+```bash
+pip install tweepy transformers torch sentencepiece
+```
+
+ray### Quick Start
 1. Install dependencies:
 	```bash
+	python -m venv .venv
 	pip install -r requirements.txt
 	```
 2. Type checking with mypy:

@@ -1,0 +1,74 @@
+server:
+  port: 9002
+
+spring:
+  application:
+    name: config-server
+  
+  profiles:
+    active: native
+  
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+        overrides:
+          twitter:
+            bearer-token: ${twitter.bearer.token}
+    
+    bus:
+      enabled: true
+      destination: springCloudBus
+      trace:
+        enabled: true
+    
+    stream:
+      default:
+        group: config-server-group # default group name for all bindings
+
+      kafka:
+        binder:
+          brokers: localhost:9092
+          minPartitionCount: 3 # domyślnie tworzyło 1 partycję, a klient szukał 3 i rzucał wyjątkami o braku partycji ...-2, ...-3
+          replicationFactor: 1 
+          autoAddPartitions: true
+          autoCreateTopics: true  # już domyślnie true
+      bindings:
+        springCloudBus-out-0:
+          destination: springCloudBus
+          content-type: application/json
+    
+    azure:
+      keyvault:
+        secret:
+          property-sources:
+            - endpoint: https://dev-kw2-devs.vault.azure.net/
+              name: azure-key-vault
+              credential:
+                client-id: bde9a28c-d7c8-4ef5-909b-687263af8675
+                tenant-id: 29084a59-db89-4eb9-908a-53f42318c77d
+                client-certificate-path: ${HOME}/.azure/certs/investpulse-net-infra-full.pem
+  
+  kafka:
+    bootstrap-servers: localhost:9092
+
+logging:
+  level:
+    org.springframework.cloud.bus: DEBUG
+    org.springframework.cloud.stream: DEBUG
+    org.springframework.kafka: DEBUG
+    net.investpulse.configserver: DEBUG
+
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: busrefresh,health,info,env
+
+# Disable JMX to avoid port conflicts during development
+# Feel free to remove this line in production environments
+spring.jmx.enabled: false
