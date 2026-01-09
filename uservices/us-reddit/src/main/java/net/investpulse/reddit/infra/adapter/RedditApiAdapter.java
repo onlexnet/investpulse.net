@@ -9,8 +9,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Reddit API adapter using Spring RestClient.
@@ -21,6 +25,11 @@ import java.util.*;
 @RequiredArgsConstructor
 public class RedditApiAdapter implements RedditPostFetcher {
 
+    private static final String SEARCH_TEMPLATE = "https://www.reddit.com/r/%s/search.json?q=%s&restrict_sr=1&limit=100";
+    private static final long INITIAL_BACKOFF_MS = 2000; // 2 seconds
+    private static final long MAX_BACKOFF_MS = 30000;    // 30 seconds
+    private static final double JITTER_FACTOR = 0.1;     // 10% jitter
+
     private final RestClient restClient;
 
     @Value("${reddit.api.timeout-ms:10000}")
@@ -29,55 +38,47 @@ public class RedditApiAdapter implements RedditPostFetcher {
     @Value("${reddit.api.max-retries:5}")
     private int maxRetries;
 
-    private static final long INITIAL_BACKOFF_MS = 2000; // 2 seconds
-    private static final long MAX_BACKOFF_MS = 30000;    // 30 seconds
-    private static final double JITTER_FACTOR = 0.1;     // 10% jitter
-
     /**
      * Fetches Reddit posts for a ticker with exponential backoff on 429.
      */
     @Override
     public List<RawRedditPost> fetchPostsByTicker(String subreddit, String ticker) {
-        String url = String.format("https://www.reddit.com/r/%s/search.json?q=%s&restrict_sr=1&limit=100",
-                subreddit, ticker);
+        var url = String.format(SEARCH_TEMPLATE, subreddit, ticker);
 
-        int attempt = 0;
-        while (attempt <= maxRetries) {
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
             try {
-                return fetchWithRetry(url, subreddit, ticker);
+                return fetchPosts(url, subreddit, ticker);
             } catch (HttpStatusCodeException e) {
-                if (e.getStatusCode().value() == 429) {
-                    attempt++;
-                    if (attempt > maxRetries) {
-                        log.error("Max retries ({}) exceeded for subreddit={}, ticker={}", maxRetries, subreddit, ticker);
-                        return Collections.emptyList();
-                    }
-                    long backoffMs = calculateBackoff(attempt);
-                    log.warn("Rate limited (429) for r/{} ticker {}, backing off for {}ms (attempt {}/{})",
-                            subreddit, ticker, backoffMs, attempt, maxRetries);
-                    try {
-                        Thread.sleep(backoffMs);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        log.warn("Backoff interrupted for r/{} ticker {}", subreddit, ticker);
-                        return Collections.emptyList();
-                    }
-                } else {
+                if (e.getStatusCode().value() != 429) {
                     log.error("HTTP error {} fetching r/{} ticker {}", e.getStatusCode(), subreddit, ticker);
-                    return Collections.emptyList();
+                    return List.of();
+                }
+
+                if (attempt == maxRetries) {
+                    log.error("Max retries ({}) exceeded for subreddit={}, ticker={}", maxRetries, subreddit, ticker);
+                    return List.of();
+                }
+
+                var backoff = calculateBackoff(attempt + 1);
+                log.warn("Rate limited (429) for r/{} ticker {}, backing off for {}ms (attempt {}/{})",
+                        subreddit, ticker, backoff.toMillis(), attempt + 1, maxRetries);
+
+                if (!sleep(backoff)) {
+                    log.warn("Backoff interrupted for r/{} ticker {}", subreddit, ticker);
+                    return List.of();
                 }
             } catch (Exception e) {
                 log.error("Error fetching r/{} ticker {}", subreddit, ticker, e);
-                return Collections.emptyList();
+                return List.of();
             }
         }
-        return Collections.emptyList();
+        return List.of();
     }
 
     /**
      * Performs the actual HTTP request and parses the response.
      */
-    private List<RawRedditPost> fetchWithRetry(String url, String subreddit, String ticker) {
+    private List<RawRedditPost> fetchPosts(String url, String subreddit, String ticker) {
         var response = restClient
                 .get()
                 .uri(url)
@@ -85,16 +86,14 @@ public class RedditApiAdapter implements RedditPostFetcher {
                 .body(RedditSearchResponse.class);
 
         if (response == null || response.data == null || response.data.children == null) {
-            return Collections.emptyList();
+            return List.of();
         }
 
-        List<RawRedditPost> posts = new ArrayList<>();
-        for (RedditChild child : response.data.children) {
-            if (child.data != null) {
-                var post = mapToRawRedditPost(child.data, subreddit, ticker);
-                posts.add(post);
-            }
-        }
+        var posts = response.data.children.stream()
+                .map(RedditChild::data)
+                .filter(Objects::nonNull)
+                .map(child -> mapToRawRedditPost(child, subreddit, ticker))
+                .toList();
 
         log.info("Fetched {} posts from r/{} for ticker {}", posts.size(), subreddit, ticker);
         return posts;
@@ -120,13 +119,23 @@ public class RedditApiAdapter implements RedditPostFetcher {
      * Calculates exponential backoff with jitter.
      * Formula: min(2^attempt * INITIAL_BACKOFF, MAX_BACKOFF) × (1 + random jitter)
      */
-    private long calculateBackoff(int attempt) {
-        long exponentialBackoff = Math.min(
+    private Duration calculateBackoff(int attempt) {
+        var exponentialBackoff = Math.min(
                 (long) Math.pow(2, attempt) * INITIAL_BACKOFF_MS,
                 MAX_BACKOFF_MS
         );
-        double jitterAmount = exponentialBackoff * JITTER_FACTOR * Math.random();
-        return exponentialBackoff + (long) jitterAmount;
+        var jitterAmount = exponentialBackoff * JITTER_FACTOR * ThreadLocalRandom.current().nextDouble();
+        return Duration.ofMillis(exponentialBackoff + (long) jitterAmount);
+    }
+
+    private boolean sleep(Duration backoff) {
+        try {
+            Thread.sleep(backoff.toMillis());
+            return true;
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
     }
 
     /**
