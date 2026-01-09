@@ -28,10 +28,10 @@
 	</dependencyManagement>
 
 	<modules>
-		<module>common</module>
-		<module>config-server</module>
-		<module>sentiment-analyzer</module>
-		<module>reddit</module>
+		<module>lib-common</module>
+		<module>us-config-server</module>
+		<module>us-sentiment-analyzer</module>
+		<module>us-reddit</module>
 	</modules>
 
 	<build>
