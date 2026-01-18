@@ -79,7 +79,7 @@ public class RedditIngestor {
                     // Publish scored post
                     messagePublisher.publishScoredPost(
                             post.id(), ticker, discretizedScore, weightedScore,
-                            post.upvotes(), post.comments()
+                            post.upvotes(), post.comments(), post.timestamp()
                     );
 
                     publishedCount++;

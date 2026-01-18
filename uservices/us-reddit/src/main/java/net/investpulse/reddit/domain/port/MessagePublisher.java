@@ -24,7 +24,8 @@ public interface MessagePublisher {
      * @param weightedScore the weighted sentiment score (score × log(1 + upvotes + comments))
      * @param upvotes the number of upvotes
      * @param comments the number of comments
+     * @param timestamp the original timestamp of the post from Reddit API
      */
     void publishScoredPost(String postId, String ticker, double sentimentScore, 
-                          double weightedScore, int upvotes, int comments);
+                          double weightedScore, int upvotes, int comments, java.time.Instant timestamp);
 }

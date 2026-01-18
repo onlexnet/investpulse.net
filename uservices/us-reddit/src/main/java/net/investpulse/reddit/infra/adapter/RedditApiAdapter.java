@@ -25,7 +25,8 @@ import java.util.concurrent.ThreadLocalRandom;
 @RequiredArgsConstructor
 public class RedditApiAdapter implements RedditPostFetcher {
 
-    private static final String SEARCH_TEMPLATE = "https://www.reddit.com/r/%s/search.json?q=%s&restrict_sr=1&limit=100";
+    // Sorts by newest posts first (sort=new) and limits to past week (t=week) for relevant sentiment tracking
+    private static final String SEARCH_TEMPLATE = "https://www.reddit.com/r/%s/search.json?q=%s&restrict_sr=1&limit=100&sort=new&t=week";
     private static final long INITIAL_BACKOFF_MS = 2000; // 2 seconds
     private static final long MAX_BACKOFF_MS = 30000;    // 30 seconds
     private static final double JITTER_FACTOR = 0.1;     // 10% jitter

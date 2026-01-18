@@ -38,7 +38,7 @@ public class KafkaMessagePublisher implements MessagePublisher {
 
     @Override
     public void publishScoredPost(String postId, String ticker, double sentimentScore,
-                                 double weightedScore, int upvotes, int comments) {
+                                 double weightedScore, int upvotes, int comments, Instant timestamp) {
         String topic = String.format("reddit-scored-%s", ticker);
         
         ScoredRedditPost scoredPost = new ScoredRedditPost(
@@ -48,7 +48,7 @@ public class KafkaMessagePublisher implements MessagePublisher {
                 weightedScore,
                 upvotes,
                 comments,
-                Instant.now(),  // Jackson will serialize as epoch milliseconds (long)
+                timestamp,  // Use original timestamp from Reddit API
                 "reddit"
         );
 
