@@ -25,6 +25,10 @@ services:
         condition: service_healthy
       schema-registry:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
+      lgtm:
+        condition: service_healthy
 
     volumes:
       # Update this to wherever you want VS Code to mount the folder of your project
@@ -109,13 +113,46 @@ services:
       retries: 5
       start_period: 40s
 
-  # minikube:
-  #   image: gcr.io/k8s-minikube/kicbase:v0.0.30
-  #   privileged: true
-  #   command: /bin/sh -c "while sleep 1000; do :; done"
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - /var/lib/minikube:/var/lib/minikube
-  #   environment:
-  #     - CHANGE_MINIKUBE_NONE_USER=true
-  #     - KUBECONFIG=/var/lib/minikube/kubeconfig
+  postgres:
+    image: postgres:18-alpine
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: investpulse
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: lgtm
+    restart: always
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+      - "9411:9411"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: admin
+    volumes:
+      - lgtm_data:/var/lib/grafana
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sSf http://localhost:3000/api/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 90s
+
+volumes:
+  postgres_data:
+  lgtm_data:
