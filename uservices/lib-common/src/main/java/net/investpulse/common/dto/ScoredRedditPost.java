@@ -1,5 +1,7 @@
 package net.investpulse.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.Instant;
 
 /**
@@ -17,5 +19,7 @@ public record ScoredRedditPost(
     int upvotes,
     int comments,
     Instant timestamp,
-    String subreddit
+    String subreddit,
+    @JsonProperty("version") Integer version, // Version number for tracking changes
+    @JsonProperty("lastUpdatedAt") Instant lastUpdatedAt // When this version was created
 ) {}

@@ -6,6 +6,13 @@
 	"dockerComposeFile": [
 		"docker-compose.yaml"
 	],
+	"runServices": [
+		"my-service-name-here",
+		"postgres",
+		"kafka",
+		"schema-registry",
+		"lgtm"
+	],
 	// The 'service' property is the name of the service for the container that VS Code should
 	// use. Update this value and .devcontainer/docker-compose.yml to the real service name.
 	"service": "my-service-name-here",

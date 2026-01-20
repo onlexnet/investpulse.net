@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="001-create-reddit-posts" author="investpulse">
+        <createTable tableName="reddit_posts">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="post_id" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="title" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="content" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="upvotes" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comments" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subreddit" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_seen_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="processed_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_post_id_version" tableName="reddit_posts">
+            <column name="post_id"/>
+            <column name="version" descending="true"/>
+        </createIndex>
+
+        <createIndex indexName="idx_processed_at" tableName="reddit_posts">
+            <column name="processed_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex indexName="idx_processed_at" tableName="reddit_posts"/>
+            <dropIndex indexName="idx_post_id_version" tableName="reddit_posts"/>
+            <dropTable tableName="reddit_posts"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

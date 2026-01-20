@@ -102,6 +102,8 @@ public class RedditApiAdapter implements RedditPostFetcher {
 
     /**
      * Maps Reddit API response to RawRedditPost.
+     * Note: version and lastUpdatedAt are set to null here and will be populated
+     * by DatabaseDeduplicationService before publishing to Kafka.
      */
     private RawRedditPost mapToRawRedditPost(RedditPost data, String subreddit, String ticker) {
         return new RawRedditPost(
@@ -112,7 +114,9 @@ public class RedditApiAdapter implements RedditPostFetcher {
                 data.num_comments,
                 Instant.ofEpochSecond(data.created_utc),
                 subreddit,
-                Set.of(ticker)
+                Set.of(ticker),
+                null,  // version will be set by DatabaseDeduplicationService
+                null   // lastUpdatedAt will be set by DatabaseDeduplicationService
         );
     }
 

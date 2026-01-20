@@ -27,8 +27,12 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      # lgtm uses service_started (not service_healthy) because its healthcheck 
+      # has a 90s start_period. Using service_healthy would block devcontainer 
+      # startup for up to 90s. This allows the devcontainer to start immediately 
+      # while lgtm continues initializing in the background.
       lgtm:
-        condition: service_healthy
+        condition: service_started
 
     volumes:
       # Update this to wherever you want VS Code to mount the folder of your project
@@ -118,11 +122,11 @@ services:
     container_name: postgres
     restart: always
     ports:
-      - "5432:5432"
+      - "0.0.0.0:5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: investpulse
+      POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

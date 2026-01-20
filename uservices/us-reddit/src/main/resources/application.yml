@@ -8,6 +8,29 @@ spring:
   config:
     import: optional:configserver:http://localhost:9002
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -54,6 +77,3 @@ reddit:
   api:
     timeout-ms: 10000
     max-retries: 5
-  cache:
-    ttl-hours: 12
-    max-entries: 10000

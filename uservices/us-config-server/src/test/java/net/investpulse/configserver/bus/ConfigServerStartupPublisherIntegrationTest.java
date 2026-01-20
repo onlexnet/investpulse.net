@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,21 +91,36 @@ class ConfigServerStartupPublisherIntegrationTest {
 
     @AfterAll
     static void tearDown() {
+        // Close consumer first to avoid any lingering subscriptions
+        if (consumer != null) {
+            try {
+                consumer.unsubscribe();
+            } catch (Exception e) {
+                log.debug("Consumer unsubscribe encountered an issue: {}", e.getMessage());
+            }
+            consumer.close(Duration.ofSeconds(5));
+            log.info("Kafka consumer closed");
+        }
+
         // Delete test topic
         if (adminClient != null) {
             try {
-                adminClient.deleteTopics(List.of(TEST_TOPIC)).all().get();
+                adminClient
+                    .deleteTopics(List.of(TEST_TOPIC))
+                    .all()
+                    .get(15, TimeUnit.SECONDS);
                 log.info("Deleted test topic: {}", TEST_TOPIC);
+            } catch (ExecutionException ee) {
+                if (ee.getCause() instanceof UnknownTopicOrPartitionException) {
+                    log.info("Test topic already deleted or missing: {}", TEST_TOPIC);
+                } else {
+                    log.warn("Failed to delete topic {}: {}", TEST_TOPIC, ee.getMessage());
+                }
             } catch (Exception e) {
                 log.warn("Failed to delete topic {}: {}", TEST_TOPIC, e.getMessage());
             } finally {
-                adminClient.close();
+                adminClient.close(Duration.ofSeconds(5));
             }
-        }
-        
-        if (consumer != null) {
-            consumer.close();
-            log.info("Kafka consumer closed");
         }
     }
 
