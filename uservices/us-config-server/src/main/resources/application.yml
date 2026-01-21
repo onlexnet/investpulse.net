@@ -1,9 +1,16 @@
 server:
   port: 9002
+  tomcat:
+    threads:
+      virtual:
+        enabled: true
 
 spring:
   application:
     name: config-server
+  threads:
+    virtual:
+      enabled: true
   
   profiles:
     active: native

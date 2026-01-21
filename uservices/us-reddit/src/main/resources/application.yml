@@ -1,9 +1,16 @@
 server:
   port: 9003
+  tomcat:
+    threads:
+      virtual:
+        enabled: true
 
 spring:
   application:
     name: reddit-ingestor
+  threads:
+    virtual:
+      enabled: true
 
   config:
     import: optional:configserver:http://localhost:9002

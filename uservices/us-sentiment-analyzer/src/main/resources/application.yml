@@ -1,6 +1,9 @@
 spring:
   application:
     name: sentiment-analyzer
+  threads:
+    virtual:
+      enabled: true
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
