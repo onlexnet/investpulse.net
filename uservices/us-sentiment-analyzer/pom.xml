@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.investpulse</groupId>
-        <artifactId>build</artifactId>
+        <artifactId>parent</artifactId>
         <version>0.0.0</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../lib-parent/pom.xml</relativePath>
     </parent>
     <artifactId>sentiment-analyzer</artifactId>
     <version>0.0.1-SNAPSHOT</version>
