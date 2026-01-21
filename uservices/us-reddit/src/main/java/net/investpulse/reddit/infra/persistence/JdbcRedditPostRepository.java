@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import jakarta.annotation.Nullable;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -105,11 +107,11 @@ public class JdbcRedditPostRepository {
                 .build();
     }
 
-    private static Timestamp toTimestamp(Instant instant) {
+    private static @Nullable Timestamp toTimestamp(Instant instant) {
         return instant == null ? null : Timestamp.from(instant);
     }
 
-    private static Instant fromTimestamp(Timestamp timestamp) {
+    private static @Nullable Instant fromTimestamp(Timestamp timestamp) {
         return timestamp == null ? null : timestamp.toInstant();
     }
 }

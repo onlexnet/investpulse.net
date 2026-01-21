@@ -17,6 +17,7 @@
     <properties>
         <arrow.version>18.1.0</arrow.version>
         <parquet.version>1.14.4</parquet.version>
+        <guava.version>33.3.1-jre</guava.version>
     </properties>
 
     <dependencies>
@@ -37,6 +38,11 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
         
         <!-- Parquet writing with minimal dependencies (no Hadoop security) -->
@@ -105,6 +111,12 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${errorprone.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

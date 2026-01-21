@@ -1,5 +1,6 @@
 package net.investpulse.reddit.service;
 
+import com.google.common.base.Splitter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,9 @@ import java.util.Set;
 @Slf4j
 @Service
 public class RedditSentimentService {
+
+    private static final String WORD_SEPARATOR_PATTERN = "\\s+";
+    private static final Splitter WORD_SPLITTER = Splitter.onPattern(WORD_SEPARATOR_PATTERN).omitEmptyStrings();
 
     // Financial sentiment lexicon (simplified Loughran-McDonald)
     private static final Set<String> POSITIVE_WORDS = Set.of(
@@ -40,7 +44,7 @@ public class RedditSentimentService {
         String lowerText = text.toLowerCase();
         // Remove punctuation for word matching
         String cleanText = lowerText.replaceAll("[^a-z0-9\\s]", " ");
-        String[] words = cleanText.split("\\s+");
+        Iterable<String> words = WORD_SPLITTER.split(cleanText);
 
         int positiveCount = 0;
         int negativeCount = 0;

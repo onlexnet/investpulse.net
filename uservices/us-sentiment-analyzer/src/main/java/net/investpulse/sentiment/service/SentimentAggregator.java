@@ -190,7 +190,7 @@ public class SentimentAggregator {
                                        String ticker,
                                        Acknowledgment acknowledgment) {
         // Dual write: Kafka (sync) + Parquet (async)
-        kafkaTemplate.send(OUTPUT_TOPIC, ticker, result);
+        var _ = kafkaTemplate.send(OUTPUT_TOPIC, ticker, result);
         log.info("Published sentiment result for ticker {}: {}", ticker, result.sentiment());
         
         // Await Parquet write confirmation before committing offset

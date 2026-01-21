@@ -1,5 +1,6 @@
 package net.investpulse.sentiment.service;
 
+import com.google.common.base.Splitter;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -13,6 +14,7 @@ public class FinancialSentimentService {
     private static final String WORD_SEPARATOR_PATTERN = "\\s+";
     private static final String NON_ALPHA_PATTERN = "[^A-Z]";
     private static final String EMPTY_STRING = "";
+    private static final Splitter WORD_SPLITTER = Splitter.onPattern(WORD_SEPARATOR_PATTERN).omitEmptyStrings();
     
     private static final String SENTIMENT_POSITIVE = "POSITIVE";
     private static final String SENTIMENT_NEGATIVE = "NEGATIVE";
@@ -32,7 +34,7 @@ public class FinancialSentimentService {
             return NEUTRAL_SCORE;
         }
 
-        var words = text.toUpperCase().split(WORD_SEPARATOR_PATTERN);
+        var words = WORD_SPLITTER.split(text.toUpperCase());
         var score = 0;
         var count = 0;
 

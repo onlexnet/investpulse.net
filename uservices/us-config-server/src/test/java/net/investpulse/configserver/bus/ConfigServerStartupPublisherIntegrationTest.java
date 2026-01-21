@@ -131,8 +131,9 @@ class ConfigServerStartupPublisherIntegrationTest {
         // Poll for messages (published during ApplicationReadyEvent)
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(10));
         
-        assertThat(records).isNotEmpty()
-            .withFailMessage("Expected at least one message in topic '" + TEST_TOPIC + "'");
+        assertThat(records)
+            .withFailMessage("Expected at least one message in topic '" + TEST_TOPIC + "'")
+            .isNotEmpty();
         
         var record = records.iterator().next();
         String json = record.value();
@@ -142,26 +143,29 @@ class ConfigServerStartupPublisherIntegrationTest {
         // Parse as JSON and verify structure (Spring Cloud Bus uses 'type' field, not @class)
         var jsonNode = objectMapper.readTree(json);
         
-        assertThat(jsonNode.has("type")).isTrue()
-            .withFailMessage("Expected 'type' field in JSON");
+        assertThat(jsonNode.has("type"))
+            .withFailMessage("Expected 'type' field in JSON")
+            .isTrue();
         assertThat(jsonNode.get("type").asText())
-            .isEqualTo("RefreshRemoteApplicationEvent")
             .withFailMessage("Expected type='RefreshRemoteApplicationEvent' but got '%s'", 
-                jsonNode.get("type").asText());
+                jsonNode.get("type").asText())
+            .isEqualTo("RefreshRemoteApplicationEvent");
         
-        assertThat(jsonNode.has("originService")).isTrue()
-            .withFailMessage("Expected 'originService' field in JSON");
+        assertThat(jsonNode.has("originService"))
+            .withFailMessage("Expected 'originService' field in JSON")
+            .isTrue();
         assertThat(jsonNode.get("originService").asText())
-            .isEqualTo("config-server")
             .withFailMessage("Expected originService='config-server' but got '%s'", 
-                jsonNode.get("originService").asText());
+                jsonNode.get("originService").asText())
+            .isEqualTo("config-server");
         
-        assertThat(jsonNode.has("destinationService")).isTrue()
-            .withFailMessage("Expected 'destinationService' field in JSON");
+        assertThat(jsonNode.has("destinationService"))
+            .withFailMessage("Expected 'destinationService' field in JSON")
+            .isTrue();
         assertThat(jsonNode.get("destinationService").asText())
-            .isEqualTo("**")
             .withFailMessage("Expected destinationService='**' but got '%s'", 
-                jsonNode.get("destinationService").asText());
+                jsonNode.get("destinationService").asText())
+            .isEqualTo("**");
         
         log.info("✓ RefreshRemoteApplicationEvent verified: type={}, origin={}, destination={}", 
             jsonNode.get("type").asText(),

@@ -41,7 +41,7 @@ public class KafkaMessagePublisher implements MessagePublisher {
                 Instant.now()
         );
         
-        rawPostTemplate.send(topic, post.id(), versionedPost)
+        var _ =rawPostTemplate.send(topic, post.id(), versionedPost)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Failed to publish raw post {} to topic {}", post.id(), topic, ex);
@@ -70,7 +70,7 @@ public class KafkaMessagePublisher implements MessagePublisher {
                 Instant.now()
         );
 
-        scoredPostTemplate.send(topic, postId, scoredPost)
+        var _ = scoredPostTemplate.send(topic, postId, scoredPost)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Failed to publish scored post {} to topic {}", postId, topic, ex);
