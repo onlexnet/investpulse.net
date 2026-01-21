@@ -10,9 +10,6 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>reddit</name>
     <description>Reddit Sentiment Analysis Ingestor</description>
-    <properties>
-        <guava.version>33.3.1-jre</guava.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>net.investpulse</groupId>
@@ -47,7 +44,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

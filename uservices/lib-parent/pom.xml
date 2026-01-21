@@ -19,6 +19,7 @@
 		<java.version>25</java.version>
 		<spring-cloud.version>2025.0.1</spring-cloud.version>
 		<errorprone.version>2.45.0</errorprone.version>
+		<guava.version>33.5.0-jre</guava.version>
 	</properties>
 
 	<dependencyManagement>
@@ -29,6 +30,11 @@
 				<version>${spring-cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
