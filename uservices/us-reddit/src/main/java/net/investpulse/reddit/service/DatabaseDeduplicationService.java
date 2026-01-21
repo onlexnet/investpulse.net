@@ -8,9 +8,6 @@ import net.investpulse.reddit.infra.persistence.entity.RedditPostEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.Optional;
-
 /**
  * Service for database-backed deduplication and versioning of Reddit posts.
  * Replaces the previous in-memory Caffeine cache with persistent PostgreSQL storage.
@@ -48,32 +45,26 @@ public class DatabaseDeduplicationService {
      */
     @Transactional
     public DeduplicationResult checkAndSavePost(RawRedditPost post) {
-        Optional<RedditPostEntity> existingOpt = repository.findLatestVersion(post.id());
+        var maybeOpt = repository.findLatestVersion(post.id());
 
-        if (existingOpt.isEmpty()) {
-            // New post - save as version 1
-            RedditPostEntity newEntity = RedditPostEntity.fromRawPost(post, 1);
-            repository.save(newEntity);
-            log.debug("New post saved: postId={}, version=1", post.id());
-            return new DeduplicationResult(PostStatus.NEW, 1);
+        if (maybeOpt.isEmpty()) {
+            RedditPostEntity saved = repository.saveNew(post);
+            log.debug("New post saved: postId={}, version={}", post.id(), saved.getVersion());
+            return new DeduplicationResult(PostStatus.NEW, saved.getVersion());
         }
 
-        RedditPostEntity existing = existingOpt.get();
+        RedditPostEntity existing = maybeOpt.get();
 
         // Check if post has changes
         if (existing.hasChanges(post)) {
-            // Post updated - increment version
-            int newVersion = existing.getVersion() + 1;
-            RedditPostEntity updatedEntity = RedditPostEntity.fromRawPost(post, newVersion);
-            repository.save(updatedEntity);
-            log.debug("Post updated: postId={}, version={} -> {}", post.id(), existing.getVersion(), newVersion);
-            return new DeduplicationResult(PostStatus.UPDATED, newVersion);
+            RedditPostEntity updated = repository.saveUpdated(existing, post);
+            log.debug("Post updated: postId={}, version={} -> {}", post.id(), existing.getVersion(), updated.getVersion());
+            return new DeduplicationResult(PostStatus.UPDATED, updated.getVersion());
         }
 
         // No changes - update last_seen_at timestamp only
-        existing.setLastSeenAt(Instant.now());
-        repository.save(existing);
-        log.debug("Post unchanged: postId={}, version={}", post.id(), existing.getVersion());
-        return new DeduplicationResult(PostStatus.UNCHANGED, existing.getVersion());
+        RedditPostEntity touched = repository.touchLastSeen(existing);
+        log.debug("Post unchanged: postId={}, version={}", post.id(), touched.getVersion());
+        return new DeduplicationResult(PostStatus.UNCHANGED, touched.getVersion());
     }
 }
