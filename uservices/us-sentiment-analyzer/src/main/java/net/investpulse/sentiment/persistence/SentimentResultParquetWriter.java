@@ -1,7 +1,8 @@
 package net.investpulse.sentiment.persistence;
 
-import net.investpulse.common.dto.SentimentResult;
-import org.apache.parquet.column.ParquetProperties;
+import java.io.IOException;
+import java.util.HashMap;
+
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
@@ -10,8 +11,7 @@ import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
 
-import java.io.IOException;
-import java.util.HashMap;
+import net.investpulse.common.dto.SentimentResult;
 
 /**
  * Builder for creating {@link ParquetWriter} instances for {@link SentimentResult} records.
