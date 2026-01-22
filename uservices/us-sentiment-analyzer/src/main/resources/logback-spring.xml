@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 
+        Logback configuration for sentiment-analyzer service
+        Integrates with LGTM stack (Loki, Grafana, Tempo, Metrics)
+        
+        Features:
+        - Structured logging with trace correlation
+        - OpenTelemetry OTLP appender for centralized log aggregation
+        - Console appender with pattern-based formatting for local debugging
+        - INFO+ log level filtering to reduce log volume
+        - MDC (Mapped Diagnostic Context) for trace/span ID propagation
+    -->
+
+    <!-- Spring Boot profile detection for environment-specific configuration -->
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="sentiment-analyzer"/>
+    <springProperty scope="context" name="environment" source="spring.profiles.active" defaultValue="local"/>
+    
+    <!-- Console appender: Human-readable logs for local development and debugging -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Pattern includes timestamp, log level, thread name, logger, trace context, and message -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [traceId=%X{traceId:-} spanId=%X{spanId:-}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 
+        OpenTelemetry OTLP appender: Ships structured logs to Loki via OTLP HTTP
+        
+        Configuration details:
+        - Endpoint: http://lgtm:4318/v1/logs (Loki OTLP endpoint)
+        - Protocol: OTLP over HTTP
+        - Automatic trace/span ID correlation via OpenTelemetry context
+        - Resource attributes: service.name, deployment.environment
+        - Log attributes: thread, logger, level, exception
+    -->
+    <appender name="OTLP" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+        <!-- 
+            OpenTelemetry configuration via environment variables or system properties:
+            - OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+            - OTEL_SERVICE_NAME: ${appName}
+            - OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${environment}
+            
+            These are configured in application.yml via management.otlp settings
+        -->
+        
+        <!-- Capture code location (file, line number) - disable for performance if needed -->
+        <captureCodeAttributes>false</captureCodeAttributes>
+        
+        <!-- Capture markers as attributes -->
+        <captureMarkerAttribute>true</captureMarkerAttribute>
+        
+        <!-- Capture key-value pairs as attributes -->
+        <captureKeyValuePairAttributes>true</captureKeyValuePairAttributes>
+        
+        <!-- Capture logger context (MDC) as attributes -->
+        <captureLoggerContext>true</captureLoggerContext>
+        
+        <!-- Capture exception stack traces -->
+        <captureExperimentalAttributes>true</captureExperimentalAttributes>
+    </appender>
+
+    <!-- 
+        Async wrapper for OTLP appender to prevent blocking application threads
+        
+        Configuration:
+        - Queue size: 512 log events (adjust based on throughput needs)
+        - Never block: Application continues even if logging falls behind
+    -->
+    <appender name="ASYNC_OTLP" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- Reference to synchronous OTLP appender -->
+        <appender-ref ref="OTLP"/>
+        
+        <!-- Queue capacity: Larger = more memory, better burst handling -->
+        <queueSize>512</queueSize>
+        
+        <!-- Discard logs below WARN when queue reaches 80% capacity -->
+        <discardingThreshold>0</discardingThreshold>
+        
+        <!-- Never block application threads waiting for log queue -->
+        <neverBlock>true</neverBlock>
+        
+        <!-- Include caller data (file, line number) - disabled for performance -->
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <!-- 
+        Logger configuration: Set log levels for different packages
+        
+        Strategy:
+        - Application code (net.investpulse): INFO level for business events
+        - Spring Framework: WARN level to reduce noise
+        - Kafka: WARN level to reduce consumer/producer verbosity
+    -->
+    <logger name="net.investpulse" level="INFO"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.kafka" level="WARN"/>
+    <logger name="org.apache.kafka" level="WARN"/>
+    
+    <!-- 
+        Root logger: Default configuration for all loggers
+        
+        Level: INFO (filters out DEBUG and TRACE)
+        Appenders: CONSOLE (local), ASYNC_OTLP (centralized via OpenTelemetry)
+    -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_OTLP"/>
+    </root>
+</configuration>

@@ -1,0 +1,46 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Config Server",
+            "request": "launch",
+            "mainClass": "net.investpulse.configserver.ConfigServerApp",
+            "projectName": "config-server",
+            "cwd": "${workspaceFolder}/us-config-server",
+            "vmArgs": "-Dcom.sun.management.jmxremote=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=0 -Dspring.jmx.enabled=false"
+        },
+        {
+            "type": "java",
+            "name": "Launch Reddit Service",
+            "request": "launch",
+            "mainClass": "net.investpulse.reddit.RedditApp",
+            "projectName": "reddit",
+            "cwd": "${workspaceFolder}/us-reddit",
+            "env": {
+                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://lgtm:4318"
+            }
+        },
+        {
+            "type": "java",
+            "name": "Launch Sentiment Analyzer",
+            "request": "launch",
+            "mainClass": "net.investpulse.sentiment.SentimentApp",
+            "projectName": "sentiment-analyzer",
+            "cwd": "${workspaceFolder}/us-sentiment-analyzer",
+            "vmArgs": "--enable-native-access=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED -Dcom.sun.management.jmxremote=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=0 -Dspring.jmx.enabled=false"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch All Services",
+            "configurations": [
+                "Launch Config Server",
+                "Launch Reddit Service",
+                "Launch Sentiment Analyzer"
+            ],
+            "stopAll": true,
+            "preLaunchTask": "build-all"
+        }
+    ]
+}

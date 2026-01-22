@@ -20,6 +20,10 @@
 		<spring-cloud.version>2025.0.1</spring-cloud.version>
 		<errorprone.version>2.45.0</errorprone.version>
 		<guava.version>33.5.0-jre</guava.version>
+		<!-- OpenTelemetry logging integration for centralized log aggregation via OTLP -->
+		<opentelemetry.version>1.51.0</opentelemetry.version>
+		<opentelemetry-logback-appender.version>2.16.0-alpha</opentelemetry-logback-appender.version>
+		<logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
 	</properties>
 
 	<dependencyManagement>
@@ -35,6 +39,29 @@
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
+			</dependency>
+			<!-- OpenTelemetry SDK for logging appender -->
+			<dependency>
+				<groupId>io.opentelemetry</groupId>
+				<artifactId>opentelemetry-sdk</artifactId>
+				<version>${opentelemetry.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.opentelemetry</groupId>
+				<artifactId>opentelemetry-sdk-logs</artifactId>
+				<version>${opentelemetry.version}</version>
+			</dependency>
+			<!-- OpenTelemetry logback appender for shipping logs via OTLP -->
+			<dependency>
+				<groupId>io.opentelemetry.instrumentation</groupId>
+				<artifactId>opentelemetry-logback-appender-1.0</artifactId>
+				<version>${opentelemetry-logback-appender.version}</version>
+			</dependency>
+			<!-- Logstash encoder for structured JSON logging with trace correlation -->
+			<dependency>
+				<groupId>net.logstash.logback</groupId>
+				<artifactId>logstash-logback-encoder</artifactId>
+				<version>${logstash-logback-encoder.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
