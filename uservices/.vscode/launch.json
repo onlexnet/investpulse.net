@@ -17,8 +17,12 @@
             "mainClass": "net.investpulse.reddit.RedditApp",
             "projectName": "reddit",
             "cwd": "${workspaceFolder}/us-reddit",
+            "vmArgs": "-javaagent:/home/worker/.m2/repository/io/opentelemetry/javaagent/opentelemetry-javaagent/2.24.0/opentelemetry-javaagent-2.24.0.jar",
             "env": {
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://lgtm:4318"
+                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://lgtm:4318",
+                "OTEL_SERVICE_NAME": "reddit-service",
+                "OTEL_TRACES_EXPORTER": "otlp",
+                "OTEL_LOGS_EXPORTER": "otlp"
             }
         },
         {
@@ -28,7 +32,14 @@
             "mainClass": "net.investpulse.sentiment.SentimentApp",
             "projectName": "sentiment-analyzer",
             "cwd": "${workspaceFolder}/us-sentiment-analyzer",
-            "vmArgs": "--enable-native-access=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED -Dcom.sun.management.jmxremote=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=0 -Dspring.jmx.enabled=false"
+            "vmArgs": ".10.0.jar --enable-native-access=ALL-UNNAMED --add-opens java.base/javax.security.auth=ALL-UNNAMED -Dcom.sun.management.jmxremote=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=0 -Dspring.jmx.enabled=false",
+            "env": {
+                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
+                "OTEL_SERVICE_NAME": "sentiment-analyzer",
+                "OTEL_TRACES_EXPORTER": "otlp",
+                "OTEL_METRICS_EXPORTER": "otlp",
+                "OTEL_LOGS_EXPORTER": "otlp"
+            }
         }
     ],
     "compounds": [

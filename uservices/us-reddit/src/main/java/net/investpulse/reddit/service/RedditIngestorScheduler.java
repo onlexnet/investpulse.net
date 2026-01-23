@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import io.micrometer.tracing.annotation.SpanTag;
+
 import java.util.Arrays;
 import java.util.List;
 

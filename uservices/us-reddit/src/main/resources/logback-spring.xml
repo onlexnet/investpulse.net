@@ -108,5 +108,6 @@
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ASYNC_OTLP"/>
+        <!-- <appender-ref ref="OTLP"/> -->
     </root>
 </configuration>
