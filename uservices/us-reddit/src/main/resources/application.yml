@@ -61,7 +61,7 @@ management:
       base-path: /actuator
   endpoint:
     refresh:
-      enabled: true
+      access: unrestricted
   tracing:
     sampling:
       probability: 1.0
