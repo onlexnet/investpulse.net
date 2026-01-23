@@ -2,13 +2,13 @@ package net.investpulse.reddit.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.investpulse.reddit.metrics.RedditMetrics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import io.micrometer.tracing.annotation.SpanTag;
-
+import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,12 +23,19 @@ import java.util.List;
 public class RedditIngestorScheduler {
 
     private final RedditIngestor redditIngestor;
+    private final RedditMetrics redditMetrics;
 
     @Value("${reddit.tickers:AAPL,MSFT,GOOGL,TSLA,AMZN,NVDA,META,AMD,COIN,MSTR}")
     private String tickersConfig;
 
     @Value("${reddit.poll-interval-seconds:5}")
     private int pollIntervalSeconds;
+
+    @PostConstruct
+    public void initializeMetrics() {
+        log.info("Initializing Reddit metrics");
+        redditMetrics.init();
+    }
 
     /**
      * Scheduled task to ingest posts for all configured tickers.

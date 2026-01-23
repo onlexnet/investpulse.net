@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.investpulse.common.dto.RawRedditPost;
 import net.investpulse.reddit.domain.port.MessagePublisher;
 import net.investpulse.reddit.domain.port.RedditPostFetcher;
+import net.investpulse.reddit.metrics.RedditMetrics;
 import net.investpulse.reddit.service.DatabaseDeduplicationService.DeduplicationResult;
 import net.investpulse.reddit.service.DatabaseDeduplicationService.PostStatus;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,8 +25,8 @@ public class RedditIngestor {
     private final RedditPostFetcher redditPostFetcher;
     private final MessagePublisher messagePublisher;
     private final DatabaseDeduplicationService deduplicationService;
-    private final TickerExtractor tickerExtractor;
     private final RedditSentimentService sentimentService;
+    private final RedditMetrics redditMetrics;
 
     @Value("${reddit.subreddits:stocks,investing,wallstreetbets}")
     private String subredditsConfig;
@@ -43,6 +44,7 @@ public class RedditIngestor {
      * @param ticker the stock ticker to search for (e.g., "AAPL")
      */
     public void ingestPostsForTicker(String ticker) {
+        var ingestionSample = redditMetrics.startIngestionTimer();
         List<String> subreddits = parseSubreddits();
         log.info("Starting ingestion for ticker {} from {} subreddit(s)", ticker, subreddits.size());
 
@@ -56,55 +58,75 @@ public class RedditIngestor {
             try {
                 List<RawRedditPost> posts = redditPostFetcher.fetchPostsByTicker(subreddit, ticker);
                 fetchedCount += posts.size();
+                redditMetrics.recordPostFetched(posts.size());
 
                 for (RawRedditPost post : posts) {
-                    // Check post against database
-                    DeduplicationResult result = deduplicationService.checkAndSavePost(post);
+                    try {
+                        // Check post against database
+                        var dedupSample = redditMetrics.startDeduplicationTimer();
+                        DeduplicationResult result = deduplicationService.checkAndSavePost(post);
+                        redditMetrics.recordDeduplicationTime(dedupSample);
 
-                    if (result.status() == PostStatus.UNCHANGED) {
-                        unchangedCount++;
-                        log.debug("Skipping unchanged post {} from r/{}, version={}", 
-                                post.id(), subreddit, result.version());
-                        continue;
+                        if (result.status() == PostStatus.UNCHANGED) {
+                            unchangedCount++;
+                            redditMetrics.recordPostUnchanged(1);
+                            log.debug("Skipping unchanged post {} from r/{}, version={}", 
+                                    post.id(), subreddit, result.version());
+                            continue;
+                        }
+
+                        if (result.status() == PostStatus.UPDATED) {
+                            updatedCount++;
+                            redditMetrics.recordPostUpdated(1);
+                        }
+
+                        // Analyze sentiment
+                        var sentimentSample = redditMetrics.startSentimentAnalysisTimer();
+                        String textForSentiment = post.title() + " " + (post.content() != null ? post.content() : "");
+                        double rawScore = sentimentService.analyzeSentiment(textForSentiment);
+                        double discretizedScore = sentimentService.discretizeSentiment(rawScore);
+                        double weightedScore = sentimentService.calculateWeightedScore(
+                                discretizedScore, post.upvotes(), post.comments()
+                        );
+                        redditMetrics.recordSentimentAnalysisTime(sentimentSample);
+
+                        totalWeightedScore += weightedScore;
+
+                        // Publish raw post with version
+                        messagePublisher.publishRawPost(post, result.version());
+
+                        // Publish scored post with version
+                        messagePublisher.publishScoredPost(
+                                post.id(), ticker, discretizedScore, weightedScore,
+                                post.upvotes(), post.comments(), post.timestamp(), result.version()
+                        );
+
+                        publishedCount++;
+                        redditMetrics.recordPostPublished();
+                        log.debug("Published post {} from r/{}: sentiment={}, weighted={}, version={}, status={}", 
+                                post.id(), subreddit, discretizedScore, weightedScore, result.version(), result.status());
+                    } catch (Exception e) {
+                        log.error("Error processing post {} from r/{} for ticker {}", post.id(), subreddit, ticker, e);
+                        redditMetrics.recordPublishingError();
                     }
-
-                    if (result.status() == PostStatus.UPDATED) {
-                        updatedCount++;
-                    }
-
-                    // Analyze sentiment
-                    String textForSentiment = post.title() + " " + (post.content() != null ? post.content() : "");
-                    double rawScore = sentimentService.analyzeSentiment(textForSentiment);
-                    double discretizedScore = sentimentService.discretizeSentiment(rawScore);
-                    double weightedScore = sentimentService.calculateWeightedScore(
-                            discretizedScore, post.upvotes(), post.comments()
-                    );
-
-                    totalWeightedScore += weightedScore;
-
-                    // Publish raw post with version
-                    messagePublisher.publishRawPost(post, result.version());
-
-                    // Publish scored post with version
-                    messagePublisher.publishScoredPost(
-                            post.id(), ticker, discretizedScore, weightedScore,
-                            post.upvotes(), post.comments(), post.timestamp(), result.version()
-                    );
-
-                    publishedCount++;
-                    log.debug("Published post {} from r/{}: sentiment={}, weighted={}, version={}, status={}", 
-                            post.id(), subreddit, discretizedScore, weightedScore, result.version(), result.status());
                 }
             } catch (Exception e) {
                 log.error("Error ingesting posts from r/{} for ticker {}", subreddit, ticker, e);
+                redditMetrics.recordFetchingError();
             }
         }
+
+        redditMetrics.recordIngestionTime(ingestionSample, ticker);
 
         // Update metrics
         totalPostsFetched += fetchedCount;
         totalPostsPublished += publishedCount;
         totalUnchanged += unchangedCount;
         totalUpdates += updatedCount;
+
+        // Record gauge metrics
+        redditMetrics.recordFetchedPostsGauge(totalPostsFetched);
+        redditMetrics.recordPublishedPostsGauge(totalPostsPublished);
 
         // Log summary
         double avgWeightedScore = publishedCount > 0 ? totalWeightedScore / publishedCount : 0.0;
