@@ -4,7 +4,7 @@
         {
             "label": "build-all",
             "type": "shell",
-            "command": "mvnd clean install -DskipTests",
+            "command": "mvn clean install -DskipTests",
             "group": "build",
             "problemMatcher": [],
             "presentation": {
