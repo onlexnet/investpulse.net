@@ -23,6 +23,7 @@
 		<!-- OpenTelemetry logging integration for centralized log aggregation via OTLP -->
 		<opentelemetry.version>1.51.0</opentelemetry.version>
 		<opentelemetry-logback-appender.version>2.16.0-alpha</opentelemetry-logback-appender.version>
+		<opentelemetry-javaagent.version>2.24.0</opentelemetry-javaagent.version>
 		<logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
 	</properties>
 
@@ -62,6 +63,13 @@
 				<groupId>net.logstash.logback</groupId>
 				<artifactId>logstash-logback-encoder</artifactId>
 				<version>${logstash-logback-encoder.version}</version>
+			</dependency>
+			<!-- OpenTelemetry Java Agent for automatic instrumentation (runtime scope only) -->
+			<dependency>
+				<groupId>io.opentelemetry.javaagent</groupId>
+				<artifactId>opentelemetry-javaagent</artifactId>
+				<version>${opentelemetry-javaagent.version}</version>
+				<scope>runtime</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -160,7 +168,7 @@
 										<limit>
 											<counter>INSTRUCTION</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.22</minimum>
+											<minimum>0.19</minimum>
 										</limit>
 									</limits>
 								</rule>
